@@ -1,0 +1,33 @@
+﻿{
+  "$schema": "database.schema.json",
+  "dbProviderFactories": {
+    "Oracle.ManagedDataAccess.Client": "Oracle.ManagedDataAccess.Client.OracleClientFactory, Oracle.ManagedDataAccess",
+    "System.Data.SqlClient": "System.Data.SqlClient.SqlClientFactory, System.Data.SqlClient",
+    "MySql.Data.MySqlClient": "MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data",
+    "Microsoft.Data.SqliteClient": "Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite"
+  },
+  "connectionStrings": {
+    "oracle": {
+      "connectionString": "Data source=localhost/example; User ID=example; Password=example;",
+      "providerName": "Oracle.ManagedDataAccess.Client"
+    },
+    "sqlserver": {
+      "connectionString": "Data Source=example; User ID=sa; Password=example;Initial Catalog = Example",
+      "providerName": "System.Data.SqlClient"
+    },
+    "mysql": {
+      "connectionString": "Database=example; SSL Mode=None; Data Source=example; User Id=example; Password=example",
+      "providerName": "MySql.Data.MySqlClient"
+    },
+    "sqlite": {
+      "connectionString": "Data Source=example.db3;",
+      "providerName": "Microsoft.Data.SqliteClient"
+    },
+    "generic": {
+      "connectionString": "Data Source=example; User ID=sa; Password=example;Initial Catalog = Example",
+      "providerName": "System.Data.SqlClient",
+      "type": "Generic" // 强制使用Generic，无法获取插入的自增长主键，测试将与其他类型存在差异
+    }
+  },
+  "databaseSettings": { "defaultDatabase": "generic" }
+}

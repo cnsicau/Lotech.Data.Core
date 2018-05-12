@@ -14,6 +14,7 @@
     <Description>Lotech.Data for dotnet core.
 a ORM like EnterpriseLib.Data.
 SqlServer Oracle MySQL SQLite etc.</Description>
+    <AssemblyVersion>2.0.0.0512</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

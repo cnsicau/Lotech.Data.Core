@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <DocumentationFile>bin\Debug\netcoreapp2.0\Lotech.Data.xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.0-beta2</Version>
+    <Version>2.0.0-preview</Version>
     <PackageId>Lotech.Data.Core</PackageId>
     <Authors>cnsicau</Authors>
     <Company>lotech</Company>

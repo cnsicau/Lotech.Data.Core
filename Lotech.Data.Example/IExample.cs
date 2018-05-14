@@ -1,23 +1,23 @@
 ﻿using System;
 
-namespace Lotech.Data.Test
+namespace Lotech.Data.Example
 {
+    public interface IExample
+    {
+        string Code { get; set; }
+        byte[] Content { get; set; }
+        DateTime CreateTime { get; set; }
+        bool Deleted { get; set; }
+        long Id { get; set; }
+        long LongId { get; set; }
+        DateTime? ModifyTime { get; set; }
+        string Name { get; set; }
+    }
 
-    /*  create database example;
-
-        create table Example
-        (
-          Id bigint not null primary key identity(1, 1),
-          Code nvarchar(32) not null,
-          Name nvarchar(128) not null,
-          CreateTime datetime not null,
-          ModifyTime datetime,
-          Deleted bit not null,
-          LongId as 100000000 + Id,
-          Bin varbinary(max) null
-        );
-    */
-    class Example
+    /// <summary>
+    /// 默认
+    /// </summary>
+    public class Example : IExample
     {
         [Column(PrimaryKey = true, DbGenerated = true)]
         public long Id { get; set; }

@@ -1,54 +1,51 @@
-﻿namespace Lotech.Data.Test
+﻿using System;
+
+namespace Lotech.Data.Example
 {
     class Program
     {
+        static void EntityTests<TExample>(IDatabaseExample example)
+            where TExample : class, IExample, new()
+        {
+            var test = new TestEntityExecutes<TExample>(example);
+            test.TestInsert();
+            test.TestLoad();
+            test.TestUpdate();
+            test.TestExists();
+            test.TestDelete();
+            test.TestTransaction();
+            test.TestFind();
+        }
+
+        static void SqlTests<TExample>(IDatabaseExample example)
+        {
+            Console.WriteLine(example.GetType().Name.PadLeft(40, '-').PadRight(80, '-'));
+            var test = new TestSqlExecutes(example.Database);
+
+            test.ExecuteDataSetTest();
+            test.ExecuteNonQueryTest();
+        }
+
         static void Main()
         {
             var sqlite = new SQLiteExample();
-            sqlite.TestInsert();
-            sqlite.TestLoad();
-            sqlite.TestUpdate();
-            sqlite.TestExists();
-            sqlite.TestDelete();
-            sqlite.TestTransaction();
-            sqlite.TestFind();
-
+            // Entity
+            EntityTests<SQLiteExample.Example>(sqlite);    // SQLite 
             var mysql = new MySqlExample();
-            mysql.TestInsert();
-            mysql.TestLoad();
-            mysql.TestUpdate();
-            mysql.TestExists();
-            mysql.TestDelete();
-            mysql.TestTransaction();
-            mysql.TestFind();
-
+            EntityTests<Example>(mysql);                   // MySQL
             var oracle = new OracleExample();
-            oracle.TestInsert();
-            oracle.TestLoad();
-            oracle.TestUpdate();
-            oracle.TestExists();
-            oracle.TestDelete();
-            oracle.TestTransaction();
-            oracle.TestFind();
-
+            EntityTests<OracleExample.Example>(oracle);    // Oracle
+            var sqlserver = new SqlServerExample();
+            EntityTests<Example>(sqlserver);               // SqlServer
             var generic = new GenericExample();
-            generic.TestInsert();
-            generic.TestLoad();
-            generic.TestUpdate();
-            generic.TestExists();
-            generic.TestDelete();
-            generic.TestTransaction();
-            generic.TestFind();
+            EntityTests<Example>(generic);                 // Generic
 
-
-            var sql = new SqlServerExample();
-            sql.TestInsert();
-            sql.TestLoad();
-            sql.TestUpdate();
-            sql.TestExists();
-            sql.TestDelete();
-            sql.TestTransaction();
-            sql.TestFind();
+            // Raw SQL
+            SqlTests<SQLiteExample.Example>(sqlite);       // SQLite 
+            SqlTests<Example>(mysql);                      // MySQL
+            SqlTests<OracleExample.Example>(oracle);       // Oracle
+            SqlTests<Example>(sqlserver);                  // SqlServer
+            SqlTests<Example>(generic);                    // Generic
         }
     }
 }

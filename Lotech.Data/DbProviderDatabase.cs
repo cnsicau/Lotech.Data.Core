@@ -1,10 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using Lotech.Data.Queries;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
-using System.Linq.Expressions;
 using System.Diagnostics;
-using Lotech.Data.Queries;
+using System.Linq;
+using System.Linq.Expressions;
 
 namespace Lotech.Data
 {
@@ -68,7 +69,7 @@ namespace Lotech.Data
         {
             if (command.Connection != null)
             {
-                if (command.Connection.State == System.Data.ConnectionState.Open)
+                if (command.Connection.State == ConnectionState.Open)
                 {
                     return new ConnectionSubstitute(command.Connection).Ref();
                 }
@@ -105,7 +106,7 @@ namespace Lotech.Data
         /// <param name="commandText"></param>
         /// <returns></returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100")]
-        public virtual DbCommand GetCommand(System.Data.CommandType commandType, string commandText)
+        public virtual DbCommand GetCommand(CommandType commandType, string commandText)
         {
             var command = dbProviderFactory.CreateCommand();
             command.CommandText = commandText;
@@ -119,7 +120,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual DbCommand GetSqlStringCommand(string query)
         {
-            return GetCommand(System.Data.CommandType.Text, query);
+            return GetCommand(CommandType.Text, query);
         }
         /// <summary>
         /// 
@@ -128,7 +129,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual DbCommand GetStoredProcedureCommand(string procedureName)
         {
-            return GetCommand(System.Data.CommandType.StoredProcedure, procedureName);
+            return GetCommand(CommandType.StoredProcedure, procedureName);
         }
         /// <summary>
         /// 
@@ -138,7 +139,7 @@ namespace Lotech.Data
         /// <param name="dbType"></param>
         /// <param name="direction"></param>
         /// <param name="value"></param>
-        public virtual void AddParameter(DbCommand command, string parameterName, System.Data.DbType dbType, System.Data.ParameterDirection direction, object value)
+        public virtual void AddParameter(DbCommand command, string parameterName, DbType dbType, ParameterDirection direction, object value)
         {
             if (command == null)
             {
@@ -169,7 +170,7 @@ namespace Lotech.Data
         /// <param name="precision"></param>
         /// <param name="scale"></param>
         /// <param name="value"></param>
-        public virtual void AddParameter(DbCommand command, string parameterName, System.Data.DbType dbType, System.Data.ParameterDirection direction, int size, bool nullable, int precision, int scale, object value)
+        public virtual void AddParameter(DbCommand command, string parameterName, DbType dbType, ParameterDirection direction, int size, bool nullable, int precision, int scale, object value)
         {
             if (command == null)
             {
@@ -181,7 +182,7 @@ namespace Lotech.Data
             }
 
             var parameter = dbProviderFactory.CreateParameter();
-            parameter.Direction = System.Data.ParameterDirection.Output;
+            parameter.Direction = ParameterDirection.Output;
             parameter.DbType = dbType;
             parameter.SourceColumnNullMapping = nullable;
             parameter.Size = size;
@@ -196,9 +197,9 @@ namespace Lotech.Data
         /// <param name="parameterName"></param>
         /// <param name="dbType"></param>
         /// <param name="value"></param>
-        public virtual void AddInParameter(DbCommand command, string parameterName, System.Data.DbType dbType, object value)
+        public virtual void AddInParameter(DbCommand command, string parameterName, DbType dbType, object value)
         {
-            AddParameter(command, parameterName, dbType, System.Data.ParameterDirection.Input, value);
+            AddParameter(command, parameterName, dbType, ParameterDirection.Input, value);
         }
         /// <summary>
         /// 
@@ -207,7 +208,7 @@ namespace Lotech.Data
         /// <param name="parameterName"></param>
         /// <param name="dbType"></param>
         /// <param name="size"></param>
-        public virtual void AddOutParameter(DbCommand command, string parameterName, System.Data.DbType dbType, int size)
+        public virtual void AddOutParameter(DbCommand command, string parameterName, DbType dbType, int size)
         {
             if (command == null)
             {
@@ -219,7 +220,7 @@ namespace Lotech.Data
             }
 
             var parameter = dbProviderFactory.CreateParameter();
-            parameter.Direction = System.Data.ParameterDirection.Output;
+            parameter.Direction = ParameterDirection.Output;
             parameter.DbType = dbType;
             parameter.Size = size;
             parameter.ParameterName = parameterName;
@@ -246,14 +247,14 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        public virtual System.Data.IDataReader ExecuteReader(DbCommand command)
+        public virtual IDataReader ExecuteReader(DbCommand command)
         {
             var substitute = GetConnection(command);
             try
             {
                 command.Connection = substitute.Connection;
 
-                if (substitute.Connection.State != System.Data.ConnectionState.Open)
+                if (substitute.Connection.State != ConnectionState.Open)
                     substitute.Connection.Open();
 
                 Debug.WriteLine("Execute query:" + command.CommandText);
@@ -270,9 +271,9 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public System.Data.IDataReader ExecuteReader(string commandText)
+        public IDataReader ExecuteReader(string commandText)
         {
-            return ExecuteReader(System.Data.CommandType.Text, commandText);
+            return ExecuteReader(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -280,7 +281,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual System.Data.IDataReader ExecuteReader(System.Data.CommandType commandType, string commandText)
+        public virtual IDataReader ExecuteReader(CommandType commandType, string commandText)
         {
             var command = GetCommand(commandType, commandText);
             try
@@ -305,7 +306,7 @@ namespace Lotech.Data
             {
                 Debug.WriteLine("Execute query:" + command.CommandText);
                 command.Connection = substitute.Connection;
-                if (substitute.Connection.State != System.Data.ConnectionState.Open)
+                if (substitute.Connection.State != ConnectionState.Open)
                     substitute.Connection.Open();
 
                 object ret = command.ExecuteScalar();
@@ -319,7 +320,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public object ExecuteScalar(string commandText)
         {
-            return ExecuteScalar(System.Data.CommandType.Text, commandText);
+            return ExecuteScalar(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -327,7 +328,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual object ExecuteScalar(System.Data.CommandType commandType, string commandText)
+        public virtual object ExecuteScalar(CommandType commandType, string commandText)
         {
             using (var command = GetCommand(commandType, commandText))
             {
@@ -357,7 +358,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public TScalar ExecuteScalar<TScalar>(string commandText)
         {
-            return ExecuteScalar<TScalar>(System.Data.CommandType.Text, commandText);
+            return ExecuteScalar<TScalar>(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -366,7 +367,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual TScalar ExecuteScalar<TScalar>(System.Data.CommandType commandType, string commandText)
+        public virtual TScalar ExecuteScalar<TScalar>(CommandType commandType, string commandText)
         {
             using (var command = GetCommand(commandType, commandText))
             {
@@ -379,10 +380,30 @@ namespace Lotech.Data
         /// <param name="command"></param>
         /// <returns></returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000")]
-        public virtual System.Data.DataSet ExecuteDataSet(DbCommand command)
+        public virtual DataSet ExecuteDataSet(DbCommand command)
         {
             using (DbDataAdapter adapter = dbProviderFactory.CreateDataAdapter())
             {
+                if (adapter == null) // 不支持 Adapter驱动，尝试直接 DataReader装载模式
+                {
+                    using (var reader = ExecuteReader(command))
+                    {
+                        var dataSet = new DataSet();
+                        var table = dataSet.Tables.Add("Table");
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                        }
+                        var rows = new object[reader.FieldCount];
+                        while (reader.Read())
+                        {
+                            reader.GetValues(rows);
+                            table.Rows.Add(rows);
+                        }
+
+                        return dataSet;
+                    }
+                }
                 Debug.WriteLine("Execute query:" + command.CommandText);
 
                 adapter.SelectCommand = command;
@@ -404,9 +425,9 @@ namespace Lotech.Data
         /// <param name="commandText"></param>
         /// <returns></returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000")]
-        public System.Data.DataSet ExecuteDataSet(string commandText)
+        public DataSet ExecuteDataSet(string commandText)
         {
-            return ExecuteDataSet(System.Data.CommandType.Text, commandText);
+            return ExecuteDataSet(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -415,7 +436,7 @@ namespace Lotech.Data
         /// <param name="commandText"></param>
         /// <returns></returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000")]
-        public virtual System.Data.DataSet ExecuteDataSet(System.Data.CommandType commandType, string commandText)
+        public virtual DataSet ExecuteDataSet(CommandType commandType, string commandText)
         {
             using (var command = GetCommand(commandType, commandText))
             {
@@ -433,7 +454,7 @@ namespace Lotech.Data
             {
                 Debug.WriteLine("Execute query:" + command.CommandText);
                 command.Connection = subsitute.Connection;
-                if (subsitute.Connection.State != System.Data.ConnectionState.Open)
+                if (subsitute.Connection.State != ConnectionState.Open)
                     subsitute.Connection.Open();
                 return command.ExecuteNonQuery();
             }
@@ -445,7 +466,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual int ExecuteNonQuery(string commandText)
         {
-            return ExecuteNonQuery(System.Data.CommandType.Text, commandText);
+            return ExecuteNonQuery(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -453,7 +474,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual int ExecuteNonQuery(System.Data.CommandType commandType, string commandText)
+        public virtual int ExecuteNonQuery(CommandType commandType, string commandText)
         {
             using (var command = GetCommand(commandType, commandText))
             {
@@ -571,7 +592,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType ExecuteEntity<EntityType>(string commandText) where EntityType : class
         {
-            return ExecuteEntity<EntityType>(System.Data.CommandType.Text, commandText);
+            return ExecuteEntity<EntityType>(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -580,7 +601,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual EntityType ExecuteEntity<EntityType>(System.Data.CommandType commandType, string commandText)
+        public virtual EntityType ExecuteEntity<EntityType>(CommandType commandType, string commandText)
              where EntityType : class
         {
             using (var command = dbProviderFactory.CreateCommand())
@@ -599,7 +620,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual IEnumerable<EntityType> ExecuteEntities<EntityType>(string commandText) where EntityType : class
         {
-            return ExecuteEntities<EntityType>(System.Data.CommandType.Text, commandText);
+            return ExecuteEntities<EntityType>(CommandType.Text, commandText);
         }
         /// <summary>
         /// 
@@ -608,7 +629,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual IEnumerable<EntityType> ExecuteEntities<EntityType>(System.Data.CommandType commandType, string commandText)
+        public virtual IEnumerable<EntityType> ExecuteEntities<EntityType>(CommandType commandType, string commandText)
             where EntityType : class
         {
             using (var command = dbProviderFactory.CreateCommand())

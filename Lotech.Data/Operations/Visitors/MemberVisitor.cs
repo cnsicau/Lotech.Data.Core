@@ -28,7 +28,7 @@ namespace Lotech.Data.Operations.Visitors
                 if (node.Expression.Type != typeof(TEntity))
                     throw new InvalidOperationException($"仅支持访问模型{typeof(TEntity).Name}参数的成员 {node}.");
 
-                var member = _descriptor.Members?.FirstOrDefault(_ => _.Member == node.Member);
+                var member = _descriptor.Members?.FirstOrDefault(_ => _.Member.Name == node.Member.Name/*通过名称匹配，避免接口调用 Member 不一致*/);
                 if (member == null)
                     throw new InvalidOperationException($"访问模型{typeof(TEntity).Name}参数未找到映射 {node}.");
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace Lotech.Data
 {
@@ -144,7 +143,6 @@ namespace Lotech.Data
         Func<IDatabase, Expression<Func<TEntity, bool>>, bool> ExistsByPredicate<TEntity>() where TEntity : class;
         #endregion
 
-
         #region LoadEntity
         /// <summary>
         /// 
@@ -165,6 +163,30 @@ namespace Lotech.Data
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
         Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity> LoadEntityByPredicate<TEntity>() where TEntity : class;
+
+        #endregion
+
+        #region v2.1 UpdateEntitiesX + Count(..)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TSet"></typeparam>
+        Action<IDatabase, EntityType, Func<EntityType, TSet>, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>() where EntityType : class where TSet : class;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <returns></returns>
+        Func<IDatabase, int> Count<EntityType>() where EntityType : class;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <returns></returns>
+        Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class;
         #endregion
     }
 }

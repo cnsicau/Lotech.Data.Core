@@ -7,6 +7,16 @@ namespace Lotech.Data.MySqls
 {
     class MySqlEntityServices : IEntityServices
     {
+        public Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class
+        {
+            return Operation<EntityType, Func<IDatabase, Expression<Func<EntityType, bool>>, int>, MySqlCountEntitiesExpression<EntityType>>.Instance;
+        }
+
+        public Func<IDatabase, int> Count<EntityType>() where EntityType : class
+        {
+            return Operation<EntityType, Func<IDatabase, int>, MySqlCountEntities<EntityType>>.Instance;
+        }
+
         public Action<IDatabase, IEnumerable<TEntity>> DeleteEntities<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
@@ -85,6 +95,13 @@ namespace Lotech.Data.MySqls
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>>
                 >.Instance;
+        }
+
+        public Action<IDatabase, EntityType, Func<EntityType, TSet>, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>()
+            where EntityType : class
+            where TSet : class
+        {
+            throw new NotImplementedException();
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntitiesExclude<TEntity, TExclude>()

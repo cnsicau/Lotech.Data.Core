@@ -7,6 +7,16 @@ namespace Lotech.Data.Oracles
 {
     class OracleEntityServices : IEntityServices
     {
+        public Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class
+        {
+            return Operation<EntityType, Func<IDatabase, Expression<Func<EntityType, bool>>, int>, OracleCountEntitiesExpression<EntityType>>.Instance;
+        }
+
+        public Func<IDatabase, int> Count<EntityType>() where EntityType : class
+        {
+            return Operation<EntityType, Func<IDatabase, int>, OracleCountEntities<EntityType>>.Instance;
+        }
+        
         public Action<IDatabase, IEnumerable<TEntity>> DeleteEntities<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
@@ -128,6 +138,13 @@ namespace Lotech.Data.Oracles
             return Operation<TEntity, Action<IDatabase, TEntity>,
                     OperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Include<TInclude>>
                 >.Instance;
+        }
+
+        public Action<IDatabase, EntityType, Func<EntityType, TSet>, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>()
+            where EntityType : class
+            where TSet : class
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -19,7 +19,39 @@ namespace Lotech.Data
         /// </summary>
         private readonly DbProviderFactory dbProviderFactory;
         private readonly IEntityServices services;
-        
+
+        static class ResultMapper<ValueType>
+        {
+            readonly static Func<IResultMapper<ValueType>> New;
+            static ResultMapper()
+            {
+                Type mapperType;
+
+                if (typeof(ValueType) == typeof(object))
+                {
+                    mapperType = typeof(ObjectResultMapper);
+                }
+                else if (typeof(ValueType).Assembly == typeof(int).Assembly)
+                {
+                    mapperType = typeof(SimpleResultMapper<>).MakeGenericType(typeof(ValueType));
+                }
+                else
+                {
+                    mapperType = typeof(EntityResultMapper<>).MakeGenericType(typeof(ValueType));
+                }
+
+                New = Expression.Lambda<Func<IResultMapper<ValueType>>>(
+                        Expression.New(mapperType.GetConstructor(Type.EmptyTypes))
+                    ).Compile();
+            }
+
+            /// <summary>
+            /// 创建映射器实例
+            /// </summary>
+            /// <returns></returns>
+            internal static IResultMapper<ValueType> Create() { return New(); }
+        }
+
         static void TraceLog(string message)
         {
             Trace.WriteLine(message);
@@ -360,7 +392,7 @@ namespace Lotech.Data
             {
                 command.Connection = subsitute.Connection;
                 return new CommandQueryResult<TScalar>(command
-                        , new SimpleResultMapper<TScalar>(), Log).FirstOrDefault();
+                        , ResultMapper<TScalar>.Create(), Log).FirstOrDefault();
             }
         }
         /// <summary>
@@ -530,6 +562,82 @@ namespace Lotech.Data
             return services.ExistsByPredicate<EntityType>()(this, predicate);
         }
         #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public virtual dynamic ExecuteEntity(DbCommand command)
+        {
+            using (var subsitute = GetConnection(command))
+            {
+                command.Connection = subsitute.Connection;
+                return new CommandQueryResult<object>(
+                        command
+                        , new ObjectResultMapper()
+                        , Log).FirstOrDefault();
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public virtual dynamic[] ExecuteEntities(DbCommand command)
+        {
+            using (var subsitute = GetConnection(command))
+            {
+                command.Connection = subsitute.Connection;
+                return new CommandQueryResult<object>(
+                        command
+                        , new ObjectResultMapper()
+                        , Log).ToArray();
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="commandType"></param>
+        /// <param name="commandText"></param>
+        /// <returns></returns>
+        public virtual dynamic ExecuteEntity(CommandType commandType, string commandText)
+        {
+            using (var command = GetCommand(commandType, commandText))
+            {
+                return ExecuteEntity(command);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="commandType"></param>
+        /// <param name="commandText"></param>
+        /// <returns></returns>
+        public virtual dynamic[] ExecuteEntities(CommandType commandType, string commandText)
+        {
+            using (var command = GetCommand(commandType, commandText))
+            {
+                return ExecuteEntities(command);
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="commandText"></param>
+        /// <returns></returns>
+        public virtual dynamic ExecuteEntity(string commandText)
+        {
+            return ExecuteEntity(CommandType.Text, commandText);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="commandText"></param>
+        /// <returns></returns>
+        public virtual dynamic[] ExecuteEntities(string commandText)
+        {
+            return ExecuteEntities(CommandType.Text, commandText);
+        }
 
         /// <summary>
         /// 
@@ -576,7 +684,7 @@ namespace Lotech.Data
                 command.Connection = subsitute.Connection;
                 return new CommandQueryResult<EntityType>(
                         command
-                        , new EntityResultMapper<EntityType>()
+                        , ResultMapper<EntityType>.Create()
                         , Log).FirstOrDefault();
             }
         }
@@ -593,7 +701,7 @@ namespace Lotech.Data
                 command.Connection = subsitute.Connection;
                 return new CommandQueryResult<EntityType>(
                     command
-                    , new EntityResultMapper<EntityType>()
+                    , ResultMapper<EntityType>.Create()
                     , Log).ToArray();
             }
         }
@@ -802,6 +910,42 @@ namespace Lotech.Data
         public virtual EntityType[] FindEntities<EntityType>(Expression<Func<EntityType, bool>> predicate) where EntityType : class
         {
             return services.FindEntitiesByPredicate<EntityType>()(this, predicate);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TSet"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="sets"></param>
+        /// <param name="predicate"></param>
+        public virtual void UpdateEntities<EntityType, TSet>(EntityType entity, Func<EntityType, TSet> sets, Expression<Func<EntityType, bool>> predicate)
+            where EntityType : class
+            where TSet : class
+        {
+            services.UpdateEntities<EntityType, TSet>()(this, entity, sets, predicate);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <param name="conditions"></param>
+        /// <returns></returns>
+        public virtual int Count<EntityType>(Expression<Func<EntityType, bool>> conditions) where EntityType : class
+        {
+            return services.CountByPredicate<EntityType>()(this, conditions);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <returns></returns>
+        public virtual int Count<EntityType>() where EntityType : class
+        {
+            return services.Count<EntityType>()(this);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace Lotech.Data.Example
             test.TestDelete();
             test.TestTransaction();
             test.TestFind();
+            test.TestCount();
         }
 
         static void SqlTests<TExample>(IDatabaseExample example)
@@ -27,6 +28,7 @@ namespace Lotech.Data.Example
             test.ExecuteDataSetTest();
             test.ExecuteEntitiesTest();
             test.ExecuteEntityTest();
+            test.ExecuteDynamicTest();
             test.ExecuteScalarTest();
             test.ExecuteScalarTTest();
         }
@@ -42,6 +44,7 @@ namespace Lotech.Data.Example
         {
             // Entity
             var sqlite = new SQLiteExample();
+
             EntityTests<SQLiteExample.Example>(sqlite);    // SQLite 
             var mysql = new MySqlExample();
             EntityTests<Example>(mysql);                   // MySQL

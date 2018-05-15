@@ -157,5 +157,13 @@ namespace Lotech.Data.Example
                 Console.WriteLine($"Find(_.Code.StartsWith(\"T\")) => Id: {e.Id}, Code: {e.Code}, Name: {e.Name}, LongId: {e.LongId}, CreateTime: {e.CreateTime}");
             }
         }
+
+        public void TestCount()
+        {
+            var count = db.Count<TExample>();
+            Console.WriteLine("Count() = " + count);
+            count = db.Count<TExample>(_ => _.Code.StartsWith("T"));
+            Console.WriteLine("Count(_ => _.Code.StartsWith(\"T\")) = " + count);
+        }
     }
 }

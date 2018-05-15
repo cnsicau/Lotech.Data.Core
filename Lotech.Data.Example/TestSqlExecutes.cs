@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 
 namespace Lotech.Data.Example
@@ -88,6 +89,30 @@ namespace Lotech.Data.Example
                 Console.WriteLine($"db.ExecuteEntity<TExample>(command) => example's name = {example.Name}");
             }
         }
+        public void ExecuteDynamicTest()
+        {
+            var example = db.ExecuteEntity("SELECT * FROM example") ;
+            Console.WriteLine($"db.ExecuteEntity(\"SELECT * FROM example\") => example's name = {example.Name}");
+
+            example = db.ExecuteEntity(CommandType.Text, "SELECT * FROM example");
+            Console.WriteLine($"db.ExecuteEntity(CommandType.Text, \"SELECT * FROM example\") => example's name = {example.Name}");
+
+            try
+            {
+                example = db.ExecuteEntity(CommandType.TableDirect, "example");
+                Console.WriteLine($"db.ExecuteEntity(CommandType.TableDirect, \"example\") => example's name = {example.Name}");
+            }
+            catch (Exception e)
+            {
+                WriteErrorLine($"db.ExecuteEntity(CommandType.TableDirect, \"example\") error => {e}");
+            }
+            using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
+            {
+                example = db.ExecuteEntity(command);
+                Console.WriteLine($"db.ExecuteEntity(command) => example's name = {example.Name}");
+            }
+        }
+
         public void ExecuteScalarTest()
         {
             var scalar = db.ExecuteScalar("SELECT * FROM example");

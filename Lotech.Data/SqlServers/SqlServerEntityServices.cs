@@ -46,14 +46,14 @@ namespace Lotech.Data.SqlServers
             return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, SqlServerExistsEntityExpression<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, IEnumerable<TEntity>> FindEntities<TEntity>() where TEntity : class
+        public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, IEnumerable<TEntity>>, SqlServerFindEntities<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity[]>, SqlServerFindEntities<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>> FindEntitiesByPredicate<TEntity>() where TEntity : class
+        public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>, SqlServerFindEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, SqlServerFindEntitiesExpression<TEntity>>.Instance;
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {

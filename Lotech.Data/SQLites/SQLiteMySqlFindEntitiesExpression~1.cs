@@ -9,7 +9,7 @@ namespace Lotech.Data.SQLites
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    class SQLiteFindEntitiesExpression<TEntity> : Operations.Common.CommonFindEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>>
+    class SQLiteFindEntitiesExpression<TEntity> : Operations.Common.CommonFindEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>>
        where TEntity : class
     {
         public SQLiteFindEntitiesExpression() : base(

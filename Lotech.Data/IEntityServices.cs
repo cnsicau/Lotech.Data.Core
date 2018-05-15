@@ -114,12 +114,12 @@ namespace Lotech.Data
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        Func<IDatabase, IEnumerable<TEntity>> FindEntities<TEntity>() where TEntity : class;
+        Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class;
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>> FindEntitiesByPredicate<TEntity>() where TEntity : class;
+        Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class;
         #endregion
 
         #region Exists

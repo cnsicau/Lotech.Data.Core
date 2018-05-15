@@ -10,7 +10,7 @@ namespace Lotech.Data.Operations.Common
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public class CommonFindEntitiesExpression<TEntity> : IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>>
+    public class CommonFindEntitiesExpression<TEntity> : IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>>
         where TEntity : class
     {
         private readonly Func<string, string> quote;
@@ -39,8 +39,8 @@ namespace Lotech.Data.Operations.Common
             this.quote = quote;
         }
 
-        Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>
-            IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>>.Create(EntityDescriptor descriptor)
+        Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>
+            IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>>.Create(EntityDescriptor descriptor)
         {
             if (quote != null)
             {

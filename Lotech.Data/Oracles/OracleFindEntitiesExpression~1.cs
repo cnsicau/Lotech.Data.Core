@@ -9,7 +9,7 @@ namespace Lotech.Data.Oracles
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    class OracleFindEntitiesExpression<TEntity> : Operations.Common.CommonFindEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>>
+    class OracleFindEntitiesExpression<TEntity> : Operations.Common.CommonFindEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>>
        where TEntity : class
     {
         public OracleFindEntitiesExpression() : base(

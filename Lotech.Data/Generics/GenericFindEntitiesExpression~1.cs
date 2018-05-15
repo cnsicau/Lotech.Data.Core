@@ -8,7 +8,7 @@ namespace Lotech.Data.Generics
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    class GenericFindEntitiesExpression<TEntity> : Operations.Common.CommonFindEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>>
+    class GenericFindEntitiesExpression<TEntity> : Operations.Common.CommonFindEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>>
         where TEntity : class
     {
     }

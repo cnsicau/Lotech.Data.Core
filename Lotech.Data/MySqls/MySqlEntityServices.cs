@@ -46,14 +46,14 @@ namespace Lotech.Data.MySqls
             return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, MySqlExistsEntityExpression<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, IEnumerable<TEntity>> FindEntities<TEntity>() where TEntity : class
+        public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, IEnumerable<TEntity>>, MySqlFindEntities<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity[]>, MySqlFindEntities<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>> FindEntitiesByPredicate<TEntity>() where TEntity : class
+        public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>, MySqlFindEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, MySqlFindEntitiesExpression<TEntity>>.Instance;
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {

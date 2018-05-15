@@ -586,7 +586,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="command"></param>
         /// <returns></returns>
-        public virtual IEnumerable<EntityType> ExecuteEntities<EntityType>(DbCommand command) where EntityType : class
+        public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command) where EntityType : class
         {
             using (var subsitute = GetConnection(command))
             {
@@ -631,7 +631,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual IEnumerable<EntityType> ExecuteEntities<EntityType>(string commandText) where EntityType : class
+        public virtual EntityType[] ExecuteEntities<EntityType>(string commandText) where EntityType : class
         {
             return ExecuteEntities<EntityType>(CommandType.Text, commandText);
         }
@@ -642,7 +642,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual IEnumerable<EntityType> ExecuteEntities<EntityType>(CommandType commandType, string commandText)
+        public virtual EntityType[] ExecuteEntities<EntityType>(CommandType commandType, string commandText)
             where EntityType : class
         {
             using (var command = dbProviderFactory.CreateCommand())
@@ -788,7 +788,7 @@ namespace Lotech.Data
         /// </summary>
         /// <typeparam name="EntityType"></typeparam>
         /// <returns></returns>
-        public virtual IEnumerable<EntityType> FindEntities<EntityType>() where EntityType : class
+        public virtual EntityType[] FindEntities<EntityType>() where EntityType : class
         {
             return services.FindEntities<EntityType>()(this);
         }
@@ -799,7 +799,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public virtual IEnumerable<EntityType> FindEntities<EntityType>(Expression<Func<EntityType, bool>> predicate) where EntityType : class
+        public virtual EntityType[] FindEntities<EntityType>(Expression<Func<EntityType, bool>> predicate) where EntityType : class
         {
             return services.FindEntitiesByPredicate<EntityType>()(this, predicate);
         }

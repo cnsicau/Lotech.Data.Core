@@ -8,7 +8,7 @@ namespace Lotech.Data.Operations.Common
     /// <summary>
     /// 
     /// </summary>
-    public class CommonFindEntities<TEntity> : IOperationProvider<Func<IDatabase, IEnumerable<TEntity>>>
+    public class CommonFindEntities<TEntity> : IOperationProvider<Func<IDatabase, TEntity[]>>
         where TEntity : class
     {
         private readonly Func<string, string> quote;
@@ -27,7 +27,7 @@ namespace Lotech.Data.Operations.Common
             this.quote = quote;
         }
 
-        Func<IDatabase, IEnumerable<TEntity>> IOperationProvider<Func<IDatabase, IEnumerable<TEntity>>>.Create(EntityDescriptor descriptor)
+        Func<IDatabase, TEntity[]> IOperationProvider<Func<IDatabase, TEntity[]>>.Create(EntityDescriptor descriptor)
         {
             if (quote != null)
             {

@@ -46,14 +46,14 @@ namespace Lotech.Data.Oracles
             return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, OracleExistsEntityExpression<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, IEnumerable<TEntity>> FindEntities<TEntity>() where TEntity : class
+        public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, IEnumerable<TEntity>>, OracleFindEntities<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity[]>, OracleFindEntities<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>> FindEntitiesByPredicate<TEntity>() where TEntity : class
+        public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>, OracleFindEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, OracleFindEntitiesExpression<TEntity>>.Instance;
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {

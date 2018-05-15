@@ -1,8 +1,8 @@
-﻿using System.Data;
-using System.Data.Common;
-using System;
-using System.Linq.Expressions;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Linq.Expressions;
 
 namespace Lotech.Data
 {
@@ -41,7 +41,7 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        DbCommand GetCommand(System.Data.CommandType commandType, string commandText);
+        DbCommand GetCommand(CommandType commandType, string commandText);
         /// <summary>
         /// 获取SQL命令对象
         /// </summary>
@@ -275,7 +275,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="command">命令</param>
         /// <returns>返回可枚举的实体集合</returns>
-        IEnumerable<EntityType> ExecuteEntities<EntityType>(DbCommand command) where EntityType : class;
+        EntityType[] ExecuteEntities<EntityType>(DbCommand command) where EntityType : class;
         /// <summary>
         /// 执行返回指定实体
         /// </summary>
@@ -292,7 +292,7 @@ namespace Lotech.Data
         /// <param name="commandType">命令类型</param>
         /// <param name="commandText">命令文本</param>
         /// <returns>返回可枚举的实体集合</returns>
-        IEnumerable<EntityType> ExecuteEntities<EntityType>(CommandType commandType, string commandText) where EntityType : class;
+        EntityType[] ExecuteEntities<EntityType>(CommandType commandType, string commandText) where EntityType : class;
         /// <summary>
         /// 执行返回指定实体
         /// </summary>
@@ -307,7 +307,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="commandText">命令文本</param>
         /// <returns>返回可枚举的实体集合</returns>
-        IEnumerable<EntityType> ExecuteEntities<EntityType>(string commandText) where EntityType : class;
+        EntityType[] ExecuteEntities<EntityType>(string commandText) where EntityType : class;
         #endregion
 
         #region Insert
@@ -419,14 +419,14 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="conditions"></param>
         /// <returns></returns>
-        IEnumerable<EntityType> FindEntities<EntityType>(Expression<Func<EntityType, bool>> conditions) where EntityType : class;
+        EntityType[] FindEntities<EntityType>(Expression<Func<EntityType, bool>> conditions) where EntityType : class;
 
         /// <summary>
         /// 查找所有数据
         /// </summary>
         /// <typeparam name="EntityType"></typeparam>
         /// <returns></returns>
-        IEnumerable<EntityType> FindEntities<EntityType>() where EntityType : class;
+        EntityType[] FindEntities<EntityType>() where EntityType : class;
         #endregion
 
         #region Load

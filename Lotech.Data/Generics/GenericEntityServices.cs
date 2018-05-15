@@ -49,14 +49,14 @@ namespace Lotech.Data.Generics
             return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, GenericExistsEntityExpression<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, IEnumerable<TEntity>> FindEntities<TEntity>() where TEntity : class
+        public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, IEnumerable<TEntity>>, GenericFindEntities<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity[]>, GenericFindEntities<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>> FindEntitiesByPredicate<TEntity>() where TEntity : class
+        public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>, GenericFindEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, GenericFindEntitiesExpression<TEntity>>.Instance;
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class

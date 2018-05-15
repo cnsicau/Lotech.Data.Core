@@ -9,7 +9,7 @@ namespace Lotech.Data.MySqls
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    class MySqlFindEntities<TEntity> : CommonFindEntities<TEntity>, IOperationProvider<Func<IDatabase, IEnumerable<TEntity>>>
+    class MySqlFindEntities<TEntity> : CommonFindEntities<TEntity>, IOperationProvider<Func<IDatabase, TEntity[]>>
        where TEntity : class
     {
         public MySqlFindEntities() : base(Quote) { }

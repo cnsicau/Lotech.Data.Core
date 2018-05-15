@@ -46,14 +46,14 @@ namespace Lotech.Data.SQLites
             return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, SQLiteExistsEntityExpression<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, IEnumerable<TEntity>> FindEntities<TEntity>() where TEntity : class
+        public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, IEnumerable<TEntity>>, SQLiteFindEntities<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity[]>, SQLiteFindEntities<TEntity>>.Instance;
         }
 
-        public Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>> FindEntitiesByPredicate<TEntity>() where TEntity : class
+        public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, IEnumerable<TEntity>>, SQLiteFindEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, SQLiteFindEntitiesExpression<TEntity>>.Instance;
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {

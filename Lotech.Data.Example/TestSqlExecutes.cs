@@ -9,6 +9,7 @@ namespace Lotech.Data.Example
         public TestSqlExecutes(IDatabase db)
         {
             this.db = db;
+            ((DbProviderDatabase)db).EnableTraceLog();
         }
 
         public void ExecuteDataSetTest()

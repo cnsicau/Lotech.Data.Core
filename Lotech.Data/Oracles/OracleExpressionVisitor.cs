@@ -1,35 +1,127 @@
 ﻿using Lotech.Data.Descriptors;
 using Lotech.Data.Operations;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Lotech.Data.Oracles
 {
     class OracleExpressionVisitor<TEntity> : SqlExpressionVisitor<TEntity> where TEntity : class
     {
-        public OracleExpressionVisitor(IDatabase database)
-       : base(database, AttributeDescriptorFactory.Create<TEntity>()) { }
+        // 函数调用映射
+        static readonly Dictionary<MethodInfo, Action<SqlExpressionVisitor<TEntity>, MethodCallExpression>>
+            methodCallVisitors = new Dictionary<MethodInfo, Action<SqlExpressionVisitor<TEntity>, MethodCallExpression>>
+            {
+                {Methods.ToUpper, VisitToUpper },
+                {Methods.ToLower, VisitToLower },
+                {Methods.StartsWith, VisitStartsWith },
+                {Methods.StartsWithChar, VisitStartsWith },
+                {Methods.EndsWith, VisitEndsWith },
+                {Methods.EndsWithChar, VisitEndsWith },
+                {Methods.Contains, VisitContains },
+                {Methods.Substring, VisitSubstring },
+                {Methods.SubstringLength, VisitSubstring },
+            };
 
+        #region Method Visitors
+        static void VisitToUpper(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.AddFragment("UPPER(");
+            visitor.Visit(call.Object);
+            visitor.AddFragment(")");
+        }
+        static void VisitToLower(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.AddFragment("LOWER(");
+            visitor.Visit(call.Object);
+            visitor.AddFragment(")");
+        }
+        static void VisitStartsWith(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.Visit(call.Object);
+            visitor.AddFragment(" LIKE ");
+            visitor.Visit(call.Arguments[0]);
+            visitor.AddFragment(" || '%'");
+        }
+        static void VisitEndsWith(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.Visit(call.Object);
+            visitor.AddFragment(" LIKE '%' || ");
+            visitor.Visit(call.Arguments[0]);
+        }
+        static void VisitContains(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.Visit(call.Object);
+            visitor.AddFragment(" LIKE '%' || ");
+            visitor.Visit(call.Arguments[0]);
+            visitor.AddFragment(" || '%'");
+        }
+        static void VisitSubstring(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.AddFragment("SUBSTR(");
+            visitor.Visit(call.Object);
+            foreach (var arg in call.Arguments)
+            {
+                visitor.AddFragment(", ");
+                visitor.Visit(arg);
+            }
+            visitor.AddFragment(")");
+        }
+        #endregion
+
+        public OracleExpressionVisitor(IDatabase database)
+            : base(database, AttributeDescriptorFactory.Create<TEntity>()) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            var method = node.Method;
-            Visit(node.Object);
-            if (method == Methods.Contains)
+            if (methodCallVisitors.TryGetValue(node.Method, out var visitor))
             {
-                AddFragment(" LIKE '%' || ");
-                foreach (var arg in node.Arguments) Visit(arg);
-                AddFragment(" || '%'");
+                visitor(this, node);
             }
-            else if (method == Methods.StartsWith)
+            else if (node.Method.Name == "ToString" && node.Arguments.Count == 0)
             {
-                AddFragment(" LIKE ");
-                foreach (var arg in node.Arguments) Visit(arg);
-                AddFragment(" || '%'");
+                if (node.Method.DeclaringType == typeof(string)) // 忽略 string.ToString转换
+                {
+                    Visit(node.Object);
+                }
+                else
+                {
+                    AddFragment("'' || ");
+                    Visit(node.Object);
+                }
             }
-            else if (method == Methods.EndsWith)
+            // list.Contains(_.Member) ...
+            else if (node.Method.Name == "Contains" && node.Method.IsGenericMethod
+                    && node.Arguments.Count == 2 && node.Method.DeclaringType == typeof(Enumerable))
             {
-                AddFragment(" LIKE '%' || ");
-                foreach (var arg in node.Arguments) Visit(arg);
+                var collectionVisitor = new OracleExpressionVisitor<TEntity>(Database);
+                collectionVisitor.Visit(node.Arguments[0]);
+                var values = (collectionVisitor.Parameters.FirstOrDefault().Value as IEnumerable)?.GetEnumerator();
+
+                if (values == null || !values.MoveNext())
+                {
+                    Visit(node.Arguments[1]);
+                    AddFragment(" IN (NULL)");
+                }
+                else
+                {
+                    var elementType = node.Method.GetGenericArguments().Single();
+                    AddFragment("("); //  mem = 1 or mem = 2 or ....
+                    Visit(node.Arguments[1]);
+                    AddFragment(" = ");
+                    AddParameter(elementType, values.Current);
+                    while (values.MoveNext())
+                    {
+                        AddFragment(" OR ");
+                        Visit(node.Arguments[1]);
+                        AddFragment(" = ");
+                        AddParameter(elementType, values.Current);
+                    }
+                    AddFragment(")");
+                }
             }
             else
             {

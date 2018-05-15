@@ -23,19 +23,44 @@ namespace Lotech.Data.Operations
         protected static class Methods
         {
             /// <summary>
-            /// String.StartsWith
+            /// String.ToUpper()
+            /// </summary>
+            public static readonly MethodInfo ToUpper = new Func<string>(string.Empty.ToUpper).Method;
+            /// <summary>
+            /// String.ToLower()
+            /// </summary>
+            public static readonly MethodInfo ToLower = new Func<string>(string.Empty.ToLower).Method;
+            /// <summary>
+            /// String.StartsWith(string)
             /// </summary>
             public static readonly MethodInfo StartsWith = new Func<string, bool>(string.Empty.StartsWith).Method;
 
             /// <summary>
-            /// String.EndsWith
+            /// String.StartsWith(char)
             /// </summary>
-            public static readonly MethodInfo EndsWith = new Func<string, bool>(string.Empty.EndsWith).Method;
+            public static readonly MethodInfo StartsWithChar = new Func<char, bool>(string.Empty.StartsWith).Method;
 
             /// <summary>
-            /// String.Contains
+            /// String.EndsWith(string)
+            /// </summary>
+            public static readonly MethodInfo EndsWith = new Func<string, bool>(string.Empty.EndsWith).Method;
+            /// <summary>
+            /// String.EndsWith(char)
+            /// </summary>
+            public static readonly MethodInfo EndsWithChar = new Func<char, bool>(string.Empty.EndsWith).Method;
+
+            /// <summary>
+            /// String.Contains(string)
             /// </summary>
             public static readonly MethodInfo Contains = new Func<string, bool>(string.Empty.Contains).Method;
+            /// <summary>
+            /// String.Substring(int position)
+            /// </summary>
+            public static readonly MethodInfo Substring = new Func<int, string>(string.Empty.Substring).Method;
+            /// <summary>
+            /// String.Contains(int position, int length)
+            /// </summary>
+            public static readonly MethodInfo SubstringLength = new Func<int, int, string>(string.Empty.Substring).Method;
         }
         #endregion
 

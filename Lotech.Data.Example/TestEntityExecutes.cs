@@ -12,6 +12,7 @@ namespace Lotech.Data.Example
         public TestEntityExecutes(IDatabaseExample example)
         {
             this.db = example.Database;
+            ((DbProviderDatabase)db).EnableTraceLog();
         }
 
         public void TestInsert()
@@ -148,7 +149,12 @@ namespace Lotech.Data.Example
             var entities = db.FindEntities<TExample>();
             foreach (var e in entities)
             {
-                Console.WriteLine($"Id: {e.Id}, Code: {e.Code}, Name: {e.Name}, LongId: {e.LongId}, CreateTime: {e.CreateTime}");
+                Console.WriteLine($"FindAll() => Id: {e.Id}, Code: {e.Code}, Name: {e.Name}, LongId: {e.LongId}, CreateTime: {e.CreateTime}");
+            }
+            entities = db.FindEntities<TExample>(_ => _.Code.StartsWith("T"));
+            foreach (var e in entities)
+            {
+                Console.WriteLine($"Find(_.Code.StartsWith(\"T\")) => Id: {e.Id}, Code: {e.Code}, Name: {e.Name}, LongId: {e.LongId}, CreateTime: {e.CreateTime}");
             }
         }
     }

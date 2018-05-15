@@ -7,6 +7,7 @@ namespace Lotech.Data.Example
         static void EntityTests<TExample>(IDatabaseExample example)
             where TExample : class, IExample, new()
         {
+            Console.WriteLine(("EntityTest " + example.GetType().Name).PadLeft(60, '-').PadRight(90, '-'));
             var test = new TestEntityExecutes<TExample>(example);
             test.TestInsert();
             test.TestLoad();
@@ -19,17 +20,24 @@ namespace Lotech.Data.Example
 
         static void SqlTests<TExample>(IDatabaseExample example)
         {
-            Console.WriteLine(example.GetType().Name.PadLeft(40, '-').PadRight(80, '-'));
+            Console.WriteLine(("SqlTest " + example.GetType().Name).PadLeft(60, '-').PadRight(90, '-'));
             var test = new TestSqlExecutes(example.Database);
 
             test.ExecuteDataSetTest();
             test.ExecuteNonQueryTest();
         }
 
+        static void MethodTests<TExample>(IDatabaseExample example)
+            where TExample : class, IExample, new()
+        {
+            Console.WriteLine(("MethodCall " + example.GetType().Name).PadLeft(60, '-').PadRight(90, '-'));                // MySQL
+            new TestMethodCall<TExample>(example).Test();
+        }
+
         static void Main()
         {
-            var sqlite = new SQLiteExample();
             // Entity
+            var sqlite = new SQLiteExample();
             EntityTests<SQLiteExample.Example>(sqlite);    // SQLite 
             var mysql = new MySqlExample();
             EntityTests<Example>(mysql);                   // MySQL
@@ -39,6 +47,12 @@ namespace Lotech.Data.Example
             EntityTests<Example>(sqlserver);               // SqlServer
             var generic = new GenericExample();
             EntityTests<Example>(generic);                 // Generic
+            // Methods
+            MethodTests<SQLiteExample.Example>(sqlite);     // SQLite 
+            MethodTests<Example>(mysql);                    // MySQL
+            MethodTests<OracleExample.Example>(oracle);     // Oracle
+            MethodTests<Example>(sqlserver);                // SqlServer
+            //MethodTests<Example>(generic);                // Generic
 
             // Raw SQL
             SqlTests<SQLiteExample.Example>(sqlite);       // SQLite 

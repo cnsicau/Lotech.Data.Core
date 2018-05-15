@@ -13,12 +13,6 @@ namespace Lotech.Data
         private readonly string _parameterPrefix;
         private readonly string _quoteFormat;
 
-        [Conditional("DEBUG")]
-        void LogMessage(string message)
-        {
-            Debug.WriteLine(message);
-        }
-
 
         /// <summary>
         /// 构造通用库
@@ -47,7 +41,6 @@ namespace Lotech.Data
         {
             _parameterPrefix = parameterPrefix;
             _quoteFormat = quoteFormat;
-            Log = _ => LogMessage(_);
         }
 
         /// <summary>

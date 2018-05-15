@@ -19,6 +19,11 @@ namespace Lotech.Data
         /// </summary>
         private readonly DbProviderFactory dbProviderFactory;
         private readonly IEntityServices services;
+        
+        static void TraceLog(string message)
+        {
+            Trace.WriteLine(message);
+        }
 
         /// <summary>
         /// 
@@ -35,6 +40,14 @@ namespace Lotech.Data
         /// 
         /// </summary>
         public virtual Action<string> Log { get; set; }
+
+        /// <summary>
+        /// 启用跟踪日志，便于输出执行中的SQL语句
+        /// </summary>
+        public virtual void EnableTraceLog()
+        {
+            Log = TraceLog;
+        }
 
         /// <summary>
         /// 

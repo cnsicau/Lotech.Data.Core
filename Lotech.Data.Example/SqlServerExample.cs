@@ -8,8 +8,6 @@ namespace Lotech.Data.Example
 
         public SqlServerExample()
         {
-            Console.WriteLine(GetType().Name.PadLeft(40, '-').PadRight(80, '-'));
-
             db.ExecuteNonQuery("truncate table example");
         }
 

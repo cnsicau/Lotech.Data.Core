@@ -33,8 +33,6 @@ namespace Lotech.Data.Example
 
         public SQLiteExample()
         {
-            Console.WriteLine(GetType().Name.PadLeft(40, '-').PadRight(80, '-'));
-
             SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
 
             db.ExecuteNonQuery("drop table if exists  Example");

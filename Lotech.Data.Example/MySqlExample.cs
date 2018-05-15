@@ -10,8 +10,6 @@ namespace Lotech.Data.Example
 
         public MySqlExample()
         {
-            Console.WriteLine(GetType().Name.PadLeft(40, '-').PadRight(80, '-'));
-
             db.ExecuteNonQuery("drop table if exists example");
             db.ExecuteNonQuery(@"create table Example (
     Id bigint not null auto_increment primary key,

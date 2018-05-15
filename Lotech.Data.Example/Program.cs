@@ -2,7 +2,7 @@
 
 namespace Lotech.Data.Example
 {
-    class Program
+    static class Program
     {
         static void EntityTests<TExample>(IDatabaseExample example)
             where TExample : class, IExample, new()
@@ -19,12 +19,16 @@ namespace Lotech.Data.Example
         }
 
         static void SqlTests<TExample>(IDatabaseExample example)
+            where TExample : class, IExample, new()
         {
             Console.WriteLine(("SqlTest " + example.GetType().Name).PadLeft(60, '-').PadRight(90, '-'));
-            var test = new TestSqlExecutes(example.Database);
+            var test = new TestSqlExecutes<TExample>(example.Database);
 
             test.ExecuteDataSetTest();
-            test.ExecuteNonQueryTest();
+            test.ExecuteEntitiesTest();
+            test.ExecuteEntityTest();
+            test.ExecuteScalarTest();
+            test.ExecuteScalarTTest();
         }
 
         static void MethodTests<TExample>(IDatabaseExample example)

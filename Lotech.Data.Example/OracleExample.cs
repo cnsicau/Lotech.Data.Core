@@ -37,8 +37,6 @@ namespace Lotech.Data.Example
 
         public OracleExample()
         {
-            Console.WriteLine(GetType().Name.PadLeft(40, '-').PadRight(80, '-'));
-
             db.ExecuteNonQuery("truncate table example");
             db.ExecuteNonQuery("drop sequence sexample");
             db.ExecuteNonQuery("create sequence sexample");

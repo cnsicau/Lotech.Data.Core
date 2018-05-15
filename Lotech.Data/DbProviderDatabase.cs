@@ -924,7 +924,7 @@ namespace Lotech.Data
             where EntityType : class
             where TSet : class
         {
-            services.UpdateEntities<EntityType, TSet>()(this, entity, sets, predicate);
+            services.UpdateEntities<EntityType, TSet>()(this, entity, predicate);
         }
 
         /// <summary>

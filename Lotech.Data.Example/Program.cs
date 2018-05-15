@@ -17,6 +17,7 @@ namespace Lotech.Data.Example
             test.TestTransaction();
             test.TestFind();
             test.TestCount();
+            test.TestUpdate2();
         }
 
         static void SqlTests<TExample>(IDatabaseExample example)

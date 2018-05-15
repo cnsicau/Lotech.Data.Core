@@ -139,11 +139,12 @@ namespace Lotech.Data.SqlServers
                 >.Instance;
         }
 
-        public Action<IDatabase, EntityType, Func<EntityType, TSet>, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>()
+        public Action<IDatabase, EntityType, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>()
             where EntityType : class
             where TSet : class
         {
-            throw new NotImplementedException();
+            return Operation<EntityType, Action<IDatabase, EntityType, Expression<Func<EntityType, bool>>>,
+                    SqlServerUpdateEntities<EntityType, TSet>>.Instance;
         }
     }
 }

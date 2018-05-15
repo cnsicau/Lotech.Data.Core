@@ -172,7 +172,7 @@ namespace Lotech.Data
         /// </summary>
         /// <typeparam name="EntityType"></typeparam>
         /// <typeparam name="TSet"></typeparam>
-        Action<IDatabase, EntityType, Func<EntityType, TSet>, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>() where EntityType : class where TSet : class;
+        Action<IDatabase, EntityType, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>() where EntityType : class where TSet : class;
 
         /// <summary>
         /// 

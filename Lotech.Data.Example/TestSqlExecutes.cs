@@ -35,7 +35,7 @@ namespace Lotech.Data.Example
             }
             catch (Exception e)
             {
-                WriteErrorLine($"db.ExecuteDataSet(CommandType.TableDirect, \"example\") error => {e}");
+                WriteErrorLine($"db.ExecuteDataSet(CommandType.TableDirect, \"example\") error => {e.Message}");
             }
             using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
             {
@@ -58,7 +58,7 @@ namespace Lotech.Data.Example
             }
             catch (Exception e)
             {
-                WriteErrorLine($"db.ExecuteEntities<TExample>(CommandType.TableDirect, \"example\") error => {e}");
+                WriteErrorLine($"db.ExecuteEntities<TExample>(CommandType.TableDirect, \"example\") error => {e.Message}");
             }
             using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
             {
@@ -81,7 +81,7 @@ namespace Lotech.Data.Example
             }
             catch (Exception e)
             {
-                WriteErrorLine($"db.ExecuteEntity<TExample>(CommandType.TableDirect, \"example\") error => {e}");
+                WriteErrorLine($"db.ExecuteEntity<TExample>(CommandType.TableDirect, \"example\") error => {e.Message}");
             }
             using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
             {
@@ -104,7 +104,7 @@ namespace Lotech.Data.Example
             }
             catch (Exception e)
             {
-                WriteErrorLine($"db.ExecuteEntity(CommandType.TableDirect, \"example\") error => {e}");
+                WriteErrorLine($"db.ExecuteEntity(CommandType.TableDirect, \"example\") error => {e.Message}");
             }
             using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
             {
@@ -128,7 +128,7 @@ namespace Lotech.Data.Example
             }
             catch (Exception e)
             {
-                WriteErrorLine($"db.ExecuteScalar(CommandType.TableDirect, \"example\") error => {e}");
+                WriteErrorLine($"db.ExecuteScalar(CommandType.TableDirect, \"example\") error => {e.Message}");
             }
             using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
             {
@@ -151,7 +151,7 @@ namespace Lotech.Data.Example
             }
             catch (Exception e)
             {
-                WriteErrorLine($"db.ExecuteScalar<long>(CommandType.TableDirect, \"example\") error => {e}");
+                WriteErrorLine($"db.ExecuteScalar<long>(CommandType.TableDirect, \"example\") error => {e.Message}");
             }
             using (var command = db.GetSqlStringCommand("SELECT * FROM example"))
             {

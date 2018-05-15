@@ -139,8 +139,8 @@ namespace Lotech.Data.MySqls
                 .AppendLine(Quote(_descriptor.Name))
                 .Append(" SET ")
                 .AppendJoin(", ", _members.Select((_, i) => Quote(_.Name) + " = " + BuildSetParameter(i)))
-                .AppendLine();
-            sqlBuilder.Append(" WHERE ")
+                .AppendLine()
+                .Append(" WHERE ")
                     .AppendJoin(", ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)));
 
             var sql = sqlBuilder.ToString();

@@ -42,6 +42,27 @@ namespace Lotech.Data.Example
             examples.ForEach(_ => Console.WriteLine("Insert example ID=" + _.Id));
         }
 
+        internal void TestUpdate2()
+        {
+            var entity = new TExample();
+            entity.Code = "9999";
+            entity.ModifyTime = DateTime.Now;
+            entity.Name = "Invalid";
+            entity.Deleted = false;
+
+            var before = db.FindEntities<TExample>(_ => _.Code.StartsWith("T"));
+            foreach (var i in before)
+                Console.WriteLine($"Before update name={i.Name} code={i.Code} deleted = {i.Deleted} modifytime={i.ModifyTime}");
+
+            db.UpdateEntities(entity
+                , _ => new { _.Deleted, _.ModifyTime }
+                , _ => _.Code.StartsWith("T"));
+
+            var after = db.FindEntities<TExample>(_ => _.Code.StartsWith("T"));
+            foreach (var i in after)
+                Console.WriteLine($"After update name={i.Name} code={i.Code} deleted = {i.Deleted} modifytime={i.ModifyTime}");
+        }
+
         public void TestLoad()
         {
             var example = db.LoadEntity<TExample, int>(1);

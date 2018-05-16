@@ -42,7 +42,7 @@ namespace Lotech.Data.Descriptors
             Type = prototype.Type;
             Name = prototype.Name;
             Schema = prototype.Schema;
-            Members = prototype.Members.Select(_ => ((ReflectionMemberDescriptor)_).Clone()).ToArray();
+            Members = prototype.Members.Select(_ => _.Clone()).ToArray();
             Keys = Members.Where(_ => _.PrimaryKey).ToArray();
         }
 

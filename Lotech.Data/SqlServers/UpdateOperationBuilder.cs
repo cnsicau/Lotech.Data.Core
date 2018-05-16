@@ -75,18 +75,17 @@ namespace Lotech.Data.SqlServers
 
         static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(MemberDescriptor[] descriptors, Func<int, string> parameterNameBuilder)
         {
-            var members = descriptors.Select((_, i) => new
-            {
+            var members = descriptors.Select((_, i) => new MemberTuple<TEntity>(
                 _.Name,
-                ParameterName = parameterNameBuilder(i),
                 _.DbType,
-                Value = MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            }).ToArray();
+                parameterNameBuilder(i),
+                MemberAccessor<TEntity, object>.GetGetter(_.Member)
+            )).ToArray();
             return (db, command, entity) =>
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Value(entity));
+                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                 }
             };
         }
@@ -96,13 +95,7 @@ namespace Lotech.Data.SqlServers
             // 不带返回
             if (_outputs.Length == 0) return (db, command, entity) => db.ExecuteNonQuery(command);
 
-            var assigns = _outputs.Select(_ =>
-            {
-                var get = MemberAccessor.GetGetter(_.Member);
-                var set = MemberAccessor.GetSetter(_.Member);
-
-                return (Action<TEntity, TEntity>)((output, entity) => set(entity, get(output)));
-            }).ToArray();
+            var assigns = _outputs.Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
 
             return (db, command, entity) =>
             {

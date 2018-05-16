@@ -67,7 +67,7 @@ namespace Lotech.Data.Operations
         private readonly IDatabase _database;
         private readonly EntityDescriptor _descriptor;
         private readonly StringBuilder _sql = new StringBuilder();
-        private readonly List<(string Name, Type Type, object Value)> _parameters = new List<(string Name, Type Type, object Value)>();
+        private readonly List<ExpressionParameter> _parameters = new List<ExpressionParameter>();
 
 
         /// <summary>
@@ -83,14 +83,18 @@ namespace Lotech.Data.Operations
         /// <param name="descriptor"></param>
         public SqlExpressionVisitor(IDatabase database, EntityDescriptor descriptor)
         {
-            _database = database ?? throw new ArgumentNullException(nameof(database));
-            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+            if(database  == null) throw new ArgumentNullException(nameof(database));
+            _database  = database ;
+
+            if(descriptor  == null) throw new ArgumentNullException(nameof(descriptor));
+            _descriptor  = descriptor ;
+
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public virtual IReadOnlyCollection<(string Name, Type Type, object Value)> Parameters
+        public virtual IReadOnlyCollection<ExpressionParameter> Parameters
         {
             get { return _parameters; }
         }
@@ -126,7 +130,7 @@ namespace Lotech.Data.Operations
         {
             var name = "p_sql_" + _parameters.Count;
             _sql.Append(_database.BuildParameterName(name));
-            _parameters.Add((name, parameterType, parameterValue));
+            _parameters.Add(new ExpressionParameter(name, parameterType, parameterValue));
         }
 
         /// <summary>

@@ -21,7 +21,9 @@ namespace Lotech.Data.Queries
         public CommandQueryResult(DbCommand command, IResultMapper<TEntity> mapper, Action<string> log)
             : base(mapper, log)
         {
-            _command = command ?? throw new ArgumentNullException(nameof(command));
+            if(command  == null) throw new ArgumentNullException(nameof(command));
+            _command  = command ;
+
         }
 
         /// <summary>

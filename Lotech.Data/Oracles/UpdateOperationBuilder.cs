@@ -74,18 +74,17 @@ namespace Lotech.Data.Oracles
 
         static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(IEnumerable<MemberDescriptor> descriptors)
         {
-            var members = descriptors.Select((_, i) => new
-            {
+            var members = descriptors.Select((_, i) => new MemberTuple<TEntity>(
                 _.Name,
-                ParameterName = BuildParameterName(i),
                 _.DbType,
-                Value = MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            }).ToArray();
+                BuildParameterName(i),
+                MemberAccessor<TEntity, object>.GetGetter(_.Member)
+            )).ToArray();
             return (db, command, entity) =>
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Value(entity));
+                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                 }
             };
         }

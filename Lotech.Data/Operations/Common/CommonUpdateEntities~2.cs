@@ -39,13 +39,13 @@ namespace Lotech.Data.Operations.Common
         public Action<IDatabase, TEntity, Expression<Func<TEntity, bool>>> Create(EntityDescriptor descriptor)
         {
             var sets = AttributeDescriptorFactory.Create<TSet>().Members.Select(_ => _.Member.Name).ToArray();
-            (string Name, string ParameterName, DbType DbType, Func<TEntity, object> Get)[] members
-                = descriptor.Members.Where(_ => sets.Contains(_.Member.Name)).Select((_, i) => (
-                        _.Name,
-                        buildParameter("p_set_" + i),
-                        _.DbType,
-                        MemberAccessor<TEntity, object>.GetGetter(_.Member)
-                    )).ToArray();
+            var members = descriptor.Members.Where(_ => sets.Contains(_.Member.Name)).Select((_, i) =>
+                new MemberTuple<TEntity>(
+                 _.Name,
+                 _.DbType,
+                 buildParameter("p_set_" + i),
+                 MemberAccessor<TEntity, object>.GetGetter(_.Member)
+             )).ToArray();
             if (members.Length == 0)
                 throw new InvalidOperationException("未设置更新列集合");
 
@@ -71,7 +71,7 @@ namespace Lotech.Data.Operations.Common
                     {
                         foreach (var member in members)
                         {
-                            db.AddInParameter(command, member.ParameterName, member.DbType, member.Get(entity));
+                            db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                         }
                         foreach (var p in visitor.Parameters)
                         {
@@ -101,7 +101,7 @@ namespace Lotech.Data.Operations.Common
                 {
                     foreach (var member in members)
                     {
-                        db.AddInParameter(command, member.ParameterName, member.DbType, member.Get(entity));
+                        db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                     }
                     foreach (var p in visitor.Parameters)
                     {

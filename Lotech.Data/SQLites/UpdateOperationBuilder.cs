@@ -76,18 +76,17 @@ namespace Lotech.Data.SQLites
 
         static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(MemberDescriptor[] descriptors, Func<int, string> parameterNameBuilder)
         {
-            var members = descriptors.Select((_, i) => new
-            {
+            var members = descriptors.Select((_, i) => new MemberTuple<TEntity>(
                 _.Name,
-                ParameterName = parameterNameBuilder(i),
                 _.DbType,
-                Value = MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            }).ToArray();
+                parameterNameBuilder(i),
+                MemberAccessor<TEntity, object>.GetGetter(_.Member)
+            )).ToArray();
             return (db, command, entity) =>
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Value(entity));
+                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                 }
             };
         }
@@ -100,15 +99,7 @@ namespace Lotech.Data.SQLites
 
             if (_outputs.Length > 0)
             {
-                var assigns = _outputs.Select(_ =>
-                {
-                    var get = MemberAccessor.GetGetter(_.Member);
-                    var set = MemberAccessor.GetSetter(_.Member);
-
-                    return new Action<TEntity, TEntity>(
-                        (reverseEntity, entity) => set(entity, get(reverseEntity))
-                    );
-                });
+                var assigns = _outputs.Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
                 reverseBind = (db, command, entity) =>
                 {
                     var reverseEntity = db.LoadEntity(entity);
@@ -134,16 +125,15 @@ namespace Lotech.Data.SQLites
         {
             Initialize(descriptor);
 
-            var sqlBuilder = new StringBuilder("UPDATE ")
+            var sql = new StringBuilder("UPDATE ")
                 .Append(string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.'))
                 .AppendLine(Quote(_descriptor.Name))
                 .Append(" SET ")
                 .AppendJoin(", ", _members.Select((_, i) => Quote(_.Name) + " = " + BuildSetParameter(i)))
-                .AppendLine();
-            sqlBuilder.Append(" WHERE ")
-                    .AppendJoin(", ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)));
-
-            var sql = sqlBuilder.ToString();
+                .AppendLine()
+                .Append(" WHERE ")
+                .AppendJoin(", ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)))
+                .ToString();
             return db => db.GetSqlStringCommand(sql);
         }
 

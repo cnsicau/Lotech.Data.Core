@@ -35,7 +35,9 @@ namespace Lotech.Data.SQLites
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
         InsertOperationBuilder(Func<MemberDescriptor, bool> setFilter)
         {
-            _setFilter = setFilter ?? throw new ArgumentNullException(nameof(setFilter));
+            if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
+            _setFilter = setFilter;
+
         }
 
         void Initialize(EntityDescriptor descriptor)
@@ -65,18 +67,18 @@ namespace Lotech.Data.SQLites
 
         Action<IDatabase, DbCommand, TEntity> CreateParameterBinder()
         {
-            var members = _members.Select((_, i) => new
-            {
+            var members = _members.Select((_, i) => new MemberTuple<TEntity>
+            (
                 _.Name,
-                ParameterName = BuildParameterName(i),
                 _.DbType,
-                Value = MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            });
+                BuildParameterName(i),
+                MemberAccessor<TEntity, object>.GetGetter(_.Member)
+            )).ToArray();
             return (db, command, entity) =>
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Value(entity));
+                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                 }
             };
         }
@@ -99,15 +101,8 @@ namespace Lotech.Data.SQLites
 
             if (_outputs.Length > 0)
             {
-                var assigns = _outputs.Select(_ =>
-                {
-                    var get = MemberAccessor.GetGetter(_.Member);
-                    var set = MemberAccessor.GetSetter(_.Member);
+                var assigns = _outputs.Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
 
-                    return new Action<TEntity, TEntity>(
-                        (reverseEntity, entity) => set(entity, get(reverseEntity))
-                    );
-                });
                 reverseBind = (db, entity) =>
                 {
                     var reverseEntity = db.LoadEntity(entity);
@@ -136,17 +131,16 @@ namespace Lotech.Data.SQLites
         {
             Initialize(descriptor);
 
-            var sqlBuilder = new StringBuilder("INSERT INTO ")
+            var sql = new StringBuilder("INSERT INTO ")
                 .Append(string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.'))
                 .Append(Quote(_descriptor.Name))
                 .Append("(")
                 .AppendJoin(", ", _members.Select((_, i) => Quote(_.Name)))
-                .AppendLine(")");
-            sqlBuilder.Append(" VALUES (")
-                    .AppendJoin(", ", _members.Select((_, i) => BuildParameterName(i)))
-                    .Append(")");
-
-            var sql = sqlBuilder.ToString();
+                .AppendLine(")")
+                .Append(" VALUES (")
+                .AppendJoin(", ", _members.Select((_, i) => BuildParameterName(i)))
+                .Append(")")
+                .ToString();
             return db => db.GetSqlStringCommand(sql);
         }
 

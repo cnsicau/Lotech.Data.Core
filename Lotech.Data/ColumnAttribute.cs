@@ -42,7 +42,9 @@ namespace Lotech.Data
         /// <param name="primaryKey"></param>
         public ColumnAttribute(string name, bool primaryKey)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            if(name  == null) throw new ArgumentNullException(nameof(name));
+            Name  = name ;
+
             PrimaryKey = primaryKey;
         }
 
@@ -54,7 +56,9 @@ namespace Lotech.Data
         /// <param name="dbType"></param>
         public ColumnAttribute(string name, bool primaryKey, DbType dbType)
         {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
+            if(name  == null) throw new ArgumentNullException(nameof(name));
+            Name  = name ;
+
             PrimaryKey = primaryKey;
             DbType = dbType;
         }

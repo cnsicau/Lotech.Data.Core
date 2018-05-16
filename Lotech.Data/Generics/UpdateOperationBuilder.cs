@@ -29,7 +29,9 @@ namespace Lotech.Data.Generics
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
         UpdateOperationBuilder(Func<MemberDescriptor, bool> setFilter)
         {
-            _setFilter = setFilter ?? throw new ArgumentNullException(nameof(setFilter));
+            if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
+            _setFilter = setFilter;
+
         }
 
         Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
@@ -40,22 +42,12 @@ namespace Lotech.Data.Generics
             // 过滤非主键、非库生成的成员
             var members = descriptor.Members.Except(descriptor.Keys)
                 .Where(_ => !_.DbGenerated && _setFilter(_))
-                .Select((key, index) =>
-                    new
-                    {
-                        key.Name,
-                        ParameterName = "p_set_" + index,
-                    }).ToArray();
+                .Select((key, index) => new MemberTuple<TEntity>(key.Name, "p_set_" + index)).ToArray();
 
             if (members.Length == 0)
                 throw new InvalidOperationException("未找到需要更新的列.");
 
-            var keys = descriptor.Keys.Select((key, index) =>
-                    new
-                    {
-                        key.Name,
-                        ParameterName = "p_where_" + index,
-                    }).ToArray();
+            var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>(key.Name, "p_where_" + index)).ToArray();
 
             return db =>
             {
@@ -80,33 +72,31 @@ namespace Lotech.Data.Generics
                 .Where(_ => !_.DbGenerated)
                 .Where(_setFilter)
                 .Select((key, index) =>
-                    new
-                    {
+                    new MemberTuple<TEntity>(key.Name,
                         key.DbType,
-                        ParameterName = "p_set_" + index,
-                        Get = Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
-                    }).ToArray();
+                        "p_set_" + index,
+                        Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
+                    )).ToArray();
 
             if (members.Length == 0)
                 throw new InvalidOperationException("未找到需要更新的列.");
 
             var keys = descriptor.Keys.Select((key, index) =>
-                    new
-                    {
+                    new MemberTuple<TEntity>(key.Name,
                         key.DbType,
-                        ParameterName = "p_where_" + index,
-                        Get = Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
-                    }).ToArray();
+                        "p_where_" + index,
+                        Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
+                    )).ToArray();
 
             return (db, command, entity) =>
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, db.BuildParameterName(member.ParameterName), member.DbType, member.Get(entity));
+                    db.AddInParameter(command, db.BuildParameterName(member.ParameterName), member.DbType, member.Getter(entity));
                 }
                 foreach (var key in keys)
                 {
-                    db.AddInParameter(command, db.BuildParameterName(key.ParameterName), key.DbType, key.Get(entity));
+                    db.AddInParameter(command, db.BuildParameterName(key.ParameterName), key.DbType, key.Getter(entity));
                 }
                 db.ExecuteNonQuery(command);
             };

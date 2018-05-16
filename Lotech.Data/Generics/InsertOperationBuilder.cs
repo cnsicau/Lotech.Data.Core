@@ -10,7 +10,7 @@ namespace Lotech.Data.Generics
 {
     class InsertOperationBuilder<TEntity> : IOperationBuilder<Action<IDatabase, DbCommand, TEntity>> where TEntity : class
     {
-        (string name, DbType dbType, string parameter, Func<TEntity, object> get)[] members;
+        MemberTuple<TEntity>[] members;
         EntityDescriptor descriptor;
 
         void Initialize(EntityDescriptor descriptor)
@@ -18,7 +18,7 @@ namespace Lotech.Data.Generics
             if (this.descriptor == descriptor) return;
             this.descriptor = descriptor;
             members = descriptor.Members.Where(_ => !_.DbGenerated) // 忽略库中生成的属性
-                .Select((member, index) => (member.Name,
+                .Select((member, index) => new MemberTuple<TEntity>(member.Name,
                           member.DbType,
                            "p_sql_" + index,
                           Utils.MemberAccessor<TEntity, object>.GetGetter(member.Member)
@@ -36,9 +36,9 @@ namespace Lotech.Data.Generics
                     .Append(string.IsNullOrEmpty(descriptor.Schema) ? null : (db.QuoteName(descriptor.Schema) + '.'))
                     .Append(db.QuoteName(descriptor.Name))
                     .Append("(")
-                    .AppendJoin(", ", members.Select(_ => db.QuoteName(_.name)))
+                    .AppendJoin(", ", members.Select(_ => db.QuoteName(_.Name)))
                     .Append(") VALUES (")
-                    .AppendJoin(", ", members.Select(_ => db.BuildParameterName(_.parameter)))
+                    .AppendJoin(", ", members.Select(_ => db.BuildParameterName(_.ParameterName)))
                     .Append(')')
                     .ToString();
 
@@ -53,7 +53,7 @@ namespace Lotech.Data.Generics
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, db.BuildParameterName(member.parameter), member.dbType, member.get(entity));
+                    db.AddInParameter(command, db.BuildParameterName(member.ParameterName), member.DbType, member.Getter(entity));
                 }
                 db.ExecuteNonQuery(command);
             };

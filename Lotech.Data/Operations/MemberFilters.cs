@@ -1,5 +1,6 @@
 ﻿using Lotech.Data.Descriptors;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Lotech.Data.Operations
@@ -21,9 +22,8 @@ namespace Lotech.Data.Operations
         /// <returns></returns>
         internal static Func<MemberDescriptor, bool> Exclude<TExclude>() where TExclude : class
         {
-            var excludeMembers = AttributeDescriptorFactory.Create<TExclude>().Members
-                                 .Select(_ => _.Member.Name)
-                                 .ToHashSet();
+            var excludeMembers = new HashSet<string>(AttributeDescriptorFactory.Create<TExclude>().Members
+                                 .Select(_ => _.Member.Name));
 
             return _ => !excludeMembers.Contains(_.Member.Name);
         }
@@ -34,9 +34,8 @@ namespace Lotech.Data.Operations
         /// <returns></returns>
         internal static Func<MemberDescriptor, bool> Include<TInclude>() where TInclude : class
         {
-            var excludeMembers = AttributeDescriptorFactory.Create<TInclude>().Members
-                                 .Select(_ => _.Member.Name)
-                                 .ToHashSet();
+            var excludeMembers = new HashSet<string>(AttributeDescriptorFactory.Create<TInclude>().Members
+                                 .Select(_ => _.Member.Name));
 
             return _ => excludeMembers.Contains(_.Member.Name);
         }

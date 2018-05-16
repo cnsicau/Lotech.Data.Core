@@ -18,7 +18,9 @@ namespace Lotech.Data.Operations.Visitors
         /// <param name="descriptor"></param>
         public MemberVisitor(EntityDescriptor descriptor)
         {
-            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
+            if(descriptor  == null) throw new ArgumentNullException(nameof(descriptor));
+            _descriptor  = descriptor ;
+
         }
 
         void IExpressionNodeVisitor<TEntity, MemberExpression>.Visit(SqlExpressionVisitor<TEntity> visitor, MemberExpression node)

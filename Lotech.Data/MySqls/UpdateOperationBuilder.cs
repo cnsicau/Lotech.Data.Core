@@ -76,18 +76,17 @@ namespace Lotech.Data.MySqls
 
         static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(MemberDescriptor[] descriptors, Func<int, string> parameterNameBuilder)
         {
-            var members = descriptors.Select((_, i) => new
-            {
+            var members = descriptors.Select((_, i) => new MemberTuple<TEntity>(
                 _.Name,
-                ParameterName = parameterNameBuilder(i),
-                _.DbType,
-                Value = MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            }).ToArray();
+                _.DbType, 
+                parameterNameBuilder(i), 
+                MemberAccessor<TEntity, object>.GetGetter(_.Member)
+            )).ToArray();
             return (db, command, entity) =>
             {
                 foreach (var member in members)
                 {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Value(entity));
+                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
                 }
             };
         }

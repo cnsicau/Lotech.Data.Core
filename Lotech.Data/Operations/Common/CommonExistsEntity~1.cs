@@ -52,8 +52,7 @@ namespace Lotech.Data.Operations.Common
             Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(EntityDescriptor descriptor)
             {
 
-                (string Name, DbType DbType, string ParameterName, Func<TEntity, object> Get)[]
-                    keys = descriptor.Keys.Select((key, index) =>
+                var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>
                         (
                             key.Name,
                             key.DbType,
@@ -72,7 +71,7 @@ namespace Lotech.Data.Operations.Common
                     {
                         foreach (var key in keys)
                         {
-                            db.AddInParameter(command, key.ParameterName, key.DbType, key.Get(entity));
+                            db.AddInParameter(command, key.ParameterName, key.DbType, key.Getter(entity));
                         }
                         return db.ExecuteScalar<int>(command) > 0;
                     }
@@ -84,14 +83,13 @@ namespace Lotech.Data.Operations.Common
         {
             Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(EntityDescriptor descriptor)
             {
-                (string Name, DbType DbType, string ParameterName, Func<TEntity, object> Get)[]
-                    keys = descriptor.Keys.Select((key, index) =>
-                        (
-                            key.Name,
-                            key.DbType,
-                            "p_sql_" + index,
-                            Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
-                        )).ToArray();
+                var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>
+                       (
+                           key.Name,
+                           key.DbType,
+                           "p_sql_" + index,
+                           Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
+                       )).ToArray();
 
                 return (db, entity) =>
                 {
@@ -105,7 +103,7 @@ namespace Lotech.Data.Operations.Common
                     {
                         foreach (var key in keys)
                         {
-                            db.AddInParameter(command, db.BuildParameterName(key.ParameterName), key.DbType, key.Get(entity));
+                            db.AddInParameter(command, db.BuildParameterName(key.ParameterName), key.DbType, key.Getter(entity));
                         }
                         return db.ExecuteScalar<int>(command) > 0;
                     }

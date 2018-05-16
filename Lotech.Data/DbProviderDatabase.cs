@@ -64,8 +64,12 @@ namespace Lotech.Data
         /// <param name="services"></param>
         protected DbProviderDatabase(DbProviderFactory dbProviderFactory, IEntityServices services)
         {
-            this.dbProviderFactory = dbProviderFactory ?? throw new ArgumentNullException(nameof(dbProviderFactory)); ;
-            this.services = services ?? throw new ArgumentNullException(nameof(services));
+            if(dbProviderFactory  == null) throw new ArgumentNullException(nameof(dbProviderFactory)); ;
+            this.dbProviderFactory  = dbProviderFactory ;
+
+            if(services  == null) throw new ArgumentNullException(nameof(services));
+            this.services  = services ;
+
         }
 
         /// <summary>

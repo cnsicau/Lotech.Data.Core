@@ -17,7 +17,9 @@ namespace Lotech.Data.Descriptors
         /// <param name="member"></param>
         public ReflectionMemberDescriptor(MemberInfo member)
         {
-            Member = member ?? throw new ArgumentNullException(nameof(member));
+            if(member  == null) throw new ArgumentNullException(nameof(member));
+            Member  = member ;
+
 
             Type = member.MemberType == MemberTypes.Field
                 ? ((FieldInfo)member).FieldType

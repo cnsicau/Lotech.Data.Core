@@ -1,5 +1,4 @@
 ﻿using Lotech.Data.Descriptors;
-using Lotech.Data.Operations;
 using System;
 using System.Data;
 using System.Data.Common;
@@ -41,11 +40,7 @@ namespace Lotech.Data.Operations.Common
                 if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                     throw new InvalidOperationException("仅支持具备主键数据表的删除操作.");
 
-                (string Name, string ParameterName)[] keys = descriptor.Keys.Select((key, index) =>
-                        (
-                            key.Name,
-                            "p_sql_" + index
-                        )).ToArray();
+                var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>(key.Name, "p_sql_" + index)).ToArray();
                 return db =>
                 {
                     var sql = string.Concat("DELETE FROM "
@@ -60,8 +55,7 @@ namespace Lotech.Data.Operations.Common
 
             Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
             {
-                (DbType DbType, string ParameterName, Func<TEntity, object> Get)[] keys = descriptor.Keys.Select((key, index) =>
-                        (
+                var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>(key.Name,
                             key.DbType,
                              "p_sql_" + index,
                              Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
@@ -71,7 +65,7 @@ namespace Lotech.Data.Operations.Common
                 {
                     foreach (var key in keys)
                     {
-                        db.AddInParameter(command, db.BuildParameterName(key.ParameterName), key.DbType, key.Get(entity));
+                        db.AddInParameter(command, db.BuildParameterName(key.ParameterName), key.DbType, key.Getter(entity));
                     }
                     db.ExecuteNonQuery(command);
                 };
@@ -113,8 +107,7 @@ namespace Lotech.Data.Operations.Common
 
             public Action<IDatabase, DbCommand, TEntity> BuildInvoker(EntityDescriptor descriptor)
             {
-                (DbType DbType, string ParameterName, Func<TEntity, object> Get)[] keys = descriptor.Keys.Select((key, index) =>
-                           (
+                var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>(key.Name,
                                 key.DbType,
                                 BuilderParameterName(index),
                                 Utils.MemberAccessor<TEntity, object>.GetGetter(key.Member)
@@ -124,7 +117,7 @@ namespace Lotech.Data.Operations.Common
                 {
                     foreach (var key in keys)
                     {
-                        db.AddInParameter(command, key.ParameterName, key.DbType, key.Get(entity));
+                        db.AddInParameter(command, key.ParameterName, key.DbType, key.Getter(entity));
                     }
                     db.ExecuteNonQuery(command);
                 };

@@ -18,12 +18,6 @@
     <ProjectReference Include="..\Lotech.Data\Lotech.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="database.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

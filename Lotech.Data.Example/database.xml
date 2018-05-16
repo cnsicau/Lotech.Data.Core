@@ -1,0 +1,23 @@
+﻿<database>
+    <dbProviderFactories>
+        <add name="System.Data.SqlClient" type="System.Data.SqlClient.SqlClientFactory, System.Data.SqlClient"/>
+        <add name="System.Data.MySqlClient" type="MySql.Data.MySqlClient.MySqlClientFactory, MySql.Data"/>
+        <add name="Oracle.ManagedDataAccess.Client" type="Oracle.ManagedDataAccess.Client.OracleClientFactory, Oracle.ManagedDataAccess"/>
+        <add name="System.Data.SQLiteClient" type="Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite"/>
+    </dbProviderFactories>
+
+    <connectionStrings>
+        <add name="oracle" providerName="Oracle.ManagedDataAccess.Client"
+             connectionString="Data Source=localhost/orcl; User Id=example; Password=example" />
+        <add name="sqlserver" providerName="System.Data.SqlClient"
+             connectionString="Data Source=localhost; User Id=example; Password=example; Initial Catalog=Example" />
+        <add name="mysql" providerName="System.Data.MySqlClient"
+             connectionString="Database=example;SSL Mode=None; Data Source=localhost; User Id=example; Password=example" />
+        <add name="sqlite" providerName="System.Data.SQLiteClient"
+             connectionString="Data Source=example.db3;" />
+        <add name="default" providerName="System.Data.SqlClient"
+             connectionString="Data Source=localhost; User Id=example; Password=example; Initial Catalog=Example" />
+    </connectionStrings>
+
+    <databaseSettings defaultDatabase="default" />
+</database>

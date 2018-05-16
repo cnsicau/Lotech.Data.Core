@@ -19,14 +19,10 @@ namespace Lotech.Data.Example
                 + db.LoadEntity<TExample>(_ => _.Code.ToUpper() == "T001")?.Name);
             Console.WriteLine("db.LoadEntity<TExample>(_ => _.Code.ToUpper() == \"t001\")?.Name = "
                 + db.LoadEntity<TExample>(_ => _.Code.ToLower() == "t001")?.Name);
-            Console.WriteLine("db.LoadEntity<TExample>(_ => _.Code.StartsWith('T'))?.Name = "
-                + db.LoadEntity<TExample>(_ => _.Code.StartsWith('T'))?.Name);
             Console.WriteLine("db.LoadEntity<TExample>(_ => _.Code.StartsWith(\"T0\"))?.Name = "
                 + db.LoadEntity<TExample>(_ => _.Code.StartsWith("T0"))?.Name);
             Console.WriteLine("db.LoadEntity<TExample>(_ => _.Code.EndsWith(\"01\"))?.Name = "
                 + db.LoadEntity<TExample>(_ => _.Code.EndsWith("01"))?.Name);
-            Console.WriteLine("db.LoadEntity<TExample>(_ => _.Code.EndsWith('1'))?.Name = "
-                + db.LoadEntity<TExample>(_ => _.Code.EndsWith('1'))?.Name);
             Console.WriteLine("db.LoadEntity<TExample>(_ => _.Code.Contains(\"00\"))?.Name = "
                 + db.LoadEntity<TExample>(_ => _.Code.Contains("00"))?.Name);
             Console.WriteLine("db.LoadEntity<TExample>(_ => _.Id.ToString() != null)?.Name = "

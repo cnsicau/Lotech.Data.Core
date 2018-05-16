@@ -64,11 +64,14 @@ namespace Lotech.Data
         /// <param name="services"></param>
         protected DbProviderDatabase(DbProviderFactory dbProviderFactory, IEntityServices services)
         {
-            if(dbProviderFactory  == null) throw new ArgumentNullException(nameof(dbProviderFactory)); ;
-            this.dbProviderFactory  = dbProviderFactory ;
+            if (dbProviderFactory == null)
+                throw new ArgumentNullException(nameof(dbProviderFactory));
+            ;
+            this.dbProviderFactory = dbProviderFactory;
 
-            if(services  == null) throw new ArgumentNullException(nameof(services));
-            this.services  = services ;
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+            this.services = services;
 
         }
 
@@ -126,11 +129,13 @@ namespace Lotech.Data
             }
 
             var connection = TransactionScopeConnections.GetConnection(this);
-            if (connection != null) return connection;
+            if (connection != null)
+                return connection;
 
             var transactionManager = TransactionManager.Current;
+            DbTransaction transaction;
             if (transactionManager != null
-                && TransactionManager.TryGetTransaction(ConnectionString, out DbTransaction transaction))
+                && TransactionManager.TryGetTransaction(ConnectionString, out transaction))
             {
                 // 绑定事务
                 command.Transaction = transaction;

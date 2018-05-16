@@ -93,8 +93,8 @@ namespace Lotech.Data.Operations.Common
                 if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                     throw new InvalidOperationException("仅支持具备主键数据表的删除操作.");
 
-                (string Name, string ParameterName)[] keys = descriptor.Keys
-                        .Select((key, index) => (key.Name, BuilderParameterName(index))).ToArray();
+                var keys = descriptor.Keys
+                        .Select((key, index) => new MemberTuple<TEntity>(key.Name, BuilderParameterName(index))).ToArray();
 
                 var sql = string.Concat("DELETE FROM "
                                         , string.IsNullOrEmpty(descriptor.Schema) ? null : (quote(descriptor.Schema) + '.')

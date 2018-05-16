@@ -50,7 +50,7 @@ namespace Lotech.Data.Operations.Common
             Func<IDatabase, TKey, TEntity> IOperationProvider<Func<IDatabase, TKey, TEntity>>.Create(EntityDescriptor descriptor)
             {
                 if (descriptor.Keys?.Length != 1)
-                    return (db, _) => throw new InvalidOperationException("仅支持单主键数据表的加载操作.");
+                    throw new InvalidOperationException("仅支持单主键数据表的加载操作.");
                 var key = descriptor.Keys[0];
                 var convert = ValueConverter.GetConvert(key.Type, typeof(TKey));
 
@@ -80,7 +80,7 @@ namespace Lotech.Data.Operations.Common
             Func<IDatabase, TKey, TEntity> IOperationProvider<Func<IDatabase, TKey, TEntity>>.Create(EntityDescriptor descriptor)
             {
                 if (descriptor.Keys?.Length != 1)
-                    return (db, _) => throw new InvalidOperationException("仅支持单主键数据表的加载操作.");
+                    throw new InvalidOperationException("仅支持单主键数据表的加载操作.");
                 var keyDescriptor = descriptor.Keys[0];
                 var convert = ValueConverter.GetConvert(keyDescriptor.Type, typeof(TKey));
 

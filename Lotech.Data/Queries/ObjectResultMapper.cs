@@ -50,10 +50,15 @@ namespace Lotech.Data.Queries
 
             public override bool TrySetMember(SetMemberBinder binder, object value)
             {
-                return values.TryAdd(binder.Name, value);
+                values[binder.Name] = value;
+                return true;
             }
 
-            public object this[string key] { get => values[key]; set => values[key] = value; }
+            public object this[string key]
+            {
+                get { return values[key]; }
+                set { values[key] = value; }
+            }
 
             public ICollection<string> Keys => values.Keys;
 

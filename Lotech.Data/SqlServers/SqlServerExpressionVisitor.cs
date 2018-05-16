@@ -18,9 +18,7 @@ namespace Lotech.Data.SqlServers
                 {Methods.ToUpper, VisitToUpper },
                 {Methods.ToLower, VisitToLower },
                 {Methods.StartsWith, VisitStartsWith },
-                {Methods.StartsWithChar, VisitStartsWith },
                 {Methods.EndsWith, VisitEndsWith },
-                {Methods.EndsWithChar, VisitEndsWith },
                 {Methods.Contains, VisitContains },
                 {Methods.Substring, VisitSubstring },
                 {Methods.SubstringLength, VisitSubstring2 },
@@ -84,7 +82,8 @@ namespace Lotech.Data.SqlServers
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (methodCallVisitors.TryGetValue(node.Method, out var visitor))
+            Action<SqlExpressionVisitor<TEntity>, MethodCallExpression> visitor;
+            if (methodCallVisitors.TryGetValue(node.Method, out visitor))
             {
                 visitor(this, node);
             }

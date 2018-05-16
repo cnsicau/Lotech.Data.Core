@@ -27,7 +27,8 @@ namespace Lotech.Data
             {
                 transaction.TransactionCompleted += (s, e) =>
                 {
-                    if (transactionConnections.TryRemove(e.Transaction, out ConcurrentDictionary<string, ConnectionSubstitute> el))
+                    ConcurrentDictionary<string, ConnectionSubstitute> el;
+                    if (transactionConnections.TryRemove(e.Transaction, out el))
                     {
                         foreach (var subsitute in el.Values)
                         {
@@ -59,13 +60,13 @@ namespace Lotech.Data
 
             var transactionConnections = GetTransactionConnections();
 
-            return transactionConnections.GetOrAdd(database.ConnectionString, (connectionString, db) =>
+            return transactionConnections.GetOrAdd(database.ConnectionString, (connectionString) =>
             {
-                var connection = db.CreateConnection();
+                var connection = database.CreateConnection();
                 connection.ConnectionString = connectionString;
                 connection.Open();
                 return new ConnectionSubstitute(connection);
-            }, database).Ref();
+            }).Ref();
         }
     }
 }

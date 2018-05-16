@@ -26,7 +26,7 @@ namespace Lotech.Data.Utils
                 ? ((PropertyInfo)member).PropertyType
                 : member.MemberType == MemberTypes.Field
                 ? ((FieldInfo)member).FieldType
-                : throw new NotSupportedException("仅支持实例的字段、属性判定.");
+                : typeof(void);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Lotech.Data.Utils
                 ? ((PropertyInfo)member).GetMethod.IsStatic
                 : member.MemberType == MemberTypes.Field
                 ? ((FieldInfo)member).IsStatic
-                : throw new NotSupportedException("仅支持实例的字段、属性判定.");
+                : false;
         }
 
         /// <summary>

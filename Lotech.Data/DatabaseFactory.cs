@@ -66,7 +66,7 @@ namespace Lotech.Data
         public static IDatabase CreateDatabase(ConnectionStringSettings connectionSettings)
         {
             IDatabase db;
-            var provider = DbProviderFactories.GetFactory(connectionSettings.ProviderName);
+            var provider = Configurations.DbProviderFactories.GetFactory(connectionSettings.ProviderName);
             var databaseType = connectionSettings.Type;
             if (databaseType == DatabaseType.Default)
             {

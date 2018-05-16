@@ -51,11 +51,12 @@ namespace Lotech.Data.Descriptors
 
             static IDictionary<ColumnAttribute, MemberDescriptor> GetMemberAttributes(MemberDescriptor[] members)
             {
-                return new Dictionary<ColumnAttribute, MemberDescriptor>(members
+                return members
                     .Select(_ => new KeyValuePair<ColumnAttribute, MemberDescriptor>(
                         Attribute.GetCustomAttribute(_.Member, typeof(ColumnAttribute)) as ColumnAttribute,
                          _))
-                    .Where(_ => _.Key != null));
+                    .Where(_ => _.Key != null)
+                    .ToDictionary(_ => _.Key, _ => _.Value);
             }
 
 

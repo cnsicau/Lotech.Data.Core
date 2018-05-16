@@ -71,8 +71,7 @@ namespace Lotech.Data
             }
             else // 存在父管理器时向上使用
             {
-                if (!transactionManagers.TryPeek(out parentManager))
-                    throw new InvalidOperationException("unkonwn transation state.");
+                parentManager = transactionManagers.Peek();
                 // 继承上级
                 id = parentManager.id;
                 transactions = parentManager.transactions;
@@ -133,9 +132,9 @@ namespace Lotech.Data
             var keys = transactions.Keys.ToArray();
             foreach (var key in keys)
             {
-                transactions.Remove(key, out DbTransaction transaction);
-                using (transaction)
+                using (var transaction = transactions[key])
                 {
+                    transactions.Remove(key);
                     transaction.Commit();
                 }
             }
@@ -150,8 +149,7 @@ namespace Lotech.Data
         {
             get
             {
-                TransactionManager current = null;
-                return transactionManagers?.TryPeek(out current) == true ? current : null;
+                return transactionManagers?.Count > 0 ? transactionManagers.Peek() : null;
             }
         }
 
@@ -189,9 +187,9 @@ namespace Lotech.Data
                     var keys = transactions.Keys.ToArray();
                     foreach (var key in keys)
                     {
-                        transactions.Remove(key, out DbTransaction transaction);
-                        using (transaction)
+                        using (var transaction = transactions[key])
                         {
+                            transactions.Remove(key);
                             transaction.Rollback();
                         }
                     }

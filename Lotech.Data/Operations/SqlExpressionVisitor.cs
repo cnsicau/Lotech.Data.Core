@@ -36,18 +36,9 @@ namespace Lotech.Data.Operations
             public static readonly MethodInfo StartsWith = new Func<string, bool>(string.Empty.StartsWith).Method;
 
             /// <summary>
-            /// String.StartsWith(char)
-            /// </summary>
-            public static readonly MethodInfo StartsWithChar = new Func<char, bool>(string.Empty.StartsWith).Method;
-
-            /// <summary>
             /// String.EndsWith(string)
             /// </summary>
             public static readonly MethodInfo EndsWith = new Func<string, bool>(string.Empty.EndsWith).Method;
-            /// <summary>
-            /// String.EndsWith(char)
-            /// </summary>
-            public static readonly MethodInfo EndsWithChar = new Func<char, bool>(string.Empty.EndsWith).Method;
 
             /// <summary>
             /// String.Contains(string)

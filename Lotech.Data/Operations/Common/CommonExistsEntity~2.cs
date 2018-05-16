@@ -35,7 +35,7 @@ namespace Lotech.Data.Operations.Common
         Func<IDatabase, TKey, bool> IOperationProvider<Func<IDatabase, TKey, bool>>.Create(EntityDescriptor descriptor)
         {
             if (descriptor.Keys?.Length != 1)
-                return (db, _) => throw new InvalidOperationException("仅支持单主键数据表的加载操作.");
+                throw new InvalidOperationException("仅支持单主键数据表的加载操作.");
             var key = descriptor.Keys.Single();
             var convert = ValueConverter.GetConvert(key.Type, typeof(TKey));
 

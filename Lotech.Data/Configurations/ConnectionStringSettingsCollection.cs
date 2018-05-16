@@ -11,6 +11,12 @@ namespace Lotech.Data.Configurations
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="connectionSettings"></param>
+        public ConnectionStringSettingsCollection(IDictionary<string, ConnectionStringSettings> connectionSettings)
+            : base(connectionSettings) { }
+        /// <summary>
+        /// 
+        /// </summary>
         public ConnectionStringSettingsCollection() : base(StringComparer.CurrentCultureIgnoreCase) { }
     }
 }

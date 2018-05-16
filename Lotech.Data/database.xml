@@ -1,0 +1,12 @@
+﻿<database>
+  <dbProviderFactories>
+    <add name="System.Data.SQLiteClient" type="Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite"/>
+  </dbProviderFactories>
+
+  <connectionStrings>
+    <add name="default" providerName="System.Data.SQLiteClient"
+         connectionString="Data Source=example.db3;" />
+  </connectionStrings>
+
+  <databaseSettings defaultDatabase="default" />
+</database>

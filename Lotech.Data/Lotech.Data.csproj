@@ -17,20 +17,6 @@ SqlServer Oracle MySQL SQLite etc.</Description>
     <AssemblyVersion>2.0.0.0512</AssemblyVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="database.schema.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="database.json" />
-    <Content Include="database.schema.json" />
-  </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties database_1json__JSONSchema="database.schema.json" database_1schema_1json__JSONSchema="http://json.schemastore.org/xunit.runner.schema" /></VisualStudio></ProjectExtensions>
 
 </Project>

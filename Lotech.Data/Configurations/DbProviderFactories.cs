@@ -1,9 +1,11 @@
+Ôªøusing System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Reflection;
 
-namespace System.Data.Common
+namespace Lotech.Data.Configurations
 {
-    /// <summary>DB«˝∂Ø≈‰÷√</summary>
+    /// <summary>DBÈ©±Âä®ÈÖçÁΩÆ</summary>
     static public class DbProviderFactories
     {
         static readonly Dictionary<string, DbProviderFactory> factories = new Dictionary<string, DbProviderFactory>(StringComparer.CurrentCultureIgnoreCase);
@@ -18,18 +20,20 @@ namespace System.Data.Common
             factories[name] = factory;
         }
 
-        ///◊¢≤·«˝∂Ø
+        ///Ê≥®ÂÜåÈ©±Âä®
         /// <summary></summary>
-        static public void RegisterFactory(string name, string factory)
+        /// <param name="name"></param>
+        /// <param name="providerFactorTypeName"></param>
+        static public void RegisterFactory(string name, string providerFactorTypeName)
         {
-            var provider = Type.GetType(factory, false);
-            if (provider == null) throw new InvalidOperationException("DbProviderFactory not found: " + factory);
+            var provider = Type.GetType(providerFactorTypeName, false);
+            if (provider == null) throw new InvalidOperationException("DbProviderFactory not found: " + providerFactorTypeName);
 
             factories[name] = (DbProviderFactory)provider.InvokeMember("Instance", BindingFlags.GetField | BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic, null, null, null);
         }
 
         /// <summary>
-        /// ªÒ»°≈‰÷√µƒDB«˝∂Ø
+        /// Ëé∑ÂèñÈÖçÁΩÆÁöÑDBÈ©±Âä®
         /// </summary>
         /// <param name="providerName"></param>
         /// <returns></returns>

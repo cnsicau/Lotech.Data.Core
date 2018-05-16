@@ -16,7 +16,7 @@
         public string ConnectionString { get; set; }
 
         /// <summary>
-        /// 获取此连接串对应的库类型 Default\Generic\SqlServer\MySql\Oracle\SqlLit
+        /// 获取此连接串对应的库类型 Default\Generic\SqlServer\MySql\Oracle\SQLite
         /// </summary>
         public DatabaseType Type { get; set; }
 

@@ -46,16 +46,12 @@ namespace Lotech.Data.MySqls
             if (descriptor.Type != typeof(TEntity)) throw new InvalidOperationException("实体描述符与当前类型不匹配.");
 
             if (descriptor == _descriptor) return;  // 避免重复初始化
-
-            var keys = descriptor.Keys;
-            if (keys == null || keys.Length == 0)
-                throw new InvalidOperationException($"更新目标类型{descriptor.Type}必须具备主键");
-
-            _members = descriptor.Members.Except(keys).Where(_ => !_.DbGenerated && _setFilter(_)).ToArray();
+            
+            _members = descriptor.Members.Where(_ => !_.DbGenerated && _setFilter(_)).ToArray();
             if (_members.Length == 0)
                 throw new InvalidOperationException("未找到需要更新的列.");
             _descriptor = descriptor;
-            _keys = keys;
+            _keys = descriptor.Keys;
             var outputs = descriptor.Members.Where(_ => _.DbGenerated).ToArray();
             _identity = outputs.SingleOrDefault(_ => _.PrimaryKey);
             _outputs = outputs.Where(_ => !_.PrimaryKey).ToArray();

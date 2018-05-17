@@ -156,6 +156,7 @@
     <Compile Include="Oracles\OracleUpdateEntities.cs" />
     <Compile Include="Oracles\UpdateOperationBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queries\ProcedureParameter~1.cs" />
     <Compile Include="Queries\CommandQueryResult~1.cs" />
     <Compile Include="Queries\DataReaderResultSource.cs" />
     <Compile Include="Queries\EntityResultMapper~1.cs" />
@@ -167,7 +168,6 @@
     <Compile Include="Queries\SimpleResultMapper~1.cs" />
     <Compile Include="Queries\SqlQueryResult~1.cs" />
     <Compile Include="Queries\StoredProcedureParameter~1.cs" />
-    <Compile Include="Queries\StoredProcedureQueryResult~1.cs" />
     <Compile Include="SQLiteDatabase.cs" />
     <Compile Include="SQLites\DeleteOperationBuilder.cs" />
     <Compile Include="SQLites\InsertOperationBuilder.cs" />

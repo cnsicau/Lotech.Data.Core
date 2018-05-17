@@ -123,6 +123,9 @@ namespace Lotech.Data.Configurations
         [XmlRoot("database")]
         public class Configuration
         {
+            /// <summary>
+            /// 
+            /// </summary>
             [XmlArray("dbProviderFactories")]
             [XmlArrayItem("add")]
             public List<DbProviderFactoryConfiguration> DbProviderFactories { get; set; }

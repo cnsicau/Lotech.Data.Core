@@ -933,5 +933,110 @@ namespace Lotech.Data
         {
             return services.Count<EntityType>()(this);
         }
+
+        #region Procedure Methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public IDataReader ExecuteProcedureReader<TParameter>(string procedureName, TParameter namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public object ExecuteProcedureScalar<TParameter>(string procedureName, TParameter namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TScalar"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public TScalar ExecuteProcedureScalar<TScalar, TParameter>(string procedureName, Func<TScalar, TParameter> namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public DataSet ExecuteProcedureDataSet<TParameter>(string procedureName, TParameter namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public DataSet ExecuteProcedureNonQuery<TParameter>(string procedureName, TParameter namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public EntityType ExecuteProcedureEntity<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public EntityType[] ExecuteProcedureEntities<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public dynamic ExecuteProcedureEntity<TParameter>(string procedureName, TParameter namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public dynamic[] ExecuteProcedureEntities<TParameter>(string procedureName, TParameter namedParameter)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }

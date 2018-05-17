@@ -133,6 +133,15 @@ namespace Lotech.Data
         /// <param name="commandText"></param>
         /// <returns>返回IDataReader对象</returns>
         IDataReader ExecuteReader(string commandText);
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        IDataReader ExecuteProcedureReader<TParameter>(string procedureName, TParameter namedParameter);
         #endregion
 
         #region ExecuteScalar
@@ -159,6 +168,16 @@ namespace Lotech.Data
         /// <returns>返回单一对象值, 没有值时返回null</returns>
         object ExecuteScalar(string commandText);
 
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        object ExecuteProcedureScalar<TParameter>(string procedureName, TParameter namedParameter);
+
         /// <summary>
         /// 执行单一输出指定类型
         /// </summary>
@@ -183,6 +202,17 @@ namespace Lotech.Data
         /// <param name="commandText">命令文本</param>
         /// <returns>返回单一对象值, 没有值时返回null</returns>
         TScalar ExecuteScalar<TScalar>(CommandType commandType, string commandText);
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureScalar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="TScalar"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  (Dic_Organzation o) => new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        TScalar ExecuteProcedureScalar<TScalar, TParameter>(string procedureName, Func<TScalar, TParameter> namedParameter);
         #endregion
 
         #region ExecuteDataSet
@@ -207,6 +237,17 @@ namespace Lotech.Data
         /// <param name="commandText">命令文本</param>
         /// <returns>返回DataSet对象</returns>
         DataSet ExecuteDataSet(CommandType commandType, string commandText);
+
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureSclar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        DataSet ExecuteProcedureDataSet<TParameter>(string procedureName, TParameter namedParameter);
         #endregion
 
         #region ExecuteNonQuery
@@ -231,6 +272,16 @@ namespace Lotech.Data
         /// <param name="commandText">命令文本</param>
         /// <returns>返回受影响的行数（如果数据库关闭了影响行，结果将无效）</returns>
         int ExecuteNonQuery(CommandType commandType, string commandText);
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureSclar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        DataSet ExecuteProcedureNonQuery<TParameter>(string procedureName, TParameter namedParameter);
         #endregion
 
         #region EntitiesMethod
@@ -262,12 +313,33 @@ namespace Lotech.Data
 
         #region Entity
         /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureSclar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  (Dic_Org o) => new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        EntityType ExecuteProcedureEntity<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter);
+        /// <summary>
         /// 执行返回指定实体
         /// </summary>
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="command">命令</param>
         /// <returns></returns>
         EntityType ExecuteEntity<EntityType>(DbCommand command) where EntityType : class;
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureSclar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:  (Dic_Org o) => new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        EntityType[] ExecuteProcedureEntities<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter);
 
         /// <summary>
         /// 执行返回指定实体集合
@@ -311,6 +383,26 @@ namespace Lotech.Data
         #endregion
 
         #region Object Entity
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureSclar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:   new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        dynamic ExecuteProcedureEntity<TParameter>(string procedureName, TParameter namedParameter);
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureSclar("proc", org => new { name = 4 })</example>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:   new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        dynamic[] ExecuteProcedureEntities<TParameter>(string procedureName, TParameter namedParameter);
+
         /// <summary>
         /// 执行返回指定实体
         /// </summary>

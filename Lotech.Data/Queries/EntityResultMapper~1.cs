@@ -1,6 +1,7 @@
 ﻿using Lotech.Data.Descriptors;
 using Lotech.Data.Utils;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -50,61 +51,84 @@ namespace Lotech.Data.Queries
             /// </summary>
             public Type ValueType { get; set; }
         }
+
+        static class MapperContainer
+        {
+            static readonly ConcurrentDictionary<EntityDescriptor, IDictionary<string, MapDescriptor>>
+                memberMappers = new ConcurrentDictionary<EntityDescriptor, IDictionary<string, MapDescriptor>>();
+
+            static internal IDictionary<string, MapDescriptor> GetDescriptors(EntityDescriptor entityDescriptor)
+            {
+                if (entityDescriptor == null) throw new ArgumentNullException(nameof(entityDescriptor));
+                return memberMappers.GetOrAdd(entityDescriptor, CreateMapDescriptors);
+            }
+
+            /// <summary>
+            /// 读取DataReader指定列的值
+            /// </summary>
+            /// <param name="source">源</param>
+            /// <param name="column">列序号</param>
+            /// <param name="convert">值转换器</param>
+            /// <returns></returns>
+            static object ReadValue(IResultSource source, int column, ValueConverter.ConvertDelegate convert)
+            {
+                return convert(source[column]);
+            }
+
+            /// <summary>
+            /// 生成动态属性映射代理方法
+            /// </summary>
+            /// <param name="member"></param>
+            /// <returns></returns>
+            static MapReaderValueDelegate CreateMapDelegate(MemberInfo member)
+            {
+                var entityParameter = Expression.Parameter(typeof(TEntity), "entity");
+                var sourceParameter = Expression.Parameter(typeof(IResultSource), "source");
+                var columnParameter = Expression.Parameter(typeof(int), "column");
+                var convertParameter = Expression.Parameter(typeof(ValueConverter.ConvertDelegate), "convert");
+                Func<IResultSource, int, ValueConverter.ConvertDelegate, object> readValue = ReadValue;
+
+                var memberValueType = member.MemberType == MemberTypes.Property
+                                        ? ((PropertyInfo)member).PropertyType
+                                        : ((FieldInfo)member).FieldType;
+
+                // entity.MEMBER = (MemberValueType)ReadValue(memberType, realType, source, columnIndex);
+                return Expression.Lambda<MapReaderValueDelegate>(
+                        Expression.Assign(
+                            Expression.MakeMemberAccess(entityParameter, member),
+                            Expression.Convert(
+                                Expression.Call(readValue.Method,
+                                    sourceParameter,
+                                    columnParameter,
+                                    convertParameter
+                                ),
+                                memberValueType)
+                        )
+                    , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();
+            }
+
+            static IDictionary<string, MapDescriptor> CreateMapDescriptors(EntityDescriptor entityDescriptor)
+            {
+                var memberDescriptors = new Dictionary<string, MapDescriptor>(StringComparer.CurrentCultureIgnoreCase);
+
+                foreach (var member in entityDescriptor.Members)
+                {
+                    MapDescriptor descriptor = new MapDescriptor();
+                    descriptor.MemberName = member.Name;
+                    descriptor.MemberType = member.Member.MemberType;
+                    descriptor.MemberValueType = member.Type.ToString();
+                    descriptor.ValueType = member.Type;
+                    descriptor.Map = CreateMapDelegate(member.Member);
+
+                    memberDescriptors[member.Name] = descriptor;
+                }
+
+                return memberDescriptors;
+            }
+
+        }
         #region Static Members
 
-        /// <summary>
-        /// 生成动态属性映射代理方法
-        /// </summary>
-        /// <param name="member"></param>
-        /// <returns></returns>
-        static MapReaderValueDelegate CreateMapDelegate(MemberInfo member)
-        {
-            var entityParameter = Expression.Parameter(typeof(TEntity), "entity");
-            var sourceParameter = Expression.Parameter(typeof(IResultSource), "source");
-            var columnParameter = Expression.Parameter(typeof(int), "column");
-            var convertParameter = Expression.Parameter(typeof(ValueConverter.ConvertDelegate), "convert");
-            Func<IResultSource, int, ValueConverter.ConvertDelegate, object> readValue = ReadValue;
-
-            var memberValueType = member.MemberType == MemberTypes.Property
-                                    ? ((PropertyInfo)member).PropertyType
-                                    : ((FieldInfo)member).FieldType;
-
-            // entity.MEMBER = (MemberValueType)ReadValue(memberType, realType, source, columnIndex);
-            return Expression.Lambda<MapReaderValueDelegate>(
-                    Expression.Assign(
-                        Expression.MakeMemberAccess(entityParameter, member),
-                        Expression.Convert(
-                            Expression.Call(readValue.Method,
-                                sourceParameter,
-                                columnParameter,
-                                convertParameter
-                            ),
-                            memberValueType)
-                    )
-                , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();
-        }
-
-        /// <summary>
-        /// 若是Nullable，返回其实际类型，否则返回当前类型
-        /// </summary>
-        /// <param name="valueType"></param>
-        /// <returns></returns>
-        static Type GetUnderlyingOrCurrentType(Type valueType)
-        {
-            return Nullable.GetUnderlyingType(valueType) ?? valueType;
-        }
-
-        /// <summary>
-        /// 读取DataReader指定列的值
-        /// </summary>
-        /// <param name="source">源</param>
-        /// <param name="column">列序号</param>
-        /// <param name="convert">值转换器</param>
-        /// <returns></returns>
-        static object ReadValue(IResultSource source, int column, ValueConverter.ConvertDelegate convert)
-        {
-            return convert(source[column]);
-        }
 
 
         #endregion
@@ -122,22 +146,7 @@ namespace Lotech.Data.Queries
         /// <param name="entityDescriptor"></param>
         public EntityResultMapper(EntityDescriptor entityDescriptor)
         {
-            if (entityDescriptor == null) throw new ArgumentNullException(nameof(entityDescriptor));
-
-            var entityDescriptors = new Dictionary<string, MapDescriptor>(StringComparer.CurrentCultureIgnoreCase);
-
-            foreach (var member in entityDescriptor.Members)
-            {
-                MapDescriptor descriptor = new MapDescriptor();
-                descriptor.MemberName = member.Name;
-                descriptor.MemberType = member.Member.MemberType;
-                descriptor.MemberValueType = member.Type.ToString();
-                descriptor.ValueType = member.Type;
-                descriptor.Map = CreateMapDelegate(member.Member);
-
-                entityDescriptors[member.Name] = descriptor;
-            }
-            this.memberDescriptors = entityDescriptors;
+            this.memberDescriptors = MapperContainer.GetDescriptors(entityDescriptor);
         }
         #endregion
 

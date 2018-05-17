@@ -103,7 +103,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual DbConnection CreateConnection()
         {
-            if (String.IsNullOrEmpty(ConnectionString))
+            if (string.IsNullOrEmpty(ConnectionString))
             {
                 throw new InvalidProgramException("ConnectionString is empty");
             }
@@ -119,13 +119,9 @@ namespace Lotech.Data
         /// <returns></returns>
         protected virtual ConnectionSubstitute GetConnection(DbCommand command)
         {
-            if (command.Connection != null)
+            if (command?.Connection?.Site is ConnectionSubstitute)
             {
-                if (command.Connection.State == ConnectionState.Open)
-                {
-                    return new ConnectionSubstitute(command.Connection).Ref();
-                }
-                return new ConnectionSubstitute(command.Connection);
+                return ((ConnectionSubstitute)command.Connection.Site).Ref();
             }
 
             var connection = TransactionScopeConnections.GetConnection(this);

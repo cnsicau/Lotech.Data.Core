@@ -8,6 +8,12 @@ namespace Lotech.Data
     /// </summary>
     public class SqlServerDatabase : DbProviderDatabase, IDatabase
     {
+#if NET_4 && !DOTNET_CORE
+        /// <summary>
+        /// 
+        /// </summary>
+        public SqlServerDatabase() : this(System.Data.SqlClient.SqlClientFactory.Instance) { }
+#endif
         /// <summary>
         /// 
         /// </summary>

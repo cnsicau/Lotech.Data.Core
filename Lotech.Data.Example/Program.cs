@@ -45,8 +45,18 @@ namespace Lotech.Data.Example
         {
             // Entity
             var sqlite = new SQLiteExample();
-
             EntityTests<SQLiteExample.Example>(sqlite);    // SQLite 
+
+            var query = sqlite.Database.SqlQuery()
+                .AppendLine("SELECT * FROM example")
+                .AppendLine(" WHERE 1 = 1")
+                .AppendLine("  AND {0} = {2} OR {3} = {1}", 0, 4, 2, 4);
+
+            var q1 = query.ExecuteEntities();
+            var q2 = query.ExecuteEntities<Example>();
+            var q3 = query.ExecuteDataSet();
+
+
             var mysql = new MySqlExample();
             EntityTests<Example>(mysql);                   // MySQL
             var oracle = new OracleExample();

@@ -141,7 +141,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        IDataReader ExecuteProcedureReader<TParameter>(string procedureName, TParameter namedParameter);
+        IDataReader ExecuteProcedureReader<TParameter>(string procedureName, TParameter namedParameter) where TParameter: class;
         #endregion
 
         #region ExecuteScalar
@@ -176,7 +176,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        object ExecuteProcedureScalar<TParameter>(string procedureName, TParameter namedParameter);
+        object ExecuteProcedureScalar<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class;
 
         /// <summary>
         /// 执行单一输出指定类型
@@ -212,7 +212,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  (Dic_Organzation o) => new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        TScalar ExecuteProcedureScalar<TScalar, TParameter>(string procedureName, Func<TScalar, TParameter> namedParameter);
+        TScalar ExecuteProcedureScalar<TScalar, TParameter>(string procedureName, Func<TScalar, TParameter> namedParameter) where TParameter : class;
         #endregion
 
         #region ExecuteDataSet
@@ -247,7 +247,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        DataSet ExecuteProcedureDataSet<TParameter>(string procedureName, TParameter namedParameter);
+        DataSet ExecuteProcedureDataSet<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class;
         #endregion
 
         #region ExecuteNonQuery
@@ -281,7 +281,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        DataSet ExecuteProcedureNonQuery<TParameter>(string procedureName, TParameter namedParameter);
+        void ExecuteProcedureNonQuery<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class;
         #endregion
 
         #region EntitiesMethod
@@ -321,7 +321,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  (Dic_Org o) => new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        EntityType ExecuteProcedureEntity<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter);
+        EntityType ExecuteProcedureEntity<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter) where EntityType : class where TParameter : class;
         /// <summary>
         /// 执行返回指定实体
         /// </summary>
@@ -339,7 +339,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:  (Dic_Org o) => new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        EntityType[] ExecuteProcedureEntities<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter);
+        EntityType[] ExecuteProcedureEntities<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter) where EntityType : class where TParameter : class;
 
         /// <summary>
         /// 执行返回指定实体集合
@@ -391,7 +391,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        dynamic ExecuteProcedureEntity<TParameter>(string procedureName, TParameter namedParameter);
+        dynamic ExecuteProcedureEntity<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class;
 
         /// <summary>
         /// 执行指定存储过程，并使用命名参数绑定
@@ -401,7 +401,7 @@ namespace Lotech.Data
         /// <param name="procedureName">存储过程名称</param>
         /// <param name="namedParameter">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        dynamic[] ExecuteProcedureEntities<TParameter>(string procedureName, TParameter namedParameter);
+        dynamic[] ExecuteProcedureEntities<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class;
 
         /// <summary>
         /// 执行返回指定实体

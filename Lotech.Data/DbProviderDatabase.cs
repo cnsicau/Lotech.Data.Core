@@ -942,9 +942,9 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public IDataReader ExecuteProcedureReader<TParameter>(string procedureName, TParameter namedParameter)
+        public IDataReader ExecuteProcedureReader<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteReader(CreateProcedureCommand(procedureName, namedParameter));
         }
         /// <summary>
         /// 
@@ -953,9 +953,9 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public object ExecuteProcedureScalar<TParameter>(string procedureName, TParameter namedParameter)
+        public object ExecuteProcedureScalar<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteScalar(CreateProcedureCommand(procedureName, namedParameter));
         }
         /// <summary>
         /// 
@@ -965,9 +965,9 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public TScalar ExecuteProcedureScalar<TScalar, TParameter>(string procedureName, Func<TScalar, TParameter> namedParameter)
+        public TScalar ExecuteProcedureScalar<TScalar, TParameter>(string procedureName, Func<TScalar, TParameter> namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteScalar<TScalar>(CreateProcedureCommand(procedureName, namedParameter(default(TScalar))));
         }
         /// <summary>
         /// 
@@ -976,9 +976,9 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public DataSet ExecuteProcedureDataSet<TParameter>(string procedureName, TParameter namedParameter)
+        public DataSet ExecuteProcedureDataSet<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteDataSet(CreateProcedureCommand(procedureName, namedParameter));
         }
         /// <summary>
         /// 
@@ -987,21 +987,9 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public DataSet ExecuteProcedureNonQuery<TParameter>(string procedureName, TParameter namedParameter)
+        public void ExecuteProcedureNonQuery<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="EntityType"></typeparam>
-        /// <typeparam name="TParameter"></typeparam>
-        /// <param name="procedureName"></param>
-        /// <param name="namedParameter"></param>
-        /// <returns></returns>
-        public EntityType ExecuteProcedureEntity<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter)
-        {
-            throw new NotImplementedException();
+            ExecuteNonQuery(CreateProcedureCommand(procedureName, namedParameter));
         }
         /// <summary>
         /// 
@@ -1011,9 +999,21 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public EntityType[] ExecuteProcedureEntities<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter)
+        public EntityType ExecuteProcedureEntity<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter) where EntityType : class where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteEntity<EntityType>(CreateProcedureCommand(procedureName, namedParameter(default(EntityType))));
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="EntityType"></typeparam>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="namedParameter"></param>
+        /// <returns></returns>
+        public EntityType[] ExecuteProcedureEntities<EntityType, TParameter>(string procedureName, Func<EntityType, TParameter> namedParameter) where EntityType : class where TParameter : class
+        {
+            return ExecuteEntities<EntityType>(CreateProcedureCommand(procedureName, namedParameter(default(EntityType))));
         }
         /// <summary>
         /// 
@@ -1022,9 +1022,9 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public dynamic ExecuteProcedureEntity<TParameter>(string procedureName, TParameter namedParameter)
+        public dynamic ExecuteProcedureEntity<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteEntity(CreateProcedureCommand(procedureName, namedParameter));
         }
         /// <summary>
         /// 
@@ -1033,9 +1033,16 @@ namespace Lotech.Data
         /// <param name="procedureName"></param>
         /// <param name="namedParameter"></param>
         /// <returns></returns>
-        public dynamic[] ExecuteProcedureEntities<TParameter>(string procedureName, TParameter namedParameter)
+        public dynamic[] ExecuteProcedureEntities<TParameter>(string procedureName, TParameter namedParameter) where TParameter : class
         {
-            throw new NotImplementedException();
+            return ExecuteEntities(CreateProcedureCommand(procedureName, namedParameter));
+        }
+
+        DbCommand CreateProcedureCommand<TParameter>(string procedureName, TParameter parameter) where TParameter : class
+        {
+            var command = GetStoredProcedureCommand(procedureName);
+            new ProcedureParameter<TParameter>(this, parameter).BindCommandParameters(command);
+            return command;
         }
         #endregion
     }

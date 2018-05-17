@@ -432,41 +432,22 @@ namespace Lotech.Data
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000")]
         public virtual DataSet ExecuteDataSet(DbCommand command)
         {
-            using (DbDataAdapter adapter = dbProviderFactory.CreateDataAdapter())
+            using (var reader = ExecuteReader(command))
             {
-                if (adapter == null) // 不支持 Adapter驱动，尝试直接 DataReader装载模式
+                var dataSet = new DataSet(command.CommandText);
+                var table = dataSet.Tables.Add("Result");
+                for (int i = 0; i < reader.FieldCount; i++)
                 {
-                    using (var reader = ExecuteReader(command))
-                    {
-                        var dataSet = new DataSet();
-                        var table = dataSet.Tables.Add("Table");
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
-                        }
-                        var rows = new object[reader.FieldCount];
-                        while (reader.Read())
-                        {
-                            reader.GetValues(rows);
-                            table.Rows.Add(rows);
-                        }
-
-                        return dataSet;
-                    }
+                    table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
                 }
-                Log?.Invoke("Execute DataSet:" + command.CommandText);
-
-                adapter.SelectCommand = command;
-                using (var subsitute = GetConnection(command))
+                var rows = new object[reader.FieldCount];
+                while (reader.Read())
                 {
-                    command.Connection = subsitute.Connection;
-                    if (subsitute.Connection.State != ConnectionState.Open)
-                        subsitute.Connection.Open();
-
-                    var dataSet = new DataSet("Table");
-                    adapter.Fill(dataSet);
-                    return dataSet;
+                    reader.GetValues(rows);
+                    table.Rows.Add(rows);
                 }
+
+                return dataSet;
             }
         }
         /// <summary>

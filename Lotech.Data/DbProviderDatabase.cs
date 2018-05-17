@@ -311,7 +311,7 @@ namespace Lotech.Data
                 if (substitute.Connection.State != ConnectionState.Open)
                     substitute.Connection.Open();
 
-                Debug.WriteLine("Execute query:" + command.CommandText);
+                Log?.Invoke("Execute Reader:" + command.CommandText);
                 return new CompositedDataReader(command.ExecuteReader(), substitute);
             }
             catch
@@ -358,7 +358,7 @@ namespace Lotech.Data
         {
             using (var substitute = GetConnection(command))
             {
-                Debug.WriteLine("Execute query:" + command.CommandText);
+                Log?.Invoke("Execute Scalar:" + command.CommandText);
                 command.Connection = substitute.Connection;
                 if (substitute.Connection.State != ConnectionState.Open)
                     substitute.Connection.Open();
@@ -458,16 +458,16 @@ namespace Lotech.Data
                         return dataSet;
                     }
                 }
-                Debug.WriteLine("Execute query:" + command.CommandText);
+                Log?.Invoke("Execute DataSet:" + command.CommandText);
 
                 adapter.SelectCommand = command;
                 using (var subsitute = GetConnection(command))
                 {
                     command.Connection = subsitute.Connection;
-                    if (subsitute.Connection.State != System.Data.ConnectionState.Open)
+                    if (subsitute.Connection.State != ConnectionState.Open)
                         subsitute.Connection.Open();
 
-                    var dataSet = new System.Data.DataSet("Table");
+                    var dataSet = new DataSet("Table");
                     adapter.Fill(dataSet);
                     return dataSet;
                 }
@@ -506,7 +506,7 @@ namespace Lotech.Data
         {
             using (var subsitute = GetConnection(command))
             {
-                Debug.WriteLine("Execute query:" + command.CommandText);
+                Log?.Invoke("Execute NonQuery:" + command.CommandText);
                 command.Connection = subsitute.Connection;
                 if (subsitute.Connection.State != ConnectionState.Open)
                     subsitute.Connection.Open();

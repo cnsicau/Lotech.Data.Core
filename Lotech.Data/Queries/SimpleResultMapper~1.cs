@@ -7,6 +7,7 @@ using System.Text;
 
 namespace Lotech.Data.Queries
 {
+    using ConvertDelegate = Lazy<Utils.ValueConverter.ConvertDelegate>;
     /// <summary>
     /// 简单类型映射int\short\bool等
     /// </summary>
@@ -16,6 +17,7 @@ namespace Lotech.Data.Queries
         static readonly Assembly SimpleTypeAssembly = typeof(bool).Assembly;
         private IResultSource source;
         private Type underlyingType;
+        private ConvertDelegate convert;
 
         static internal bool IsSimpleType()
         {
@@ -29,6 +31,8 @@ namespace Lotech.Data.Queries
             underlyingType = Nullable.GetUnderlyingType(typeof(T));
 
             this.source = source;
+
+            convert = new ConvertDelegate(() => Utils.ValueConverter.GetConvert(this.source.GetColumnType(0), typeof(T)));
         }
 
         /// <summary>
@@ -40,18 +44,10 @@ namespace Lotech.Data.Queries
         {
             if (source.Next())
             {
-                object value = source[0];
+                var value = source[0];
                 try
                 {
-                    if (value == DBNull.Value || value == null)
-                    {
-                        if (underlyingType != null)
-                        {
-                            result = default(T);
-                            return true;
-                        }
-                    }
-                    result = (T)Convert.ChangeType(source[0], underlyingType ?? typeof(T));
+                    result = (T)convert.Value(value);
                 }
                 catch (FormatException e)
                 {

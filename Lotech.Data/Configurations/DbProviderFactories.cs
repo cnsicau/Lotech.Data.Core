@@ -14,9 +14,9 @@ namespace Lotech.Data.Configurations
         static DbProviderFactories()
         {
             // 默认注册 SqlServer、Odbc、Oledb 驱动
-            factories.Add(nameof(System.Data.SqlClient), System.Data.SqlClient.SqlClientFactory.Instance);
-            factories.Add(nameof(System.Data.Odbc), System.Data.Odbc.OdbcFactory.Instance);
-            factories.Add(nameof(System.Data.OleDb), System.Data.OleDb.OleDbFactory.Instance);
+            factories.Add("System.Data.SqlClient", System.Data.SqlClient.SqlClientFactory.Instance);
+            factories.Add("System.Data.Odbc", System.Data.Odbc.OdbcFactory.Instance);
+            factories.Add("System.Data.OleDb", System.Data.OleDb.OleDbFactory.Instance);
         }
 #endif
         /// <summary>

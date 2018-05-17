@@ -25,13 +25,14 @@ namespace Lotech.Data.Queries
                 result = null;
                 return false;
             }
-            result = new DataExpando();
+            var values = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+            result = new ObjectValue(values);
 
             // 将所有结果放入动态扩展对象中
             for (int i = source.Columns.Count - 1; i >= 0; i--)
             {
                 var columnValue = source[i];
-                ((IDictionary<string, object>)result)[source.Columns[i]] = columnValue == DBNull.Value ? null : columnValue;
+                values[source.Columns[i]] = columnValue == DBNull.Value ? null : columnValue;
             }
             return true;
         }
@@ -39,9 +40,11 @@ namespace Lotech.Data.Queries
         void IResultMapper<object>.TearDown() { }
 
         #region DataExpando
-        class DataExpando : DynamicObject, IDictionary<string, object>
+        class ObjectValue : DynamicObject, IDictionary<string, object>
         {
-            private IDictionary<string, object> values = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+            private IDictionary<string, object> values;
+
+            internal ObjectValue(IDictionary<string, object> values) { this.values = values; }
 
             public override bool TryGetMember(GetMemberBinder binder, out object result)
             {
@@ -52,6 +55,11 @@ namespace Lotech.Data.Queries
             {
                 values[binder.Name] = value;
                 return true;
+            }
+
+            public override IEnumerable<string> GetDynamicMemberNames()
+            {
+                return values.Keys;
             }
 
             public object this[string key]

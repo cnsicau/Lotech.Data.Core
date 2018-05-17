@@ -33,8 +33,9 @@ namespace Lotech.Data.Example
 
         public SQLiteExample()
         {
+#if NET_CORE
             SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
-
+#endif
             db.ExecuteNonQuery("drop table if exists  Example");
             db.ExecuteNonQuery(@"create table Example (
    Id INTEGER PRIMARY KEY AUTOINCREMENT,

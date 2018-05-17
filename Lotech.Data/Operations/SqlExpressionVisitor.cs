@@ -85,7 +85,7 @@ namespace Lotech.Data.Operations
         /// <summary>
         /// 
         /// </summary>
-        public virtual IReadOnlyCollection<ExpressionParameter> Parameters
+        public virtual IList<ExpressionParameter> Parameters
         {
             get { return _parameters; }
         }

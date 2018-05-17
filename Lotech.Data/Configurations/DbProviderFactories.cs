@@ -10,6 +10,15 @@ namespace Lotech.Data.Configurations
     {
         static readonly Dictionary<string, DbProviderFactory> factories = new Dictionary<string, DbProviderFactory>(StringComparer.CurrentCultureIgnoreCase);
 
+#if !DOTNET_CORE && NET_4
+        static DbProviderFactories()
+        {
+            // 默认注册 SqlServer、Odbc、Oledb 驱动
+            factories.Add(nameof(System.Data.SqlClient), System.Data.SqlClient.SqlClientFactory.Instance);
+            factories.Add(nameof(System.Data.Odbc), System.Data.Odbc.OdbcFactory.Instance);
+            factories.Add(nameof(System.Data.OleDb), System.Data.OleDb.OleDbFactory.Instance);
+        }
+#endif
         /// <summary>
         /// 
         /// </summary>

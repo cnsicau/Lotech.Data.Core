@@ -1,2 +1,2 @@
 # Lotech.Data.Core
-Lotech.Data for dotnet core
+an ORM like "EnterpriseLib Data Block" for dotnet core

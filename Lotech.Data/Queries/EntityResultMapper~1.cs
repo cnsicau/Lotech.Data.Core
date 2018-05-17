@@ -110,7 +110,7 @@ namespace Lotech.Data.Queries
         #endregion
 
         #region Fields & Constructor
-        IReadOnlyDictionary<string, MapDescriptor> memberDescriptors;
+        IDictionary<string, MapDescriptor> memberDescriptors;
         /// <summary>
         /// 
         /// </summary>

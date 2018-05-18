@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Lotech.Data.Core.Queries
+namespace Lotech.Data.Queries
 {
     class SqlQuery : ISqlQuery
     {

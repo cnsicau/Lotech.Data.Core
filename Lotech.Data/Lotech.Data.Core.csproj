@@ -14,9 +14,11 @@
     <Description>an ORM like "EnterpriseLib Data Block" for dotnet core.</Description>
     <AssemblyVersion>2.0.0.517</AssemblyVersion>
     <AssemblyName>Lotech.Data</AssemblyName>
+    <RootNamespace>Lotech.Data</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\**" />
+    <Content Include="database.xml" />
   </ItemGroup>
 </Project>

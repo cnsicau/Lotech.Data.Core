@@ -1,9 +1,7 @@
-﻿using Lotech.Data.Core.Queries;
+﻿using Lotech.Data.Queries;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Text;
 
 namespace Lotech.Data
 {

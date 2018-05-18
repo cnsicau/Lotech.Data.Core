@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data.Common;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -25,10 +25,23 @@ namespace Lotech.Data.Queries
         }
         #endregion
 
-        IDatabase ISqlQuery.Database
+        string NextParameterName() { return _database.BuildParameterName("p_query_" + _index++); }
+
+        IDatabase IQuery.Database
         {
             get { return _database; }
-            set { _database = value; }
+        }
+
+        DbCommand IQuery.CreateCommand()
+        {
+            var command = _database.GetSqlStringCommand(_snippets.ToString());
+
+            foreach (var p in _parameters)
+            {
+                var type = p.Value?.GetType() ?? typeof(string);
+                _database.AddInParameter(command, p.Key, Utils.DbTypeParser.Parse(type), p.Value);
+            }
+            return command;
         }
 
         ISqlQuery ISqlQuery.Append(string snippet)
@@ -36,8 +49,6 @@ namespace Lotech.Data.Queries
             _snippets.Append(snippet);
             return this;
         }
-
-        string NextParameterName() { return _database.BuildParameterName("p_q_" + _index++); }
 
         ISqlQuery ISqlQuery.Append(string snippet, params object[] args)
         {

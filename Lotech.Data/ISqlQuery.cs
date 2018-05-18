@@ -12,7 +12,7 @@ namespace Lotech.Data
     ///                         .Append(" AND Deleted = {0}", true);
     ///     ]]>
     /// </example>
-    public interface ISqlQuery
+    public interface ISqlQuery : IQuery
     {
         /// <summary>
         /// 追加片断
@@ -28,11 +28,6 @@ namespace Lotech.Data
         /// <param name="snippet"></param>
         /// <returns></returns>
         ISqlQuery Append(string snippet);
-
-        /// <summary>
-        /// 设置或获取关联库
-        /// </summary>
-        IDatabase Database { get; set; }
 
         /// <summary>
         /// 连接当前查询片断

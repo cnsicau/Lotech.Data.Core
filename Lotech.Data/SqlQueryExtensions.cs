@@ -1,7 +1,6 @@
 ﻿using Lotech.Data.Queries;
 using System;
 using System.Data;
-using System.Data.Common;
 
 namespace Lotech.Data
 {
@@ -219,134 +218,109 @@ namespace Lotech.Data
         }
         #endregion
 
-        #region Database Methods
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public static DbCommand CreateCommand(this ISqlQuery query)
-        {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-            var command = query.Database.GetSqlStringCommand(query.GetSnippets());
+        #region Execute**** Methods
 
-            foreach (var p in query.GetParameters())
-            {
-                var type = p.Value?.GetType() ?? typeof(string);
-                query.Database.AddInParameter(command, p.Key, Utils.DbTypeParser.Parse(type), p.Value);
-            }
-            return command;
+        /// <summary>
+        /// 执行指定SQL，并传入给定参数
+        /// </summary>
+        /// <example>db.ExecuteSqlReader("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">参数清单</param>
+        /// <returns></returns>
+        static public IDataReader ExecuteSqlReader(this IDatabase database, string sql, params object[] args)
+        {
+            return database.SqlQuery(sql, args).ExecuteReader();
         }
 
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
+        /// <example>db.ExecuteSqlScalar("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">参数清单</param>
         /// <returns></returns>
-        public static DataSet ExecuteDataSet(this ISqlQuery query)
+        static public object ExecuteSqlScalar(this IDatabase database, string sql, params object[] args)
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteDataSet(query.CreateCommand());
-        }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public static dynamic[] ExecuteEntities(this ISqlQuery query)
-        {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteEntities(query.CreateCommand());
-        }
-
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public static TEntity[] ExecuteEntities<TEntity>(this ISqlQuery query) where TEntity : class
-        {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteEntities<TEntity>(query.CreateCommand());
+            return database.SqlQuery(sql, args).ExecuteScalar();
         }
 
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
+        /// <example>db.ExecuteSqlDataSet("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">参数清单</param>
         /// <returns></returns>
-        public static dynamic ExecuteEntity(this ISqlQuery query)
+        static public DataSet ExecuteSqlDataSet(this IDatabase database, string sql, params object[] args)
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteEntity(query.CreateCommand());
+            return database.SqlQuery(sql, args).ExecuteDataSet();
         }
 
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
-        /// <returns></returns>
-        public static TEntity ExecuteEntity<TEntity>(this ISqlQuery query) where TEntity : class
+        /// <example>db.ExecuteSqlNonQuery("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">参数清单</param>
+        static public void ExecuteSqlNonQuery(this IDatabase database, string sql, params object[] args)
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteEntity<TEntity>(query.CreateCommand());
+            database.SqlQuery(sql, args).ExecuteNonQuery();
         }
 
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
-        public static void ExecuteNonQuery(this ISqlQuery query)
+        /// <example>db.ExecuteSqlEntity("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        static public dynamic ExecuteSqlEntity(this IDatabase database, string sql, params object[] args)
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            query.Database.ExecuteNonQuery(query.CreateCommand());
+            return database.SqlQuery(sql, args).ExecuteEntity();
         }
 
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
+        /// <example>db.ExecuteSqlEntities("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        public static IDataReader ExecuteReader(this ISqlQuery query)
+        static public dynamic[] ExecuteSqlEntities(this IDatabase database, string sql, params object[] args)
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteReader(query.CreateCommand());
+            return database.SqlQuery(sql, args).ExecuteEntities();
         }
 
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
+        /// <example>db.ExecuteSqlEntity("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        public static TScalar ExecuteScalar<TScalar>(this ISqlQuery query)
+        static public TEntity ExecuteSqlEntity<TEntity>(this IDatabase database, string sql, params object[] args) where TEntity : class
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteScalar<TScalar>(query.CreateCommand());
+            return database.SqlQuery(sql, args).ExecuteEntity<TEntity>();
         }
 
-
         /// <summary>
-        /// 
+        /// 执行指定SQL，并传入给定参数
         /// </summary>
-        /// <param name="query"></param>
+        /// <example>db.ExecuteSqlEntities("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        public static object ExecuteScalar(this ISqlQuery query)
+        static public TEntity[] ExecuteSqlEntities<TEntity>(this IDatabase database, string sql, params object[] args) where TEntity : class
         {
-            if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
-
-            return query.Database.ExecuteScalar(query.CreateCommand());
+            return database.SqlQuery(sql, args).ExecuteEntities<TEntity>();
         }
         #endregion
     }

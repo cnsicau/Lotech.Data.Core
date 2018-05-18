@@ -71,8 +71,7 @@ namespace Lotech.Data.MySqls
         }
         #endregion
 
-        public MySqlExpressionVisitor(IDatabase database)
-            : base(database, AttributeDescriptorFactory.Create<TEntity>()) { }
+        public MySqlExpressionVisitor(IDatabase database) : base(database) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {

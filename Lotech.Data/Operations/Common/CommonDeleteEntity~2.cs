@@ -15,7 +15,7 @@ namespace Lotech.Data.Operations.Common
     {
         class Normal : IOperationProvider<Action<IDatabase, TKey>>
         {
-            Action<IDatabase, TKey> IOperationProvider<Action<IDatabase, TKey>>.Create(EntityDescriptor descriptor)
+            Action<IDatabase, TKey> IOperationProvider<Action<IDatabase, TKey>>.Create(IEntityDescriptor descriptor)
             {
                 const string ParameterName = "p_sql_0";
                 if (descriptor.Keys?.Length != 1)
@@ -54,7 +54,7 @@ namespace Lotech.Data.Operations.Common
                     parameterName = buildParameter("p_sql_0");
                     this.quote = quote;
                 }
-                public Func<IDatabase, DbCommand> BuildCommandProvider(EntityDescriptor descriptor)
+                public Func<IDatabase, DbCommand> BuildCommandProvider(IEntityDescriptor descriptor)
                 {
                     if (descriptor.Keys?.Length != 1)
                         throw new InvalidOperationException("仅支持单主键数据表的删除操作.");
@@ -69,7 +69,7 @@ namespace Lotech.Data.Operations.Common
                     return db => db.GetSqlStringCommand(sql);
                 }
 
-                public Action<IDatabase, DbCommand, TKey> BuildInvoker(EntityDescriptor descriptor)
+                public Action<IDatabase, DbCommand, TKey> BuildInvoker(IEntityDescriptor descriptor)
                 {
                     var dbType = descriptor.Keys[0].DbType;
                     var type = descriptor.Keys[0].Type;
@@ -101,7 +101,7 @@ namespace Lotech.Data.Operations.Common
             provider = new Optmized(quote, buildParameter);
         }
 
-        Action<IDatabase, TKey> IOperationProvider<Action<IDatabase, TKey>>.Create(EntityDescriptor descriptor)
+        Action<IDatabase, TKey> IOperationProvider<Action<IDatabase, TKey>>.Create(IEntityDescriptor descriptor)
         {
             return provider.Create(descriptor);
         }

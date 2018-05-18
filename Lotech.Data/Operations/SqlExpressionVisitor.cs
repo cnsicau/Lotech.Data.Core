@@ -56,7 +56,7 @@ namespace Lotech.Data.Operations
         #endregion
 
         private readonly IDatabase _database;
-        private readonly EntityDescriptor _descriptor;
+        private readonly IEntityDescriptor _descriptor;
         private readonly StringBuilder _sql = new StringBuilder();
         private readonly List<ExpressionParameter> _parameters = new List<ExpressionParameter>();
 
@@ -65,20 +65,20 @@ namespace Lotech.Data.Operations
         /// 
         /// </summary>
         /// <param name="database"></param>
-        public SqlExpressionVisitor(IDatabase database) : this(database, AttributeDescriptorFactory.Create<EntityType>()) { }
+        public SqlExpressionVisitor(IDatabase database) : this(database, database.DescriptorProvider.GetEntityDescriptor<EntityType>()) { }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="database"></param>
         /// <param name="descriptor"></param>
-        public SqlExpressionVisitor(IDatabase database, EntityDescriptor descriptor)
+        SqlExpressionVisitor(IDatabase database, IEntityDescriptor descriptor)
         {
-            if(database  == null) throw new ArgumentNullException(nameof(database));
-            _database  = database ;
+            if (database == null) throw new ArgumentNullException(nameof(database));
+            _database = database;
 
-            if(descriptor  == null) throw new ArgumentNullException(nameof(descriptor));
-            _descriptor  = descriptor ;
+            if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
+            _descriptor = descriptor;
 
         }
 

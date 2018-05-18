@@ -17,13 +17,13 @@ namespace Lotech.Data.MySqls
         where TEntity : class
     {
         #region Fields
-        private EntityDescriptor _descriptor;
-        private MemberDescriptor[] _keys;
-        private MemberDescriptor[] _members;
-        private MemberDescriptor _identity; //返回的主键列
-        private MemberDescriptor[] _outputs; // 除主键外的返回列
+        private IEntityDescriptor _descriptor;
+        private IMemberDescriptor[] _keys;
+        private IMemberDescriptor[] _members;
+        private IMemberDescriptor _identity; //返回的主键列
+        private IMemberDescriptor[] _outputs; // 除主键外的返回列
 
-        private readonly Func<MemberDescriptor, bool> _setFilter;
+        private readonly Func<IMemberDescriptor, bool> _setFilter;
         #endregion
 
         #region Constructor
@@ -33,14 +33,14 @@ namespace Lotech.Data.MySqls
         /// 
         /// </summary>
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
-        InsertOperationBuilder(Func<MemberDescriptor, bool> setFilter)
+        InsertOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
             if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
             _setFilter = setFilter;
 
         }
 
-        void Initialize(EntityDescriptor descriptor)
+        void Initialize(IEntityDescriptor descriptor)
         {
             if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
             if (descriptor.Type != typeof(TEntity)) throw new InvalidOperationException("实体描述符与当前类型不匹配.");
@@ -119,7 +119,7 @@ namespace Lotech.Data.MySqls
                 };
             }).Where(_ => _ != null).ToArray();
 
-            var reverseAssigns = _outputs.Concat(_identity == null ? new MemberDescriptor[0] : new[] { _identity })
+            var reverseAssigns = _outputs.Concat(_identity == null ? new IMemberDescriptor[0] : new[] { _identity })
                     .Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
 
 
@@ -145,7 +145,7 @@ namespace Lotech.Data.MySqls
 
         #region IIOperationBuilder Methods
 
-        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
+        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(IEntityDescriptor descriptor)
         {
             Initialize(descriptor);
 
@@ -163,7 +163,7 @@ namespace Lotech.Data.MySqls
             return db => db.GetSqlStringCommand(sql);
         }
 
-        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
+        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(IEntityDescriptor descriptor)
         {
             Initialize(descriptor);
 

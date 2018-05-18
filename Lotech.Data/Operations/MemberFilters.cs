@@ -13,17 +13,17 @@ namespace Lotech.Data.Operations
         /// <summary>
         /// 不特殊过滤
         /// </summary>
-        internal static Func<MemberDescriptor, bool> None() { return _ => true; }
+        internal static Func<IMemberDescriptor, bool> None() { return _ => true; }
 
         /// <summary>
         /// 排除更新使用
         /// </summary>
         /// <typeparam name="TExclude"></typeparam>
         /// <returns></returns>
-        internal static Func<MemberDescriptor, bool> Exclude<TExclude>() where TExclude : class
+        internal static Func<IMemberDescriptor, bool> Exclude<TExclude>() where TExclude : class
         {
-            var excludeMembers = new HashSet<string>(AttributeDescriptorFactory.Create<TExclude>().Members
-                                 .Select(_ => _.Member.Name));
+            var members = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TExclude>().Members;
+            var excludeMembers = new HashSet<string>(members.Select(_ => _.Member.Name));
 
             return _ => !excludeMembers.Contains(_.Member.Name);
         }
@@ -32,10 +32,10 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <typeparam name="TInclude"></typeparam>
         /// <returns></returns>
-        internal static Func<MemberDescriptor, bool> Include<TInclude>() where TInclude : class
+        internal static Func<IMemberDescriptor, bool> Include<TInclude>() where TInclude : class
         {
-            var excludeMembers = new HashSet<string>(AttributeDescriptorFactory.Create<TInclude>().Members
-                                 .Select(_ => _.Member.Name));
+            var members = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TInclude>().Members;
+            var excludeMembers = new HashSet<string>(members.Select(_ => _.Member.Name));
 
             return _ => excludeMembers.Contains(_.Member.Name);
         }

@@ -9,6 +9,11 @@ namespace Lotech.Data.Queries
     public interface IResultMapper<TResult>
     {
         /// <summary>
+        /// 获取或设置该结果转换关联的 Database 
+        /// </summary>
+        IDatabase Database { get; set; }
+
+        /// <summary>
         /// 准备
         /// </summary>
         /// <param name="reader"></param>

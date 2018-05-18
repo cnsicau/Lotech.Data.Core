@@ -32,7 +32,7 @@ namespace Lotech.Data.Operations.Common
             this.quote = quote;
             this.buildParameter = buildParameter;
         }
-        Func<IDatabase, TKey, bool> IOperationProvider<Func<IDatabase, TKey, bool>>.Create(EntityDescriptor descriptor)
+        Func<IDatabase, TKey, bool> IOperationProvider<Func<IDatabase, TKey, bool>>.Create(IEntityDescriptor descriptor)
         {
             if (descriptor.Keys?.Length != 1)
                 throw new InvalidOperationException("仅支持单主键数据表的加载操作.");

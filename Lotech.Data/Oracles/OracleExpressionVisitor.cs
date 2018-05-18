@@ -71,7 +71,7 @@ namespace Lotech.Data.Oracles
         #endregion
 
         public OracleExpressionVisitor(IDatabase database)
-            : base(database, AttributeDescriptorFactory.Create<TEntity>()) { }
+            : base(database) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {

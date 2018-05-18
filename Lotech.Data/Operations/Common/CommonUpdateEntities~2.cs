@@ -36,9 +36,9 @@ namespace Lotech.Data.Operations.Common
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        public Action<IDatabase, TEntity, Expression<Func<TEntity, bool>>> Create(EntityDescriptor descriptor)
+        public Action<IDatabase, TEntity, Expression<Func<TEntity, bool>>> Create(IEntityDescriptor descriptor)
         {
-            var sets = AttributeDescriptorFactory.Create<TSet>().Members.Select(_ => _.Member.Name).ToArray();
+            var sets = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TSet>().Members.Select(_ => _.Member.Name).ToArray();
             var members = descriptor.Members.Where(_ => sets.Contains(_.Member.Name)).Select((_, i) =>
                 new MemberTuple<TEntity>(
                  _.Name,

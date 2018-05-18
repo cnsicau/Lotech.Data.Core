@@ -11,9 +11,9 @@ namespace Lotech.Data.Generics
     class InsertOperationBuilder<TEntity> : IOperationBuilder<Action<IDatabase, DbCommand, TEntity>> where TEntity : class
     {
         MemberTuple<TEntity>[] members;
-        EntityDescriptor descriptor;
+        IEntityDescriptor descriptor;
 
-        void Initialize(EntityDescriptor descriptor)
+        void Initialize(IEntityDescriptor descriptor)
         {
             if (this.descriptor == descriptor) return;
             this.descriptor = descriptor;
@@ -26,7 +26,7 @@ namespace Lotech.Data.Generics
 
         }
 
-        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
+        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(IEntityDescriptor descriptor)
         {
             Initialize(descriptor);
 
@@ -46,7 +46,7 @@ namespace Lotech.Data.Generics
             };
         }
 
-        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
+        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(IEntityDescriptor descriptor)
         {
             Initialize(descriptor);
             return (db, command, entity) =>

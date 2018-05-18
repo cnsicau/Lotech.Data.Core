@@ -13,6 +13,6 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        TOperation Create(EntityDescriptor descriptor);
+        TOperation Create(IEntityDescriptor descriptor);
     }
 }

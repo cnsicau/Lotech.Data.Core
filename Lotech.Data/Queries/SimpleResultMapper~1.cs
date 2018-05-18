@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Lotech.Data.Queries
 {
@@ -23,6 +19,7 @@ namespace Lotech.Data.Queries
         {
             return typeof(T) != typeof(object) && typeof(T).Assembly == SimpleTypeAssembly;
         }
+        IDatabase IResultMapper<T>.Database { get; set; }
 
         public void TearUp(IResultSource source)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Lotech.Data.Descriptors
@@ -7,7 +8,8 @@ namespace Lotech.Data.Descriptors
     /// <summary>
     /// 成员描述符（属性、字段）
     /// </summary>
-    public class MemberDescriptor : ICloneable
+    [DebuggerDisplay("{Type} {Member.Name}", Name ="Name")]
+    public class MemberDescriptor : IMemberDescriptor, ICloneable
     {
         /// <summary>
         /// 成员名称

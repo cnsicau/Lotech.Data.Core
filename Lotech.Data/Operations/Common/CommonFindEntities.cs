@@ -27,7 +27,7 @@ namespace Lotech.Data.Operations.Common
             this.quote = quote;
         }
 
-        Func<IDatabase, TEntity[]> IOperationProvider<Func<IDatabase, TEntity[]>>.Create(EntityDescriptor descriptor)
+        Func<IDatabase, TEntity[]> IOperationProvider<Func<IDatabase, TEntity[]>>.Create(IEntityDescriptor descriptor)
         {
             if (quote != null)
             {

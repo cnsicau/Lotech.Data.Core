@@ -77,8 +77,7 @@ namespace Lotech.Data.SqlServers
         }
         #endregion
 
-        public SqlServerExpressionVisitor(IDatabase database)
-            : base(database, AttributeDescriptorFactory.Create<TEntity>()) { }
+        public SqlServerExpressionVisitor(IDatabase database) : base(database) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {

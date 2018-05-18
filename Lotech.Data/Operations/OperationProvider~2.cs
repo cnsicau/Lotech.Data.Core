@@ -25,7 +25,7 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        protected override Func<IDatabase, TOperationArg, TResult> OnCreate(EntityDescriptor descriptor)
+        protected override Func<IDatabase, TOperationArg, TResult> OnCreate(IEntityDescriptor descriptor)
         {
             var createCommand = Builder.BuildCommandProvider(descriptor);
             var invoker = Builder.BuildInvoker(descriptor);

@@ -29,7 +29,7 @@ namespace Lotech.Data.Operations.Common
             provider = new Optimized(quote, buildParameter);
         }
 
-        Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(EntityDescriptor descriptor)
+        Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(IEntityDescriptor descriptor)
         {
             if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                 throw new InvalidOperationException("仅支持具备主键数据表的加载操作.");
@@ -49,7 +49,7 @@ namespace Lotech.Data.Operations.Common
                 this.buildParameter = buildParameter;
             }
 
-            Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(EntityDescriptor descriptor)
+            Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(IEntityDescriptor descriptor)
             {
 
                 var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>
@@ -81,7 +81,7 @@ namespace Lotech.Data.Operations.Common
 
         class Normal : IOperationProvider<Func<IDatabase, TEntity, bool>>
         {
-            Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(EntityDescriptor descriptor)
+            Func<IDatabase, TEntity, bool> IOperationProvider<Func<IDatabase, TEntity, bool>>.Create(IEntityDescriptor descriptor)
             {
                 var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>
                        (

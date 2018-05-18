@@ -15,13 +15,13 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        Func<IDatabase, DbCommand> BuildCommandProvider(EntityDescriptor descriptor);
+        Func<IDatabase, DbCommand> BuildCommandProvider(IEntityDescriptor descriptor);
 
         /// <summary>
         /// 创建执行器
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        TInvoker BuildInvoker(EntityDescriptor descriptor);
+        TInvoker BuildInvoker(IEntityDescriptor descriptor);
     }
 }

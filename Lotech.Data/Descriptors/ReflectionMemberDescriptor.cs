@@ -7,7 +7,7 @@ namespace Lotech.Data.Descriptors
     /// <summary>
     /// 基于反射的成员描述子
     /// </summary>
-    public class ReflectionMemberDescriptor : MemberDescriptor, ICloneable
+    public class ReflectionMemberDescriptor : MemberDescriptor, IMemberDescriptor, ICloneable
     {
         ReflectionMemberDescriptor() { }
 

@@ -32,7 +32,7 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        public TOperation Create(EntityDescriptor descriptor)
+        public TOperation Create(IEntityDescriptor descriptor)
         {
             return OnCreate(descriptor);
         }
@@ -42,6 +42,6 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <param name="descriptor"></param>
         /// <returns></returns>
-        protected abstract TOperation OnCreate(EntityDescriptor descriptor);
+        protected abstract TOperation OnCreate(IEntityDescriptor descriptor);
     }
 }

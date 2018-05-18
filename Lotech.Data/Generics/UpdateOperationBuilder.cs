@@ -21,20 +21,20 @@ namespace Lotech.Data.Generics
 
         public UpdateOperationBuilder() : this(MemberFilters.None()) { }
 
-        private readonly Func<MemberDescriptor, bool> _setFilter;
+        private readonly Func<IMemberDescriptor, bool> _setFilter;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
-        UpdateOperationBuilder(Func<MemberDescriptor, bool> setFilter)
+        UpdateOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
             if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
             _setFilter = setFilter;
 
         }
 
-        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
+        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(IEntityDescriptor descriptor)
         {
             if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                 throw new InvalidOperationException("仅支持具备主键数据表的更新操作.");
@@ -62,7 +62,7 @@ namespace Lotech.Data.Generics
             };
         }
 
-        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
+        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(IEntityDescriptor descriptor)
         {
             if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                 throw new InvalidOperationException("仅支持具备主键数据表的更新操作.");

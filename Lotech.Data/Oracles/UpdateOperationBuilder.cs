@@ -18,12 +18,12 @@ namespace Lotech.Data.Oracles
         where TEntity : class
     {
         #region Fields
-        private EntityDescriptor _descriptor;
-        private MemberDescriptor[] _keys;
-        private MemberDescriptor[] _members;
-        private MemberDescriptor[] _outputs;
+        private IEntityDescriptor _descriptor;
+        private IMemberDescriptor[] _keys;
+        private IMemberDescriptor[] _members;
+        private IMemberDescriptor[] _outputs;
 
-        private readonly Func<MemberDescriptor, bool> _setFilter;
+        private readonly Func<IMemberDescriptor, bool> _setFilter;
         #endregion
 
         public class Exclude<TExclude> : UpdateOperationBuilder<TEntity> where TExclude : class
@@ -43,13 +43,13 @@ namespace Lotech.Data.Oracles
         /// 
         /// </summary>
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
-        UpdateOperationBuilder(Func<MemberDescriptor, bool> setFilter)
+        UpdateOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
             if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
             _setFilter = setFilter;
         }
 
-        void Initialize(EntityDescriptor descriptor)
+        void Initialize(IEntityDescriptor descriptor)
         {
             if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
             if (descriptor.Type != typeof(TEntity)) throw new InvalidOperationException("实体描述符与当前类型不匹配.");
@@ -72,7 +72,7 @@ namespace Lotech.Data.Oracles
         #region Methods
         static string BuildParameterName(int index) { return BuildParameter("p_sql_" + index); }
 
-        static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(IEnumerable<MemberDescriptor> descriptors)
+        static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(IEnumerable<IMemberDescriptor> descriptors)
         {
             var members = descriptors.Select((_, i) => new MemberTuple<TEntity>(
                 _.Name,
@@ -123,7 +123,7 @@ namespace Lotech.Data.Oracles
 
         #region IIOperationBuilder Methods
 
-        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
+        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(IEntityDescriptor descriptor)
         {
             Initialize(descriptor);
 
@@ -148,7 +148,7 @@ namespace Lotech.Data.Oracles
             return db => db.GetSqlStringCommand(sql);
         }
 
-        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
+        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(IEntityDescriptor descriptor)
         {
             Initialize(descriptor);
 

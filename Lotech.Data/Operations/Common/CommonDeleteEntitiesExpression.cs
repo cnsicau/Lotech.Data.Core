@@ -38,7 +38,7 @@ namespace Lotech.Data.Operations.Common
         }
 
         Action<IDatabase, Expression<Func<TEntity, bool>>>
-            IOperationProvider<Action<IDatabase, Expression<Func<TEntity, bool>>>>.Create(EntityDescriptor descriptor)
+            IOperationProvider<Action<IDatabase, Expression<Func<TEntity, bool>>>>.Create(IEntityDescriptor descriptor)
         {
             if (quote != null)
             {

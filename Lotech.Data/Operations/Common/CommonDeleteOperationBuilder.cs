@@ -35,7 +35,7 @@ namespace Lotech.Data.Operations.Common
         /// </summary>
         class Normal : IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>
         {
-            Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
+            Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(IEntityDescriptor descriptor)
             {
                 if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                     throw new InvalidOperationException("仅支持具备主键数据表的删除操作.");
@@ -53,7 +53,7 @@ namespace Lotech.Data.Operations.Common
                 };
             }
 
-            Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
+            Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(IEntityDescriptor descriptor)
             {
                 var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>(key.Name,
                             key.DbType,
@@ -88,7 +88,7 @@ namespace Lotech.Data.Operations.Common
             string BuilderParameterName(int index) { return buildParameter("p_sql_" + index); }
 
 
-            public Func<IDatabase, DbCommand> BuildCommandProvider(EntityDescriptor descriptor)
+            public Func<IDatabase, DbCommand> BuildCommandProvider(IEntityDescriptor descriptor)
             {
                 if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                     throw new InvalidOperationException("仅支持具备主键数据表的删除操作.");
@@ -105,7 +105,7 @@ namespace Lotech.Data.Operations.Common
                 return db => db.GetSqlStringCommand(sql);
             }
 
-            public Action<IDatabase, DbCommand, TEntity> BuildInvoker(EntityDescriptor descriptor)
+            public Action<IDatabase, DbCommand, TEntity> BuildInvoker(IEntityDescriptor descriptor)
             {
                 var keys = descriptor.Keys.Select((key, index) => new MemberTuple<TEntity>(key.Name,
                                 key.DbType,
@@ -125,12 +125,12 @@ namespace Lotech.Data.Operations.Common
         }
 
 
-        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(EntityDescriptor descriptor)
+        Func<IDatabase, DbCommand> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildCommandProvider(IEntityDescriptor descriptor)
         {
             return builder.BuildCommandProvider(descriptor);
         }
 
-        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(EntityDescriptor descriptor)
+        Action<IDatabase, DbCommand, TEntity> IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>.BuildInvoker(IEntityDescriptor descriptor)
         {
             return builder.BuildInvoker(descriptor);
         }

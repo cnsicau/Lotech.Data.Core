@@ -1,4 +1,5 @@
-﻿using Lotech.Data.Queries;
+﻿using Lotech.Data.Descriptors;
+using Lotech.Data.Queries;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -49,7 +50,12 @@ namespace Lotech.Data
             /// 创建映射器实例
             /// </summary>
             /// <returns></returns>
-            internal static IResultMapper<ValueType> Create() { return New(); }
+            internal static IResultMapper<ValueType> Create(IDatabase database)
+            {
+                var mapper = New();
+                mapper.Database = database;
+                return mapper;
+            }
         }
 
         static void TraceLog(string message)
@@ -72,8 +78,15 @@ namespace Lotech.Data
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
             this.services = services;
+            services.Database = this;
 
+            DescriptorProvider = DefaultDescriptorProvider.Instance;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual IDescriptorProvider DescriptorProvider { get; set; }
 
         /// <summary>
         /// 
@@ -397,7 +410,7 @@ namespace Lotech.Data
             {
                 command.Connection = subsitute.Connection;
                 return new CommandQueryResult<TScalar>(command
-                        , ResultMapper<TScalar>.Create(), Log).FirstOrDefault();
+                        , ResultMapper<TScalar>.Create(this), Log).FirstOrDefault();
             }
         }
         /// <summary>
@@ -670,7 +683,7 @@ namespace Lotech.Data
                 command.Connection = subsitute.Connection;
                 return new CommandQueryResult<EntityType>(
                         command
-                        , ResultMapper<EntityType>.Create()
+                        , ResultMapper<EntityType>.Create(this)
                         , Log).FirstOrDefault();
             }
         }
@@ -687,7 +700,7 @@ namespace Lotech.Data
                 command.Connection = subsitute.Connection;
                 return new CommandQueryResult<EntityType>(
                     command
-                    , ResultMapper<EntityType>.Create()
+                    , ResultMapper<EntityType>.Create(this)
                     , Log).ToArray();
             }
         }

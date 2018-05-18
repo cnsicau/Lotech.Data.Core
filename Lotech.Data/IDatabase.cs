@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lotech.Data.Descriptors;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -16,6 +17,7 @@ namespace Lotech.Data
         /// 日志记录
         /// </summary>
         Action<string> Log { get; set; }
+
         /// <summary>
         /// 获取连接字符串
         /// </summary>
@@ -24,6 +26,11 @@ namespace Lotech.Data
             get;
             set;
         }
+
+        /// <summary>
+        /// 获取描述符提供者
+        /// </summary>
+        IDescriptorProvider DescriptorProvider { get; set; }
         #endregion
 
         #region Connection

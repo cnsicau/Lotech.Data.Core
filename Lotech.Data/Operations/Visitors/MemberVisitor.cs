@@ -10,13 +10,13 @@ namespace Lotech.Data.Operations.Visitors
 {
     class MemberVisitor<TEntity> : IExpressionNodeVisitor<TEntity, MemberExpression> where TEntity : class
     {
-        private readonly EntityDescriptor _descriptor;
+        private readonly IEntityDescriptor _descriptor;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="descriptor"></param>
-        public MemberVisitor(EntityDescriptor descriptor)
+        public MemberVisitor(IEntityDescriptor descriptor)
         {
             if(descriptor  == null) throw new ArgumentNullException(nameof(descriptor));
             _descriptor  = descriptor ;

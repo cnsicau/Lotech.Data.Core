@@ -1,4 +1,5 @@
 ﻿using Lotech.Data.Descriptors;
+using System.Collections.Concurrent;
 
 namespace Lotech.Data.Operations
 {
@@ -12,9 +13,22 @@ namespace Lotech.Data.Operations
         where TEntity : class
         where TOperationProvider : IOperationProvider<TOperation>, new()
     {
+        static readonly ConcurrentDictionary<IDescriptorProvider, TOperation> operations = new ConcurrentDictionary<IDescriptorProvider, TOperation>();
+
         /// <summary>
-        /// 获取基于属性注释描述的操作实例
+        /// 
         /// </summary>
-        static public readonly TOperation Instance = new TOperationProvider().Create(AttributeDescriptorFactory.Create<TEntity>());
+        /// <param name="provider"></param>
+        /// <returns></returns>
+        static public TOperation Instance(IDescriptorProvider provider)
+        {
+            return operations.GetOrAdd(provider, CreateInstance);
+        }
+
+        static TOperation CreateInstance(IDescriptorProvider provider)
+        {
+            var entityDescriptor = provider.GetEntityDescriptor<TEntity>();
+            return new TOperationProvider().Create(entityDescriptor);
+        }
     }
 }

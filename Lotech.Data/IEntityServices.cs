@@ -9,6 +9,11 @@ namespace Lotech.Data
     /// </summary>
     public interface IEntityServices
     {
+        /// <summary>
+        /// 设置或获取当前服务服务关联的库对象
+        /// </summary>
+        IDatabase Database { get; set; }
+
         #region Insert
 
         /// <summary>

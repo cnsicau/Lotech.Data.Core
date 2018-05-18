@@ -60,7 +60,7 @@ namespace Lotech.Data.Example
             var mysql = new MySqlExample();
             EntityTests<Example>(mysql);                   // MySQL
             var oracle = new OracleExample();
-            EntityTests<OracleExample.Example>(oracle);    // Oracle
+            EntityTests<Example>(oracle);    // Oracle
             var sqlserver = new SqlServerExample();
             EntityTests<Example>(sqlserver);               // SqlServer
             var generic = new GenericExample();
@@ -68,14 +68,14 @@ namespace Lotech.Data.Example
             // Methods
             MethodTests<SQLiteExample.Example>(sqlite);     // SQLite 
             MethodTests<Example>(mysql);                    // MySQL
-            MethodTests<OracleExample.Example>(oracle);     // Oracle
+            MethodTests<Example>(oracle);     // Oracle
             MethodTests<Example>(sqlserver);                // SqlServer
             //MethodTests<Example>(generic);                // Generic
 
             // Raw SQL
             SqlTests<SQLiteExample.Example>(sqlite);       // SQLite 
             SqlTests<Example>(mysql);                      // MySQL
-            SqlTests<OracleExample.Example>(oracle);       // Oracle
+            SqlTests<Example>(oracle);       // Oracle
             SqlTests<Example>(sqlserver);                  // SqlServer
             SqlTests<Example>(generic);                    // Generic
         }

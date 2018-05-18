@@ -70,8 +70,7 @@ namespace Lotech.Data.SQLites
         }
         #endregion
 
-        public SQLiteExpressionVisitor(IDatabase database)
-            : base(database, AttributeDescriptorFactory.Create<TEntity>()) { }
+        public SQLiteExpressionVisitor(IDatabase database) : base(database) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {

@@ -1,5 +1,4 @@
-﻿using Microsoft.CSharp.RuntimeBinder;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -12,6 +11,8 @@ namespace Lotech.Data.Queries
     public class ObjectResultMapper : IResultMapper<object>
     {
         private IResultSource source;
+
+        IDatabase IResultMapper<object>.Database { get; set; }
 
         void IResultMapper<object>.TearUp(IResultSource source)
         {

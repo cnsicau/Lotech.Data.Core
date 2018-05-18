@@ -6,7 +6,7 @@ namespace Lotech.Data.Descriptors
     /// <summary>
     /// 实体描述符
     /// </summary>
-    public class EntityDescriptor : ICloneable
+    public class EntityDescriptor : IEntityDescriptor, ICloneable
     {
         /// <summary>
         /// 架构
@@ -22,6 +22,11 @@ namespace Lotech.Data.Descriptors
         /// 实体类型
         /// </summary>
         public Type Type { get; set; }
+
+        IMemberDescriptor[] IEntityDescriptor.Keys { get { return Keys; } }
+
+
+        IMemberDescriptor[] IEntityDescriptor.Members { get { return Members; } }
 
         /// <summary>
         /// 键
@@ -55,7 +60,7 @@ namespace Lotech.Data.Descriptors
         /// 克隆副本
         /// </summary>
         /// <returns></returns>
-        public EntityDescriptor Clone() { return new EntityDescriptor(this); }
+        public IEntityDescriptor Clone() { return new EntityDescriptor(this); }
 
 
         object ICloneable.Clone() { return Clone(); }

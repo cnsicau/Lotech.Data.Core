@@ -28,7 +28,7 @@ namespace Lotech.Data.Operations.Common
             provider = new Optimized(quote, buildParameter);
         }
 
-        Func<IDatabase, TEntity, TEntity> IOperationProvider<Func<IDatabase, TEntity, TEntity>>.Create(EntityDescriptor descriptor)
+        Func<IDatabase, TEntity, TEntity> IOperationProvider<Func<IDatabase, TEntity, TEntity>>.Create(IEntityDescriptor descriptor)
         {
             return provider.Create(descriptor);
         }
@@ -45,7 +45,7 @@ namespace Lotech.Data.Operations.Common
                 this.buildParameter = buildParameter;
             }
 
-            Func<IDatabase, TEntity, TEntity> IOperationProvider<Func<IDatabase, TEntity, TEntity>>.Create(EntityDescriptor descriptor)
+            Func<IDatabase, TEntity, TEntity> IOperationProvider<Func<IDatabase, TEntity, TEntity>>.Create(IEntityDescriptor descriptor)
             {
                 if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                     throw new InvalidOperationException("仅支持具备主键数据表的加载操作.");
@@ -81,7 +81,7 @@ namespace Lotech.Data.Operations.Common
 
         class Normal : IOperationProvider<Func<IDatabase, TEntity, TEntity>>
         {
-            Func<IDatabase, TEntity, TEntity> IOperationProvider<Func<IDatabase, TEntity, TEntity>>.Create(EntityDescriptor descriptor)
+            Func<IDatabase, TEntity, TEntity> IOperationProvider<Func<IDatabase, TEntity, TEntity>>.Create(IEntityDescriptor descriptor)
             {
                 if (descriptor.Keys == null || descriptor.Keys.Length == 0)
                     throw new InvalidOperationException("仅支持具备主键数据表的加载操作.");

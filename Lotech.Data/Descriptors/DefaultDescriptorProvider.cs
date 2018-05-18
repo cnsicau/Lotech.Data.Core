@@ -1,16 +1,24 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Lotech.Data.Descriptors
 {
     /// <summary>
-    /// 基于属性描述符工厂
+    /// 默认描述符提供者
+    ///     实现 基于反射+ Attribute的描述
     /// </summary>
-    public class AttributeDescriptorFactory
+    public class DefaultDescriptorProvider : IDescriptorProvider
     {
-        static class AttributeEntityDescriptor<TEntity> where TEntity : class
+        /// <summary>
+        /// 全局实例
+        /// </summary>
+        public static readonly IDescriptorProvider Instance = new DefaultDescriptorProvider();
+
+        class AttributeEntityDescriptor<TEntity> where TEntity : class
         {
+            internal static readonly IEntityDescriptor Instance;
+
             static AttributeEntityDescriptor()
             {
                 var descriptor = new ReflectionEntityDescriptor<TEntity>();
@@ -21,7 +29,7 @@ namespace Lotech.Data.Descriptors
                 Instance = descriptor;
             }
 
-            static void ApplyEntityAttribute(EntityDescriptor descriptor)
+            static void ApplyEntityAttribute(ReflectionEntityDescriptor<TEntity> descriptor)
             {
                 var table = Attribute.GetCustomAttribute(typeof(TEntity), typeof(EntityAttribute)) as EntityAttribute;
 
@@ -32,7 +40,7 @@ namespace Lotech.Data.Descriptors
                 }
             }
 
-            static void ApplyMemberAttributes(EntityDescriptor descriptor)
+            static void ApplyMemberAttributes(ReflectionEntityDescriptor<TEntity> descriptor)
             {
                 var attrs = GetMemberAttributes(descriptor.Members);
                 // 同步属性中设置项
@@ -49,25 +57,22 @@ namespace Lotech.Data.Descriptors
                 descriptor.Keys = attrs.Where(_ => _.Key.PrimaryKey).Select(_ => _.Value).ToArray();
             }
 
-            static IDictionary<ColumnAttribute, MemberDescriptor> GetMemberAttributes(MemberDescriptor[] members)
+            static ICollection<KeyValuePair<ColumnAttribute, MemberDescriptor>> GetMemberAttributes(MemberDescriptor[] members)
             {
                 return members
                     .Select(_ => new KeyValuePair<ColumnAttribute, MemberDescriptor>(
                         Attribute.GetCustomAttribute(_.Member, typeof(ColumnAttribute)) as ColumnAttribute,
                          _))
-                    .Where(_ => _.Key != null)
-                    .ToDictionary(_ => _.Key, _ => _.Value);
+                    .Where(_ => _.Key != null).ToArray();
             }
-
-
-            internal static readonly EntityDescriptor Instance;
         }
 
         /// <summary>
-        /// 创建描述符
+        /// 
         /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        static public EntityDescriptor Create<TEntity>() where TEntity : class
+        public IEntityDescriptor GetEntityDescriptor<TEntity>() where TEntity : class
         {
             return AttributeEntityDescriptor<TEntity>.Instance;
         }

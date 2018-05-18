@@ -54,10 +54,10 @@ namespace Lotech.Data.Queries
 
         static class MapperContainer
         {
-            static readonly ConcurrentDictionary<EntityDescriptor, IDictionary<string, MapDescriptor>>
-                memberMappers = new ConcurrentDictionary<EntityDescriptor, IDictionary<string, MapDescriptor>>();
+            static readonly ConcurrentDictionary<IEntityDescriptor, IDictionary<string, MapDescriptor>>
+                memberMappers = new ConcurrentDictionary<IEntityDescriptor, IDictionary<string, MapDescriptor>>();
 
-            static internal IDictionary<string, MapDescriptor> GetDescriptors(EntityDescriptor entityDescriptor)
+            static internal IDictionary<string, MapDescriptor> GetDescriptors(IEntityDescriptor entityDescriptor)
             {
                 if (entityDescriptor == null) throw new ArgumentNullException(nameof(entityDescriptor));
                 return memberMappers.GetOrAdd(entityDescriptor, CreateMapDescriptors);
@@ -107,7 +107,7 @@ namespace Lotech.Data.Queries
                     , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();
             }
 
-            static IDictionary<string, MapDescriptor> CreateMapDescriptors(EntityDescriptor entityDescriptor)
+            static IDictionary<string, MapDescriptor> CreateMapDescriptors(IEntityDescriptor entityDescriptor)
             {
                 var memberDescriptors = new Dictionary<string, MapDescriptor>(StringComparer.CurrentCultureIgnoreCase);
 
@@ -129,34 +129,18 @@ namespace Lotech.Data.Queries
         }
         #region Static Members
 
-
-
         #endregion
 
         #region Fields & Constructor
-        IDictionary<string, MapDescriptor> memberDescriptors;
-        /// <summary>
-        /// 
-        /// </summary>
-        public EntityResultMapper()
-            : this(AttributeDescriptorFactory.Create<TEntity>()) { }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="entityDescriptor"></param>
-        public EntityResultMapper(EntityDescriptor entityDescriptor)
-        {
-            this.memberDescriptors = MapperContainer.GetDescriptors(entityDescriptor);
-        }
-        #endregion
-
-        #region Instance Members
         private bool initialized = false;
-
         private KeyValuePair<int, MapDescriptor>[] mappers;
         private ValueConverter.ConvertDelegate[] converts;
-
         private IResultSource source;
+
+        /// <summary>
+        /// 获取关联库
+        /// </summary>
+        public IDatabase Database { get; set; }
 
         /// <summary>
         /// 初始化
@@ -171,12 +155,14 @@ namespace Lotech.Data.Queries
         {
             var mappers = new List<KeyValuePair<int, MapDescriptor>>();
             converts = new ValueConverter.ConvertDelegate[source.Columns.Count];
+            var descriptor = Database.DescriptorProvider.GetEntityDescriptor<TEntity>();
+            var members = MapperContainer.GetDescriptors(descriptor);
             // 分析需要映射列集合（实体中、Reader中共有的列）
             for (int i = source.Columns.Count - 1; i >= 0; i--)
             {
                 var column = source.Columns[i];
                 MapDescriptor mapper;
-                if (memberDescriptors.TryGetValue(column, out mapper))
+                if (members.TryGetValue(column, out mapper))
                 {
                     mappers.Add(new KeyValuePair<int, MapDescriptor>(i, mapper));
                     converts[i] = ValueConverter.GetConvert(source.GetColumnType(i), mapper.ValueType);

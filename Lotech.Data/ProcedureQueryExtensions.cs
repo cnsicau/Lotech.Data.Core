@@ -14,8 +14,9 @@ namespace Lotech.Data
     {
         static class ModelParameter<TParameter> where TParameter : class
         {
-            internal static readonly Action<IProcedureQuery, TParameter>[] binders = AttributeDescriptorFactory.Create<TParameter>().Members
-                .Select<MemberDescriptor, Action<IProcedureQuery, TParameter>>(member =>
+            internal static readonly Action<IProcedureQuery, TParameter>[] binders 
+                = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TParameter>().Members
+                .Select<IMemberDescriptor, Action<IProcedureQuery, TParameter>>(member =>
                 {
                     var get = MemberAccessor<TParameter, object>.GetGetter(member.Member);
                     return (IProcedureQuery query, TParameter parameter) => query.AddParameter(member.Name, get(parameter));

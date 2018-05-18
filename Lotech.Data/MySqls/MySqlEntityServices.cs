@@ -7,94 +7,96 @@ namespace Lotech.Data.MySqls
 {
     class MySqlEntityServices : IEntityServices
     {
+        public IDatabase Database { get; set; }
+
         public Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class
         {
-            return Operation<EntityType, Func<IDatabase, Expression<Func<EntityType, bool>>, int>, MySqlCountEntitiesExpression<EntityType>>.Instance;
+            return Operation<EntityType, Func<IDatabase, Expression<Func<EntityType, bool>>, int>, MySqlCountEntitiesExpression<EntityType>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, int> Count<EntityType>() where EntityType : class
         {
-            return Operation<EntityType, Func<IDatabase, int>, MySqlCountEntities<EntityType>>.Instance;
+            return Operation<EntityType, Func<IDatabase, int>, MySqlCountEntities<EntityType>>.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> DeleteEntities<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<DeleteOperationBuilder<TEntity>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, Expression<Func<TEntity, bool>>> DeleteEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, Expression<Func<TEntity, bool>>>, MySqlDeleteEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Action<IDatabase, Expression<Func<TEntity, bool>>>, MySqlDeleteEntitiesExpression<TEntity>>.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, TEntity> DeleteEntity<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Action<IDatabase, TEntity>,
                     OperationProvider<TEntity>.Instance<DeleteOperationBuilder<TEntity>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, TKey> DeleteEntityByKey<TEntity, TKey>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, TKey>, MySqlDeleteEntity<TEntity, TKey>>.Instance;
+            return Operation<TEntity, Action<IDatabase, TKey>, MySqlDeleteEntity<TEntity, TKey>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, TEntity, bool> Exists<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, TEntity, bool>, MySqlExistsEntity<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity, bool>, MySqlExistsEntity<TEntity>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, TKey, bool> ExistsByKey<TEntity, TKey>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, TKey, bool>, MySqlExistsEntity<TEntity, TKey>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TKey, bool>, MySqlExistsEntity<TEntity, TKey>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, Expression<Func<TEntity, bool>>, bool> ExistsByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, MySqlExistsEntityExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, MySqlExistsEntityExpression<TEntity>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, TEntity[]>, MySqlFindEntities<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity[]>, MySqlFindEntities<TEntity>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]> FindEntitiesByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, MySqlFindEntitiesExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity[]>, MySqlFindEntitiesExpression<TEntity>>.Instance(Database.DescriptorProvider);
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, TransactionalOperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>.Instance;
+            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, TransactionalOperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, TEntity> InsertEntity<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, TEntity>, OperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>.Instance;
+            return Operation<TEntity, Action<IDatabase, TEntity>, OperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, TEntity, TEntity> LoadEntity<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, TEntity, TEntity>, MySqlLoadEntity<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TEntity, TEntity>, MySqlLoadEntity<TEntity>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, TKey, TEntity> LoadEntityByKey<TEntity, TKey>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, TKey, TEntity>, MySqlLoadEntity<TEntity, TKey>>.Instance;
+            return Operation<TEntity, Func<IDatabase, TKey, TEntity>, MySqlLoadEntity<TEntity, TKey>>.Instance(Database.DescriptorProvider);
         }
 
         public Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity> LoadEntityByPredicate<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity>, MySqlLoadEntityExpression<TEntity>>.Instance;
+            return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, TEntity>, MySqlLoadEntityExpression<TEntity>>.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntities<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, EntityType, Expression<Func<EntityType, bool>>> UpdateEntities<EntityType, TSet>()
@@ -102,7 +104,7 @@ namespace Lotech.Data.MySqls
             where TSet : class
         {
             return Operation<EntityType, Action<IDatabase, EntityType, Expression<Func<EntityType, bool>>>,
-                    MySqlUpdateEntities<EntityType, TSet>>.Instance;
+                    MySqlUpdateEntities<EntityType, TSet>>.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntitiesExclude<TEntity, TExclude>()
@@ -111,7 +113,7 @@ namespace Lotech.Data.MySqls
         {
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Exclude<TExclude>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntitiesInclude<TEntity, TInclude>()
@@ -120,14 +122,14 @@ namespace Lotech.Data.MySqls
         {
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Include<TInclude>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, TEntity> UpdateEntity<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Action<IDatabase, TEntity>,
                     OperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, TEntity> UpdateEntityExclude<TEntity, TExclude>()
@@ -136,7 +138,7 @@ namespace Lotech.Data.MySqls
         {
             return Operation<TEntity, Action<IDatabase, TEntity>,
                     OperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Exclude<TExclude>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
 
         public Action<IDatabase, TEntity> UpdateEntityInclude<TEntity, TInclude>()
@@ -145,7 +147,7 @@ namespace Lotech.Data.MySqls
         {
             return Operation<TEntity, Action<IDatabase, TEntity>,
                     OperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Include<TInclude>>
-                >.Instance;
+                >.Instance(Database.DescriptorProvider);
         }
     }
 }

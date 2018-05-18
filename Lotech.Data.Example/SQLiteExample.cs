@@ -15,12 +15,12 @@ namespace Lotech.Data.Example
 
             public DateTime CreateTime { get; set; }
 
+            [Column(DbGenerated = true)]
             public DateTime? ModifyTime { get; set; }
-
-            [Column(System.Data.DbType.Int16)]
+            
             public bool Deleted { get; set; }
 
-            [Column(DbGenerated = false)]
+            [Column(DbGenerated = true)]
             public long LongId { get; set; }
 
             [Column("Bin")]
@@ -42,9 +42,9 @@ namespace Lotech.Data.Example
    Code nvarchar(32) not null,
    Name nvarchar(128) not null,
    CreateTime datetime not null,
-   ModifyTime datetime,
+   ModifyTime TIMESTAMP default CURRENT_TIMESTAMP ,
    Deleted bit not null,
-   LongId bigint ,
+   LongId bigint default 10,
    Bin blob null
 )");
         }

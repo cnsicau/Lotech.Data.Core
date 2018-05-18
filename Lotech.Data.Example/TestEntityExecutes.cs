@@ -6,7 +6,6 @@ namespace Lotech.Data.Example
 {
     class TestEntityExecutes<TExample> where TExample : class, IExample, new()
     {
-
         private readonly IDatabase db;
 
         public TestEntityExecutes(IDatabaseExample example)
@@ -25,7 +24,7 @@ namespace Lotech.Data.Example
             example.Content = new byte[1024];
 
             db.InsertEntity(example);
-            Console.WriteLine("Insert example ID=" + example.Id);
+            Console.WriteLine("Insert example ID=" + example.Id + " LongID=" + example.LongId + " Modifytime=" + example.ModifyTime);
 
             var examples = new List<TExample>();
             for (int i = 0; i < 20; i++)
@@ -39,7 +38,7 @@ namespace Lotech.Data.Example
                 examples.Add(t);
             }
             db.InsertEntities(examples);
-            examples.ForEach(_ => Console.WriteLine("Insert example ID=" + _.Id));
+            Console.WriteLine("Insert example ID=" + example.Id + " LongID=" + example.LongId + " Modifytime=" + example.ModifyTime);
         }
 
         internal void TestUpdate2()

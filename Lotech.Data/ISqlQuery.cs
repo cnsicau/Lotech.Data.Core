@@ -30,6 +30,13 @@ namespace Lotech.Data
         ISqlQuery Append(string snippet);
 
         /// <summary>
+        /// 追加子查询
+        /// </summary>
+        /// <param name="subQuery"></param>
+        /// <returns></returns>
+        ISqlQuery Append(ISqlQuery subQuery);
+
+        /// <summary>
         /// 连接当前查询片断
         /// </summary>
         /// <returns></returns>

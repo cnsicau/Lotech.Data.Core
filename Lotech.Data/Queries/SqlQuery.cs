@@ -70,6 +70,16 @@ namespace Lotech.Data.Queries
             return this;
         }
 
+        ISqlQuery ISqlQuery.Append(ISqlQuery subQuery)
+        {
+            foreach (var p in subQuery.GetParameters())
+            {
+                _parameters.Add(p.Key, p.Value);
+            }
+            _snippets.Append(subQuery.GetSnippets());
+            return this;
+        }
+
         string ISqlQuery.GetSnippets() { return _snippets.ToString(); }
 
         IEnumerable<KeyValuePair<string, object>> ISqlQuery.GetParameters() { return _parameters; }

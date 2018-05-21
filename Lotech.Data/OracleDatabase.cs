@@ -1,4 +1,6 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data;
+using System.Data.Common;
 using Lotech.Data.Oracles;
 
 namespace Lotech.Data
@@ -30,6 +32,17 @@ namespace Lotech.Data
         internal static string BuildParameter(string name) => string.Concat(':', name);
 
         /// <summary>
+        /// 将 bool 转 Int16, 其他直接返回
+        /// </summary>
+        /// <param name="dbType"></param>
+        /// <returns></returns>
+        internal static DbType FixDbType(DbType dbType)
+        {
+            if (dbType == DbType.Boolean) return DbType.Int16;
+            return dbType;
+        }
+
+        /// <summary>
         /// 构建 :p_sql_0 格式的参数名
         /// </summary>
         /// <param name="name"></param>
@@ -42,5 +55,15 @@ namespace Lotech.Data
         /// <param name="name"></param>
         /// <returns></returns>
         public override string QuoteName(string name) => Quote(name);
+
+        /// <summary>
+        /// 特殊处理 boolean
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public override DbType ParseDbType(Type type)
+        {
+            return FixDbType(base.ParseDbType(type));
+        }
     }
 }

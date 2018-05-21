@@ -75,7 +75,7 @@ namespace Lotech.Data.Operations.Common
                         }
                         foreach (var p in visitor.Parameters)
                         {
-                            db.AddInParameter(command, p.Name, DbTypeParser.Parse(p.Type), p.Value);
+                            db.AddInParameter(command, p.Name, db.ParseDbType(p.Type), p.Value);
                         }
                         db.ExecuteNonQuery(command);
                     }
@@ -105,7 +105,7 @@ namespace Lotech.Data.Operations.Common
                     }
                     foreach (var p in visitor.Parameters)
                     {
-                        db.AddInParameter(command, p.Name, DbTypeParser.Parse(p.Type), p.Value);
+                        db.AddInParameter(command, p.Name, db.ParseDbType(p.Type), p.Value);
                     }
                     db.ExecuteNonQuery(command);
                 }

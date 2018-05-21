@@ -162,6 +162,13 @@ namespace Lotech.Data
             }
             return connection;
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public virtual DbType ParseDbType(Type type) { return Utils.DbTypeParser.Parse(type); }
         /// <summary>
         /// 
         /// </summary>

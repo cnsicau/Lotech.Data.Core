@@ -33,7 +33,7 @@ namespace Lotech.Data.Queries
             foreach (var p in _parameters)
             {
                 var type = p.Value?.GetType() ?? typeof(string);
-                _database.AddInParameter(command, _database.BuildParameterName(p.Key), Utils.DbTypeParser.Parse(type), p.Value);
+                _database.AddInParameter(command, _database.BuildParameterName(p.Key), _database.ParseDbType(type), p.Value);
             }
             return command;
         }

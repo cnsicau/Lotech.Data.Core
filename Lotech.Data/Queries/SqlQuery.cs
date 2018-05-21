@@ -9,6 +9,12 @@ namespace Lotech.Data.Queries
     class SqlQuery : ISqlQuery
     {
         #region Fields & Constructor
+        /// <summary>
+        /// 全局参数ID编号，以避免构建子查询时参数名可能重复问题
+        /// </summary>
+        [ThreadStatic]
+        private static ushort _id = 0;
+
         private static readonly Regex _placeholder = new Regex(@"([^\{]?)\{\s*(\d+)s*\}([^\}]?)", RegexOptions.Multiline | RegexOptions.Compiled);
 
         private readonly StringBuilder _snippets = new StringBuilder();
@@ -25,7 +31,7 @@ namespace Lotech.Data.Queries
         }
         #endregion
 
-        string NextParameterName() { return _database.BuildParameterName("p_query_" + _index++); }
+        string NextParameterName() { return _database.BuildParameterName("p_" + _id ++ + '_' + _index++); }
 
         IDatabase IQuery.Database
         {
@@ -35,11 +41,10 @@ namespace Lotech.Data.Queries
         DbCommand IQuery.CreateCommand()
         {
             var command = _database.GetSqlStringCommand(_snippets.ToString());
-
             foreach (var p in _parameters)
             {
                 var type = p.Value?.GetType() ?? typeof(string);
-                _database.AddInParameter(command, p.Key, Utils.DbTypeParser.Parse(type), p.Value);
+                _database.AddInParameter(command, p.Key, _database.ParseDbType(type), p.Value);
             }
             return command;
         }

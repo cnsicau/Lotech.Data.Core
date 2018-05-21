@@ -135,7 +135,7 @@ namespace Lotech.Data.Operations
 
             foreach (var p in Parameters)
             {
-                Database.AddInParameter(command, p.Name, DbTypeParser.Parse(p.Type), p.Value);
+                Database.AddInParameter(command, p.Name, _database.ParseDbType(p.Type), p.Value);
             }
             return command;
         }

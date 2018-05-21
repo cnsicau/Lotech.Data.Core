@@ -152,47 +152,5 @@ namespace Lotech.Data.Queries
         IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
 
         IEnumerator<TEntity> IEnumerable<TEntity>.GetEnumerator() { return GetEnumerator(); }
-
-        /// <summary>
-        /// 将无时间参数的类型修正为 Date ，避免 DateTime 类型影响 Date 索引列（隐式转换引起的高CPU开销）
-        /// </summary>
-        /// <param name="parameter"></param>
-        /// <param name="parameterValue"></param>
-        protected static void FixDateParameterType(IDbDataParameter parameter, object parameterValue)
-        {
-            if (parameter.DbType == DbType.DateTime && parameterValue != null)
-            {
-                if (parameterValue is DateTime? && ((DateTime?)parameterValue).Value.Date == ((DateTime?)parameterValue).Value
-                    || parameterValue is DateTime && ((DateTime)parameterValue).Date == (DateTime)parameterValue)
-                {
-                    parameter.DbType = DbType.Date;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 处理参数
-        ///     由于 Oracle 中无独立的 boolean, 因此将 Bool类型转换为 1 : 0
-        /// </summary>
-        /// <param name="parameterValue"></param>
-        /// <returns></returns>
-        protected static object ConvertParameterValue(object parameterValue)
-        {
-            if (parameterValue == null)
-                return DBNull.Value;
-
-            Type parameterType = parameterValue.GetType();
-            var underlyingType = Nullable.GetUnderlyingType(parameterType);
-            if (underlyingType != null)
-                parameterType = underlyingType;
-
-            switch (Type.GetTypeCode(parameterType))
-            {
-                case TypeCode.Boolean:
-                    return ((bool)parameterValue) ? 1 : 0;
-                default:
-                    return parameterValue;
-            }
-        }
     }
 }

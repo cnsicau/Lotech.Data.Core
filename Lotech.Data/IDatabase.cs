@@ -43,6 +43,12 @@ namespace Lotech.Data
 
         #region Command
         /// <summary>
+        /// 类型解析 DbType ，提供对 Oracle 特殊处理 bool 
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        DbType ParseDbType(Type type);
+        /// <summary>
         /// 获取指定类型的命令对象
         /// </summary>
         /// <param name="commandType"></param>

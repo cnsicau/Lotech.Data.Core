@@ -13,7 +13,7 @@
         /// <summary>
         /// 分页大小
         /// </summary>
-        public int Size { get; }
+        public int Size { get; set; }
 
         /// <summary>
         /// 排序项

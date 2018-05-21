@@ -13,5 +13,10 @@ namespace Lotech.Data.Example
         }
 
         public IDatabase Database => db;
+
+        public PageData<Example> PageExecute(ISqlQuery query, Page page)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

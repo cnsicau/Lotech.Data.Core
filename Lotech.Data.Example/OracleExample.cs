@@ -42,5 +42,10 @@ namespace Lotech.Data.Example
             db.ExecuteNonQuery("drop sequence sexample");
             db.ExecuteNonQuery("create sequence sexample");
         }
+
+        public PageData<Example> PageExecute(ISqlQuery query, Page page)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

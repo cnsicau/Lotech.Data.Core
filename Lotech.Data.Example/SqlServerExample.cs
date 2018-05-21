@@ -1,4 +1,5 @@
 ﻿using System;
+using Lotech.Data.SqlServers;
 
 namespace Lotech.Data.Example
 {
@@ -12,5 +13,10 @@ namespace Lotech.Data.Example
         }
 
         IDatabase IDatabaseExample.Database => db;
+
+        public PageData<Example> PageExecute(ISqlQuery query, Page page)
+        {
+            return query.PageExecuteEntites<Example>(page);
+        }
     }
 }

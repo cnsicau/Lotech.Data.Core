@@ -1,4 +1,5 @@
 ﻿using System;
+using Lotech.Data.MySqls;
 
 namespace Lotech.Data.Example
 {
@@ -21,6 +22,11 @@ namespace Lotech.Data.Example
     LongId bigint as ( createtime ) stored,
     Bin blob null
 )");
+        }
+
+        public PageData<Example> PageExecute(ISqlQuery query, Page page)
+        {
+            return query.PageExecuteEntites<Example>(page);
         }
     }
 }

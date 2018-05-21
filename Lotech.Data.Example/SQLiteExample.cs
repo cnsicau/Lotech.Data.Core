@@ -1,4 +1,5 @@
 ﻿using System;
+using Lotech.Data.SQLites;
 
 namespace Lotech.Data.Example
 {
@@ -47,6 +48,11 @@ namespace Lotech.Data.Example
    LongId bigint default 10,
    Bin blob null
 )");
+        }
+
+        PageData<Data.Example.Example> IDatabaseExample.PageExecute(ISqlQuery query, Page page)
+        {
+            return query.PageExecuteEntites<Data.Example.Example>(page);
         }
     }
 }

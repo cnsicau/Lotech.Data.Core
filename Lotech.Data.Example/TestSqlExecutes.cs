@@ -7,6 +7,7 @@ namespace Lotech.Data.Example
 {
     public class TestSqlExecutes<TExample> where TExample : class, IExample, new()
     {
+        private readonly IDatabaseExample example;
         private readonly IDatabase db;
         static void WriteErrorLine(string message)
         {
@@ -15,9 +16,10 @@ namespace Lotech.Data.Example
             Console.WriteLine(message);
             Console.ForegroundColor = color;
         }
-        public TestSqlExecutes(IDatabase db)
+        public TestSqlExecutes(IDatabaseExample example)
         {
-            this.db = db;
+            this.example = example;
+            this.db = example.Database;
             ((DbProviderDatabase)db).EnableTraceLog();
         }
         public void ExecuteDataSetTest()
@@ -91,7 +93,7 @@ namespace Lotech.Data.Example
         }
         public void ExecuteDynamicTest()
         {
-            var example = db.ExecuteEntity("SELECT * FROM example") ;
+            var example = db.ExecuteEntity("SELECT * FROM example");
             Console.WriteLine($"db.ExecuteEntity(\"SELECT * FROM example\") => example's name = {example.Name}");
 
             example = db.ExecuteEntity(CommandType.Text, "SELECT * FROM example");
@@ -158,6 +160,36 @@ namespace Lotech.Data.Example
                 scalar = db.ExecuteScalar<long>(command);
                 Console.WriteLine($"db.ExecuteScalar<long>(command) => scalar = {scalar}");
             }
+        }
+
+        public void ExecutePageQueryTest()
+        {
+            var query = db.SqlQuery("SELECT * FROM Example WHERE 1 = 1")
+                    .AppendNotNull(null, " AND 1 = NULL")
+                    .AppendNotNull("%", " AND Code LIKE {0}")
+                    .Append(" AND Name LIKE {0}", "%测试%");
+
+            var p1 = new Page
+            {
+                Index = 0,
+                Size = 1,
+                Orders = new[]
+                {
+                    new PageOrder{ Column = "Id", Direction = PageOrderDirection.DESC }
+                }
+            };
+            var data = example.PageExecute(query, p1);
+
+            p1 = new Page
+            {
+                Index = 1,
+                Size = 1,
+                Orders = new[]
+                {
+                    new PageOrder{ Column = "Id", Direction = PageOrderDirection.DESC }
+                }
+            };
+            data = example.PageExecute(query, p1);
         }
     }
 }

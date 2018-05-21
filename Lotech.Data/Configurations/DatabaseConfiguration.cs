@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Lotech.Data.Configurations
 {
@@ -7,6 +8,15 @@ namespace Lotech.Data.Configurations
     /// </summary>
     public class DatabaseConfiguration
     {
+        static readonly string ConfigurationFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "database.xml");
+        static readonly Lazy<DatabaseConfiguration> configuration
+                = new Lazy<DatabaseConfiguration>(() => new DatabaseConfigurationSerializer().Parse(ConfigurationFile));
+
+        /// <summary>
+        /// 获取当前设置
+        /// </summary>
+        static public DatabaseConfiguration Current { get { return configuration.Value; } }
+
         /// <summary>
         /// 
         /// </summary>
@@ -21,14 +31,5 @@ namespace Lotech.Data.Configurations
         /// 库设置
         /// </summary>
         public DatabaseSettings DatabaseSettings { get; set; }
-
-
-        static readonly Lazy<DatabaseConfiguration> configuration
-                = new Lazy<DatabaseConfiguration>(() => new DatabaseConfigurationSerializer().Parse("database.xml"));
-
-        /// <summary>
-        /// 获取当前设置
-        /// </summary>
-        static public DatabaseConfiguration Current { get { return configuration.Value; } }
     }
 }

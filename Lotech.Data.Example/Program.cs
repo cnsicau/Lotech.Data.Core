@@ -51,6 +51,10 @@ namespace Lotech.Data.Example
                 .AppendLine("SELECT * FROM example")
                 .AppendLine(" WHERE 1 = 1")
                 .AppendLine("  AND {0} = {2} OR {3} = {1}", 0, 4, 2, 4);
+            // sub query
+            var countQuery = sqlite.Database.SqlQuery("SELECT COUNT(*) FROM (")
+                        .Append(query)
+                        .Append(") T");
 
             var q1 = query.ExecuteEntities();
             var q2 = query.ExecuteEntities<Example>();

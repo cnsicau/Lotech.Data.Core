@@ -16,7 +16,7 @@ namespace Lotech.Data.SQLites
         /// <returns></returns>
         public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page) where T : class
         {
-            var count = query.Database.SqlQuery("SELECT COUNT(1) FROM（").Append(query).Append(") t").ExecuteScalar<int>();
+            var count = query.Database.SqlQuery("SELECT COUNT(1) FROM (").Append(query).Append(") t").ExecuteScalar<int>();
             // 无数据
             if (count == 0) return new PageData<T>(0, new T[0]);
 

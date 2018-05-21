@@ -38,6 +38,10 @@ namespace Lotech.Data
             var connectionSettings = DatabaseConfiguration.Current?.ConnectionStrings[connectionName];
             if (connectionSettings == null)
                 throw new InvalidOperationException("未找到默认连接: " + connectionName);
+            if (connectionSettings.ProviderName == null)
+                throw new InvalidOperationException($"连接{connectionName}的 providerName必须指出");
+            if (connectionSettings.ConnectionString == null)
+                throw new InvalidOperationException($"连接{connectionName}的 connectionString必须指出");
 
             return CreateDatabase(connectionSettings);
         }

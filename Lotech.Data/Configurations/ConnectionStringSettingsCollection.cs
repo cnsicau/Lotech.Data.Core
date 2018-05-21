@@ -18,5 +18,18 @@ namespace Lotech.Data.Configurations
         /// 
         /// </summary>
         public ConnectionStringSettingsCollection() : base(StringComparer.CurrentCultureIgnoreCase) { }
+
+        /// <summary>
+        ///  
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public new ConnectionStringSettings this[string name]
+        {
+            get
+            {
+                return TryGetValue(name, out var value) ? value : null;
+            }
+        }
     }
 }

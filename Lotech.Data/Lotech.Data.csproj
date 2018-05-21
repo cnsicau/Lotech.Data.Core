@@ -29,6 +29,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Lotech.Data.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -105,6 +106,7 @@
     <Compile Include="MySqls\MySqlLoadEntityExpression~1.cs" />
     <Compile Include="MySqls\MySqlLoadEntity~1.cs" />
     <Compile Include="MySqls\MySqlLoadEntity~2.cs" />
+    <Compile Include="MySqls\MySqlQueryExtensions.cs" />
     <Compile Include="MySqls\MySqlUpdateEntities.cs" />
     <Compile Include="MySqls\UpdateOperationBuilder.cs" />
     <Compile Include="Operations\BuildableOperationProvider.cs" />
@@ -156,6 +158,7 @@
     <Compile Include="Oracles\OracleLoadEntityExpression~1.cs" />
     <Compile Include="Oracles\OracleLoadEntity~1.cs" />
     <Compile Include="Oracles\OracleLoadEntity~2.cs" />
+    <Compile Include="Oracles\OracleQueryExtensions.cs" />
     <Compile Include="Oracles\OracleUpdateEntities.cs" />
     <Compile Include="Oracles\UpdateOperationBuilder.cs" />
     <Compile Include="ProcedureQueryExtensions.cs" />
@@ -189,6 +192,7 @@
     <Compile Include="SQLites\SQLiteMySqlLoadEntityExpression~1.cs" />
     <Compile Include="SQLites\SQLiteMySqlLoadEntity~1.cs" />
     <Compile Include="SQLites\SQLiteMySqlLoadEntity~2.cs" />
+    <Compile Include="SQLites\SQLiteQueryExtensions.cs" />
     <Compile Include="SQLites\SQLiteUpdateEntities.cs" />
     <Compile Include="SQLites\UpdateOperationBuilder.cs" />
     <Compile Include="SqlQueryExtensions.cs" />
@@ -209,6 +213,7 @@
     <Compile Include="SqlServers\SqlServerLoadEntityExpression~1.cs" />
     <Compile Include="SqlServers\SqlServerLoadEntity~1.cs" />
     <Compile Include="SqlServers\SqlServerLoadEntity~2.cs" />
+    <Compile Include="SqlServers\SqlServerQueryExtensions.cs" />
     <Compile Include="SqlServers\SqlServerUpdateEntities.cs" />
     <Compile Include="SqlServers\UpdateOperationBuilder.cs" />
     <Compile Include="TransactionManager.cs" />

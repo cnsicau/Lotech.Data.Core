@@ -57,6 +57,48 @@ namespace Lotech.Data
         public override string QuoteName(string name) => Quote(name);
 
         /// <summary>
+        /// 修复 boolean 绑定
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="dbType"></param>
+        /// <param name="direction"></param>
+        /// <param name="value"></param>
+        public override void AddParameter(DbCommand command, string parameterName, DbType dbType, ParameterDirection direction, object value)
+        {
+            base.AddParameter(command, parameterName, FixDbType(dbType), direction, value);
+        }
+
+        /// <summary>
+        /// 修复 boolean 绑定
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="dbType"></param>
+        /// <param name="size"></param>
+        public override void AddOutParameter(DbCommand command, string parameterName, DbType dbType, int size)
+        {
+            base.AddOutParameter(command, parameterName, FixDbType(dbType), size);
+        }
+
+        /// <summary>
+        /// 修复 boolean 绑定
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="dbType"></param>
+        /// <param name="direction"></param>
+        /// <param name="size"></param>
+        /// <param name="nullable"></param>
+        /// <param name="precision"></param>
+        /// <param name="scale"></param>
+        /// <param name="value"></param>
+        public override void AddParameter(DbCommand command, string parameterName, DbType dbType, ParameterDirection direction, int size, bool nullable, int precision, int scale, object value)
+        {
+            base.AddParameter(command, parameterName, FixDbType(dbType), direction, size, nullable, precision, scale, value);
+        }
+
+        /// <summary>
         /// 特殊处理 boolean
         /// </summary>
         /// <param name="type"></param>

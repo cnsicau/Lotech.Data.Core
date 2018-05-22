@@ -45,6 +45,7 @@
     <Compile Include="SqlServerExample.cs" />
     <Compile Include="TestEntityExecutes.cs" />
     <Compile Include="TestMethodCall.cs" />
+    <Compile Include="TestPageExecutes.cs" />
     <Compile Include="TestSqlExecutes.cs" />
   </ItemGroup>
   <ItemGroup>

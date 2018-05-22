@@ -57,6 +57,36 @@ namespace Lotech.Data
         /// 
         /// </summary>
         /// <param name="query"></param>
+        /// <param name="subQuery"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendLine(this ISqlQuery query, ISqlQuery subQuery)
+        {
+            return query.Append(subQuery).AppendLine();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static ISqlQuery Append(this ISqlQuery query, int val)
+        {
+            return query.Append(val.ToString());
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendLine(this ISqlQuery query, int val)
+        {
+            return query.AppendLine(val.ToString());
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
         /// <returns></returns>
         public static ISqlQuery AppendLine(this ISqlQuery query)
         {

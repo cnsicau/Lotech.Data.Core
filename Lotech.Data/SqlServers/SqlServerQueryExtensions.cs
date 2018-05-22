@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 namespace Lotech.Data.SqlServers
 {
@@ -16,7 +17,12 @@ namespace Lotech.Data.SqlServers
         /// <returns></returns>
         public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page) where T : class
         {
-            var count = query.Database.SqlQuery("SELECT COUNT(1) FROM（").Append(query).Append(") t").ExecuteScalar<int>();
+            if (page.Index > 0 && page.Orders == null || page.Orders.Length == 0)
+                throw new InvalidOperationException("由于第2页之后使用 ROW_NUMBER() OVER(ORDER BY ***)分页，必须给出至少一个排序字段.");
+
+            var count = query.Database.SqlQuery("/*CountQuery*/SELECT COUNT(1) FROM (")
+                            .AppendLine().AppendLine(query).Append("/*~CountQuery*/) t")
+                            .ExecuteScalar<int>();
             // 无数据
             if (count == 0) return new PageData<T>(0, new T[0]);
 
@@ -30,19 +36,22 @@ namespace Lotech.Data.SqlServers
 
             if (page.Index == 0)
             {
-                result.Data = query.Database.SqlQuery("SELECT TOP(").Append(page.Size.ToString())
-                                        .Append(") * FROM (")
-                                        .Append(query).Append(") t ORDER BY ").Append(orderBy)
+                result.Data = query.Database.SqlQuery("/*DataQuery*/SELECT TOP(").Append(page.Size.ToString())
+                                        .AppendLine(") * FROM (")
+                                        .AppendLine(query)
+                                        .Append("/*~DataQuery*/) t ORDER BY ").Append(orderBy)
                                         .ExecuteEntities<T>();
             }
             else
             {
-                result.Data = query.Database.SqlQuery("SELECT *, ROW_NUMBER(ORDER BY ")
-                                    .Append(orderBy).Append(") as __RowIndex FROM (")
-                                    .Append(query).Append(") t WHERE __RowIndex BETWEEN ")
-                                    .Append((page.Size * page.Index).ToString())
-                                    .Append(" AND ").Append((page.Size * (page.Index + 1)).ToString())
-                                    .ExecuteEntities<T>();
+                result.Data = query.Database.SqlQuery(@"/*DataQuery*/SELECT * FROM (")
+                                .Append("SELECT *, ROW_NUMBER() OVER(ORDER BY ").Append(orderBy).Append(@")  AS __RowIndex ")
+                                .AppendLine("FROM (")
+                                .AppendLine(query)
+                                .Append(@"/*~DataQuery*/ ) I")
+                                .Append(") O WHERE __RowIndex BETWEEN ").Append(page.Size * page.Index + 1)
+                                .Append(" AND ").Append(page.Size * (page.Index + 1))
+                                .ExecuteEntities<T>();
             }
             return result;
         }

@@ -28,10 +28,11 @@ namespace Lotech.Data.Queries
         internal SqlQuery(IDatabase database)
         {
             _database = database;
+            _id++;  // 随着SQLQuery对象增加
         }
         #endregion
 
-        string NextParameterName() { return _database.BuildParameterName("p_" + _id ++ + '_' + _index++); }
+        string NextParameterName() { return _database.BuildParameterName("p_" + _id + '_' + _index++); }
 
         IDatabase IQuery.Database
         {

@@ -161,35 +161,5 @@ namespace Lotech.Data.Example
                 Console.WriteLine($"db.ExecuteScalar<long>(command) => scalar = {scalar}");
             }
         }
-
-        public void ExecutePageQueryTest()
-        {
-            var query = db.SqlQuery("SELECT * FROM Example WHERE 1 = 1")
-                    .AppendNotNull(null, " AND 1 = NULL")
-                    .AppendNotNull("%", " AND Code LIKE {0}")
-                    .Append(" AND Name LIKE {0}", "%测试%");
-
-            var p1 = new Page
-            {
-                Index = 0,
-                Size = 1,
-                Orders = new[]
-                {
-                    new PageOrder{ Column = "Id", Direction = PageOrderDirection.DESC }
-                }
-            };
-            var data = example.PageExecute(query, p1);
-
-            p1 = new Page
-            {
-                Index = 1,
-                Size = 1,
-                Orders = new[]
-                {
-                    new PageOrder{ Column = "Id", Direction = PageOrderDirection.DESC }
-                }
-            };
-            data = example.PageExecute(query, p1);
-        }
     }
 }

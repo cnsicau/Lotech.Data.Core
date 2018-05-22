@@ -4,6 +4,8 @@ using Lotech.Data.Descriptors;
 
 namespace Lotech.Data.Example
 {
+    using Oracles;
+
     public class OracleExample : IDatabaseExample
     {
         // 指定 Oracle 全大写描述符提供者
@@ -45,7 +47,7 @@ namespace Lotech.Data.Example
 
         public PageData<Example> PageExecute(ISqlQuery query, Page page)
         {
-            throw new NotImplementedException();
+            return query.PageExecuteEntites<Example>(page);
         }
     }
 }

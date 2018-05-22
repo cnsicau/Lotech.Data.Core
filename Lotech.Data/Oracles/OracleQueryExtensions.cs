@@ -16,14 +16,17 @@ namespace Lotech.Data.Oracles
         /// <returns></returns>
         public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page) where T : class
         {
-            var count = query.Database.SqlQuery("SELECT COUNT(1) FROM (").Append(query).Append(")").ExecuteScalar<int>();
+            var count = query.Database.SqlQuery("/*CountQuery*/SELECT COUNT(1) FROM (")
+                            .AppendLine().AppendLine(query).Append("/*~CountQuery*/)")
+                            .ExecuteScalar<int>();
             // 无数据
             if (count == 0) return new PageData<T>(0, new T[0]);
 
             string orderBy = "1";
             if (page.Orders?.Length > 0)
             {
-                orderBy = string.Join(", ", page.Orders.Select(_ => query.Database.QuoteName(_.Column) + " " + _.Direction));
+                // 取消排序列的 Quote 引述，避免"Id" 无法自动转大写，引起额外的工作量
+                orderBy = string.Join(", ", page.Orders.Select(_ => _.Column + " " + _.Direction));
             }
 
             var result = new PageData<T>(count);
@@ -37,11 +40,11 @@ namespace Lotech.Data.Oracles
             }
             else
             {
-                result.Data = query.Database.SqlQuery("SELECT * FROM (SELECT i.*, i.ROWNUM AS \"__RowIndex\" FROM (")
-                                    .Append(query)
-                                    .Append(" ORDER BY ").Append(orderBy)
-                                    .Append(") i WHERE ROWNUM <= ").Append(((page.Index + 1) * page.Size).ToString())
-                                    .Append(") o WHERE \"__RowIndex\" > ").Append((page.Index * page.Size).ToString())
+                result.Data = query.Database.SqlQuery("/*DataQuery*/SELECT * FROM (SELECT i.*, ROWNUM AS \"__RowIndex\" FROM (").AppendLine()
+                                    .AppendLine(query)
+                                    .Append(" ORDER BY ").AppendLine(orderBy)
+                                    .Append("/*~DataQuery*/) i WHERE ROWNUM <= ").Append((page.Index + 1) * page.Size)
+                                    .Append(") o WHERE \"__RowIndex\" > ").Append(page.Index * page.Size)
                                     .ExecuteEntities<T>();
             }
 

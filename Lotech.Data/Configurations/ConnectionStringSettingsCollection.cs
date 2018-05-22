@@ -28,7 +28,8 @@ namespace Lotech.Data.Configurations
         {
             get
             {
-                return TryGetValue(name, out var value) ? value : null;
+                ConnectionStringSettings settings;
+                return TryGetValue(name, out settings) ? settings : null;
             }
         }
     }

@@ -16,7 +16,7 @@ namespace Lotech.Data.Example
 
         public PageData<Example> PageExecute(ISqlQuery query, Page page)
         {
-            throw new NotSupportedException();
+            return null;
         }
     }
 }

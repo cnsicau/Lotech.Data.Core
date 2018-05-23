@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>bin\Debug\SQLite</OutputPath>
     <DefineConstants>TRACE;DEBUG;SQLITE</DefineConstants>
   </PropertyGroup>
 

@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>bin\Debug\Generic</OutputPath>
     <DefineConstants>TRACE;DEBUG;GENERIC</DefineConstants>
   </PropertyGroup>
 

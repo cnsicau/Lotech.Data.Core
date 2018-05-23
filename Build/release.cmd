@@ -1,0 +1,13 @@
+@cd ../Lotech.Data
+@dotnet build -c Release "Lotech.Data.Generic.Core.csproj"
+@dotnet build -c Release "Lotech.Data.Generic.csproj"
+@dotnet build -c Release "Lotech.Data.MySql.Core.csproj"
+@dotnet build -c Release "Lotech.Data.MySql.csproj"
+@dotnet build -c Release "Lotech.Data.Oracle.Core.csproj"
+@dotnet build -c Release "Lotech.Data.Oracle.csproj"
+@dotnet build -c Release "Lotech.Data.SQLite.Core.csproj"
+@dotnet build -c Release "Lotech.Data.SQLite.csproj"
+@dotnet build -c Release "Lotech.Data.SqlServer.Core.csproj"
+@dotnet build -c Release "Lotech.Data.SqlServer.csproj"
+@dotnet build -c Release "Lotech.Data.Core.csproj"
+@dotnet build -c Release "Lotech.Data.csproj"

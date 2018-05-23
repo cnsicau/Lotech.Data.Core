@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>bin\Debug\SqlServer</OutputPath>
     <DefineConstants>TRACE;DEBUG;SQLSERVER</DefineConstants>
   </PropertyGroup>
 

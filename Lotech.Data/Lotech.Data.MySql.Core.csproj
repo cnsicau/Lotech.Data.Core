@@ -18,7 +18,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>bin\Debug\MySql</OutputPath>
     <DefineConstants>TRACE;DEBUG;MYSQL</DefineConstants>
   </PropertyGroup>
 

@@ -38,7 +38,7 @@ namespace Lotech.Data.Operations.Common
         /// <returns></returns>
         public Action<IDatabase, TEntity, Expression<Func<TEntity, bool>>> Create(IEntityDescriptor descriptor)
         {
-            var sets = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TSet>(Operation.Update).Members.Select(_ => _.Member.Name).ToArray();
+            var sets = ReflectionEntityDescriptor<TSet>.Prototype.Members.Select(_ => _.Member.Name).ToArray();
             var members = descriptor.Members.Where(_ => sets.Contains(_.Member.Name)).Select((_, i) =>
                 new MemberTuple<TEntity>(
                  _.Name,

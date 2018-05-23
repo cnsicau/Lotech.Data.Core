@@ -12,6 +12,11 @@ namespace Lotech.Data.Descriptors
     {
         static readonly EntityDescriptor prototype = new EntityDescriptor();
 
+        /// <summary>
+        /// 获取原型描述符
+        /// </summary>
+        public static IEntityDescriptor Prototype { get { return prototype; } }
+
         static ReflectionEntityDescriptor()
         {
             prototype.Type = typeof(TEntity);

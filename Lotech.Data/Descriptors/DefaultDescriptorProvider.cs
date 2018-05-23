@@ -13,11 +13,11 @@ namespace Lotech.Data.Descriptors
         /// <summary>
         /// 全局实例
         /// </summary>
-        public static readonly IDescriptorProvider Instance = new DefaultDescriptorProvider();
+        public static readonly DefaultDescriptorProvider Instance = new DefaultDescriptorProvider();
 
         class AttributeEntityDescriptor<TEntity> where TEntity : class
         {
-            internal static readonly IEntityDescriptor Instance;
+            internal static readonly EntityDescriptor Instance;
 
             static AttributeEntityDescriptor()
             {
@@ -67,12 +67,17 @@ namespace Lotech.Data.Descriptors
             }
         }
 
+        IEntityDescriptor IDescriptorProvider.GetEntityDescriptor<TEntity>(Operation operation)
+        {
+            return GetEntityDescriptor<TEntity>(operation);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public IEntityDescriptor GetEntityDescriptor<TEntity>(Operation operation) where TEntity : class
+        public EntityDescriptor GetEntityDescriptor<TEntity>(Operation operation) where TEntity : class
         {
             System.Diagnostics.Debug.WriteLine($"build descriptor for {operation} {typeof(TEntity).Name}");
             return AttributeEntityDescriptor<TEntity>.Instance;

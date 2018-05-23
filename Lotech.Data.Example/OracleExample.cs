@@ -22,7 +22,7 @@ namespace Lotech.Data.Example
                 return Descriptors<TEntity>.Container.GetOrAdd(operation, _=>
                  {
                      Console.WriteLine("Parse oracle descriptor for " + _ + " " + typeof(TEntity));
-                     var descriptor = (EntityDescriptor)DefaultDescriptorProvider.Instance.GetEntityDescriptor<TEntity>(_);
+                     var descriptor = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TEntity>(_);
                      descriptor.Name = descriptor.Name.ToUpper();
                      // 转换大写
                      foreach (MemberDescriptor member in descriptor.Members)

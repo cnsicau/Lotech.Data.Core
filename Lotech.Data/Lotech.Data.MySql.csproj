@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{AB5BE5AB-CD4D-4FBB-BDF7-FC2777D7BC6C}</ProjectGuid>
+    <ProjectGuid>{0983A782-B9EF-44F6-B9B9-609A9C72383A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Lotech.Data</RootNamespace>
-    <AssemblyName>Lotech.Data</AssemblyName>
+    <AssemblyName>Lotech.Data.MySql</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -16,8 +16,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NET_4;ALL</DefineConstants>
+    <OutputPath>bin\Debug\MySql\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NET_4;MYSQL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -25,8 +25,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NET_4;ALL</DefineConstants>
+    <OutputPath>bin\Release\MySql\</OutputPath>
+    <DefineConstants>TRACE;NET_4;MYSQL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -73,51 +73,12 @@
     <Compile Include="Descriptors\ReflectionEntityDescriptor.cs" />
     <Compile Include="Descriptors\ReflectionMemberDescriptor.cs" />
     <Compile Include="EntityAttribute.cs" />
-    <Compile Include="GenericDatabase.cs" />
-    <Compile Include="Generics\DeleteOperationBuilder.cs" />
-    <Compile Include="Generics\GenericCountEntitiesExpression~1.cs" />
-    <Compile Include="Generics\GenericCountEntities~1.cs" />
-    <Compile Include="Generics\GenericDeleteEntitiesExpression~1.cs" />
-    <Compile Include="Generics\GenericDeleteEntity~2.cs" />
-    <Compile Include="Generics\GenericEntityServices.cs" />
-    <Compile Include="Generics\GenericExistsEntityExpression~1.cs" />
-    <Compile Include="Generics\GenericExistsEntity~1.cs" />
-    <Compile Include="Generics\GenericExistsEntity~2.cs" />
-    <Compile Include="Generics\GenericFindEntitiesExpression~1.cs" />
-    <Compile Include="Generics\GenericFindEntities~1.cs" />
-    <Compile Include="Generics\GenericLoadEntityExpression~1.cs" />
-    <Compile Include="Generics\GenericLoadEntity~1.cs" />
-    <Compile Include="Generics\GenericLoadEntity~2.cs" />
-    <Compile Include="Generics\GenericQueryExtensions.cs" />
-    <Compile Include="Generics\GenericUpdateEntities.cs" />
-    <Compile Include="Generics\InsertOperationBuilder.cs" />
-    <Compile Include="Generics\UpdateOperationBuilder.cs" />
     <Compile Include="IDatabase.cs" />
     <Compile Include="IEntityServices.cs" />
     <Compile Include="IOperationProvider.cs" />
     <Compile Include="IProcedureQuery.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="ISqlQuery.cs" />
-    <Compile Include="MySqlDatabase.cs" />
-    <Compile Include="MySqls\DeleteOperationBuilder.cs" />
-    <Compile Include="MySqls\InsertOperationBuilder.cs" />
-    <Compile Include="MySqls\MySqlCountEntitiesExpression~1.cs" />
-    <Compile Include="MySqls\MySqlCountEntities~1.cs" />
-    <Compile Include="MySqls\MySqlDeleteEntitiesExpression~1.cs" />
-    <Compile Include="MySqls\MySqlDeleteEntity~2.cs" />
-    <Compile Include="MySqls\MySqlEntityServices.cs" />
-    <Compile Include="MySqls\MySqlExistsEntityExpression~1.cs" />
-    <Compile Include="MySqls\MySqlExistsEntity~1.cs" />
-    <Compile Include="MySqls\MySqlExistsEntity~2.cs" />
-    <Compile Include="MySqls\MySqlExpressionVisitor.cs" />
-    <Compile Include="MySqls\MySqlFindEntitiesExpression~1.cs" />
-    <Compile Include="MySqls\MySqlFindEntities~1.cs" />
-    <Compile Include="MySqls\MySqlLoadEntityExpression~1.cs" />
-    <Compile Include="MySqls\MySqlLoadEntity~1.cs" />
-    <Compile Include="MySqls\MySqlLoadEntity~2.cs" />
-    <Compile Include="MySqls\MySqlQueryExtensions.cs" />
-    <Compile Include="MySqls\MySqlUpdateEntities.cs" />
-    <Compile Include="MySqls\UpdateOperationBuilder.cs" />
     <Compile Include="Operations\BuildableOperationProvider.cs" />
     <Compile Include="Operations\Common\CommonCountEntities.cs" />
     <Compile Include="Operations\Common\CommonCountEntitiesExpression.cs" />
@@ -149,26 +110,6 @@
     <Compile Include="Operations\Visitors\MemberVisitor.cs" />
     <Compile Include="Operations\Visitors\NotEqualVisitor.cs" />
     <Compile Include="Operations\Visitors\NotVisitor.cs" />
-    <Compile Include="OracleDatabase.cs" />
-    <Compile Include="Oracles\DeleteOperationBuilder.cs" />
-    <Compile Include="Oracles\InsertOperationBuilder.cs" />
-    <Compile Include="Oracles\OracleCountEntitiesExpression~1.cs" />
-    <Compile Include="Oracles\OracleCountEntities~1.cs" />
-    <Compile Include="Oracles\OracleDeleteEntitiesExpression~1.cs" />
-    <Compile Include="Oracles\OracleDeleteEntity~2.cs" />
-    <Compile Include="Oracles\OracleEntityServices.cs" />
-    <Compile Include="Oracles\OracleExistsEntityExpression~1.cs" />
-    <Compile Include="Oracles\OracleExistsEntity~1.cs" />
-    <Compile Include="Oracles\OracleExistsEntity~2.cs" />
-    <Compile Include="Oracles\OracleExpressionVisitor.cs" />
-    <Compile Include="Oracles\OracleFindEntitiesExpression~1.cs" />
-    <Compile Include="Oracles\OracleFindEntities~1.cs" />
-    <Compile Include="Oracles\OracleLoadEntityExpression~1.cs" />
-    <Compile Include="Oracles\OracleLoadEntity~1.cs" />
-    <Compile Include="Oracles\OracleLoadEntity~2.cs" />
-    <Compile Include="Oracles\OracleQueryExtensions.cs" />
-    <Compile Include="Oracles\OracleUpdateEntities.cs" />
-    <Compile Include="Oracles\UpdateOperationBuilder.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="PageData~1.cs" />
     <Compile Include="PageOrder.cs" />
@@ -187,48 +128,28 @@
     <Compile Include="Queries\SimpleResultMapper~1.cs" />
     <Compile Include="Queries\SqlQuery.cs" />
     <Compile Include="QueryExtensions.cs" />
-    <Compile Include="SQLiteDatabase.cs" />
-    <Compile Include="SQLites\DeleteOperationBuilder.cs" />
-    <Compile Include="SQLites\InsertOperationBuilder.cs" />
-    <Compile Include="SQLites\SQLiteCountEntitiesExpression~1.cs" />
-    <Compile Include="SQLites\SQLiteCountEntities~1.cs" />
-    <Compile Include="SQLites\SQLiteDeleteEntitiesExpression~1.cs" />
-    <Compile Include="SQLites\SQLiteDeleteEntity~2.cs" />
-    <Compile Include="SQLites\SQLiteEntityServices.cs" />
-    <Compile Include="SQLites\SQLiteExistsEntityExpression~1.cs" />
-    <Compile Include="SQLites\SQLiteExistsEntity~1.cs" />
-    <Compile Include="SQLites\SQLiteExistsEntity~2.cs" />
-    <Compile Include="SQLites\SQLiteExpressionVisitor.cs" />
-    <Compile Include="SQLites\SQLiteFindEntitiesExpression~1.cs" />
-    <Compile Include="SQLites\SQLiteFindEntities~1.cs" />
-    <Compile Include="SQLites\SQLiteLoadEntityExpression~1.cs" />
-    <Compile Include="SQLites\SQLiteLoadEntity~1.cs" />
-    <Compile Include="SQLites\SQLiteLoadEntity~2.cs" />
-    <Compile Include="SQLites\SQLiteQueryExtensions.cs" />
-    <Compile Include="SQLites\SQLiteUpdateEntities.cs" />
-    <Compile Include="SQLites\UpdateOperationBuilder.cs" />
     <Compile Include="SqlQueryExtensions.cs" />
     <Compile Include="SqlQueryParameter.cs" />
-    <Compile Include="SqlServerDatabase.cs" />
-    <Compile Include="SqlServers\DeleteOperationBuilder.cs" />
-    <Compile Include="SqlServers\InsertOperationBuilder.cs" />
-    <Compile Include="SqlServers\SqlServerCountEntitiesExpression~1.cs" />
-    <Compile Include="SqlServers\SqlServerCountEntities~1.cs" />
-    <Compile Include="SqlServers\SqlServerDeleteEntitiesExpression~1.cs" />
-    <Compile Include="SqlServers\SqlServerDeleteEntity~2.cs" />
-    <Compile Include="SqlServers\SqlServerEntityServices.cs" />
-    <Compile Include="SqlServers\SqlServerExistsEntityExpression~1.cs" />
-    <Compile Include="SqlServers\SqlServerExistsEntity~1.cs" />
-    <Compile Include="SqlServers\SqlServerExistsEntity~2.cs" />
-    <Compile Include="SqlServers\SqlServerExpressionVisitor.cs" />
-    <Compile Include="SqlServers\SqlServerFindEntitiesExpression~1.cs" />
-    <Compile Include="SqlServers\SqlServerFindEntities~1.cs" />
-    <Compile Include="SqlServers\SqlServerLoadEntityExpression~1.cs" />
-    <Compile Include="SqlServers\SqlServerLoadEntity~1.cs" />
-    <Compile Include="SqlServers\SqlServerLoadEntity~2.cs" />
-    <Compile Include="SqlServers\SqlServerQueryExtensions.cs" />
-    <Compile Include="SqlServers\SqlServerUpdateEntities.cs" />
-    <Compile Include="SqlServers\UpdateOperationBuilder.cs" />
+    <Compile Include="MySqlDatabase.cs" />
+    <Compile Include="MySqls\DeleteOperationBuilder.cs" />
+    <Compile Include="MySqls\InsertOperationBuilder.cs" />
+    <Compile Include="MySqls\MySqlCountEntitiesExpression~1.cs" />
+    <Compile Include="MySqls\MySqlCountEntities~1.cs" />
+    <Compile Include="MySqls\MySqlDeleteEntitiesExpression~1.cs" />
+    <Compile Include="MySqls\MySqlDeleteEntity~2.cs" />
+    <Compile Include="MySqls\MySqlEntityServices.cs" />
+    <Compile Include="MySqls\MySqlExistsEntityExpression~1.cs" />
+    <Compile Include="MySqls\MySqlExistsEntity~1.cs" />
+    <Compile Include="MySqls\MySqlExistsEntity~2.cs" />
+    <Compile Include="MySqls\MySqlExpressionVisitor.cs" />
+    <Compile Include="MySqls\MySqlFindEntitiesExpression~1.cs" />
+    <Compile Include="MySqls\MySqlFindEntities~1.cs" />
+    <Compile Include="MySqls\MySqlLoadEntityExpression~1.cs" />
+    <Compile Include="MySqls\MySqlLoadEntity~1.cs" />
+    <Compile Include="MySqls\MySqlLoadEntity~2.cs" />
+    <Compile Include="MySqls\MySqlQueryExtensions.cs" />
+    <Compile Include="MySqls\MySqlUpdateEntities.cs" />
+    <Compile Include="MySqls\UpdateOperationBuilder.cs" />
     <Compile Include="TransactionManager.cs" />
     <Compile Include="TransactionScopeConnections.cs" />
     <Compile Include="Utils\DbTypeParser.cs" />

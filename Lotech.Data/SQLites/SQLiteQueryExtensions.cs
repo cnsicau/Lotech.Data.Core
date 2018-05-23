@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-#if SQLITEE
+#if SQLITE
 using Lotech.Data.SQLites;
 
 namespace Lotech.Data

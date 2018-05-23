@@ -1,5 +1,6 @@
 ﻿using Lotech.Data.Descriptors;
 using Lotech.Data.Operations.Visitors;
+using Lotech.Data.Queries;
 using Lotech.Data.Utils;
 using System;
 using System.Collections.Generic;
@@ -55,11 +56,16 @@ namespace Lotech.Data.Operations
         }
         #endregion
 
+        /// <summary>
+        /// 全局参数ID编号，以避免构建子查询时参数名可能重复问题
+        /// </summary>
+        [ThreadStatic]
+        private static ushort global_id = 0;
         private readonly IDatabase _database;
         private readonly Operation _operation;
         private readonly IEntityDescriptor _descriptor;
         private readonly StringBuilder _sql = new StringBuilder();
-        private readonly List<ExpressionParameter> _parameters = new List<ExpressionParameter>();
+        private readonly List<SqlQueryParameter> _parameters = new List<SqlQueryParameter>();
 
 
         /// <summary>
@@ -83,12 +89,13 @@ namespace Lotech.Data.Operations
             if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
             _descriptor = descriptor;
             _operation = operation;
+            global_id++;
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public virtual IList<ExpressionParameter> Parameters
+        public virtual IList<SqlQueryParameter> Parameters
         {
             get { return _parameters; }
         }
@@ -127,9 +134,9 @@ namespace Lotech.Data.Operations
         /// <param name="parameterValue"></param>
         public virtual void AddParameter(Type parameterType, object parameterValue)
         {
-            var name = "p_sql_" + _parameters.Count;
-            _sql.Append(_database.BuildParameterName(name));
-            _parameters.Add(new ExpressionParameter(name, parameterType, parameterValue));
+            var name = _database.BuildParameterName("xp" + global_id + "_" + _parameters.Count);
+            _sql.Append(name);
+            _parameters.Add(new SqlQueryParameter(name, parameterType, parameterValue));
         }
 
         /// <summary>

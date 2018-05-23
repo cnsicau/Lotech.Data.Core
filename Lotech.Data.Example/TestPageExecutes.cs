@@ -23,7 +23,7 @@ namespace Lotech.Data.Example
             Console.WriteLine("query => " + query.GetSnippets());
             foreach (var p in query.GetParameters())
             {
-                Console.WriteLine(" -- " + p.Key + " = " + p.Value);
+                Console.WriteLine(" -- " + p.Name + " = " + p.Value);
             }
             // sub query
             var countQuery = example.Database.SqlQuery("SELECT COUNT(*) FROM (")
@@ -32,7 +32,7 @@ namespace Lotech.Data.Example
             Console.WriteLine("countQuery => " + countQuery.GetSnippets());
             foreach (var p in countQuery.GetParameters())
             {
-                Console.WriteLine(" -- " + p.Key + " = " + p.Value);
+                Console.WriteLine(" -- " + p.Name + " = " + p.Value);
             }
         }
 

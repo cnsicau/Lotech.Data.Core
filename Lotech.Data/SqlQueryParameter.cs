@@ -1,11 +1,12 @@
 ﻿using System;
 
-namespace Lotech.Data.Operations
+namespace Lotech.Data
 {
     /// <summary>
     /// 表达式参数
     /// </summary>
-    public class ExpressionParameter
+    [System.Diagnostics.DebuggerDisplay("{Name,nq} = {Type.Name,nq}({Value})")]
+    public class SqlQueryParameter
     {
         /// <summary>
         /// 
@@ -13,10 +14,22 @@ namespace Lotech.Data.Operations
         /// <param name="name"></param>
         /// <param name="type"></param>
         /// <param name="value"></param>
-        public ExpressionParameter(string name, Type type, object value)
+        public SqlQueryParameter(string name, Type type, object value)
         {
             Name = name;
             Type = type;
+            Value = value;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public SqlQueryParameter(string name, object value)
+        {
+            Name = name;
+            Type = value?.GetType() ?? typeof(object);
             Value = value;
         }
 

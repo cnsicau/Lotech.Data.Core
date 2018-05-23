@@ -20,7 +20,7 @@ namespace Lotech.Data
         /// <param name="snippet">片断中可以使用 {0}, {1} 作为参数占位</param>
         /// <param name="args">片断中占位将被替换的参数值</param>
         /// <returns></returns>
-        ISqlQuery Append(string snippet, params object[] args);
+        ISqlQuery Append(string snippet, IList<object> args);
 
         /// <summary>
         /// 追加无参数片断
@@ -30,11 +30,12 @@ namespace Lotech.Data
         ISqlQuery Append(string snippet);
 
         /// <summary>
-        /// 追加子查询
+        /// 追加原始片断与参数，不处理任何占位，直接通过参数绑定
         /// </summary>
-        /// <param name="subQuery"></param>
+        /// <param name="snippet">不使用{n}占位的SQL片断，如：UserAccount = @account</param>
+        /// <param name="parameters">绑定原始片断中的参数，顺序应与原始片断参数位置一致</param>
         /// <returns></returns>
-        ISqlQuery Append(ISqlQuery subQuery);
+        ISqlQuery AppendRaw(string snippet, IEnumerable<SqlQueryParameter> parameters);
 
         /// <summary>
         /// 连接当前查询片断
@@ -46,6 +47,6 @@ namespace Lotech.Data
         /// 提取参数清单
         /// </summary>
         /// <returns></returns>
-        IEnumerable<KeyValuePair<string, object>> GetParameters();
+        IEnumerable<SqlQueryParameter> GetParameters();
     }
 }

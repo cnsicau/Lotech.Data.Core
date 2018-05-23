@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Lotech.Data.Example
 {
@@ -33,6 +32,7 @@ namespace Lotech.Data.Example
             test.ExecuteDynamicTest();
             test.ExecuteScalarTest();
             test.ExecuteScalarTTest();
+            test.SqlQueryTest();
         }
 
         static void MethodTests<TExample>(IDatabaseExample example)

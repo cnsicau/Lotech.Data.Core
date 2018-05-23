@@ -7,6 +7,7 @@ namespace Lotech.Data.Example
 {
     public class TestSqlExecutes<TExample> where TExample : class, IExample, new()
     {
+        static readonly Random random = new Random();
         private readonly IDatabaseExample example;
         private readonly IDatabase db;
         static void WriteErrorLine(string message)
@@ -159,6 +160,21 @@ namespace Lotech.Data.Example
             {
                 scalar = db.ExecuteScalar<long>(command);
                 Console.WriteLine($"db.ExecuteScalar<long>(command) => scalar = {scalar}");
+            }
+        }
+
+        public void SqlQueryTest()
+        {
+            string s = random.Next(2) > 0 ? "OK" : null;
+            var query = db.SqlQuery("SELECT * FROM example WHERE ")
+                            .AppendExpression<Example>(_ => _.Code == "CD-01" || !_.Deleted)
+                            .AppendIf(s != null, " AND ").AppendExpressionIf<Example>(s != null, _ => _.Name == s)
+                            .Append(" AND ").AppendExpression<Example>(_ => _.Id >= 5)
+                            .Append(" AND name like {0}", "测试%");
+            Console.WriteLine($"s = {s} => {query.GetSnippets()}: ");
+            foreach(var p in query.GetParameters())
+            {
+                Console.WriteLine($"  -- {p.Name} => {p.Value}");
             }
         }
     }

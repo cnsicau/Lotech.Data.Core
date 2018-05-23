@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Lotech.Data.Queries
 {
+    [System.Diagnostics.DebuggerDisplay("{_snippets}")]
     class SqlQuery : ISqlQuery
     {
         #region Fields & Constructor
@@ -18,7 +19,7 @@ namespace Lotech.Data.Queries
         private static readonly Regex _placeholder = new Regex(@"([^\{]?)\{\s*(\d+)s*\}([^\}]?)", RegexOptions.Multiline | RegexOptions.Compiled);
 
         private readonly StringBuilder _snippets = new StringBuilder();
-        private readonly SortedList<string, object> _parameters = new SortedList<string, object>();
+        private readonly List<SqlQueryParameter> _parameters = new List<SqlQueryParameter>();
         private int _index;
         private IDatabase _database;
 
@@ -44,8 +45,7 @@ namespace Lotech.Data.Queries
             var command = _database.GetSqlStringCommand(_snippets.ToString());
             foreach (var p in _parameters)
             {
-                var type = p.Value?.GetType() ?? typeof(string);
-                _database.AddInParameter(command, p.Key, _database.ParseDbType(type), p.Value);
+                _database.AddInParameter(command, p.Name, _database.ParseDbType(p.Type), p.Value);
             }
             return command;
         }
@@ -56,7 +56,7 @@ namespace Lotech.Data.Queries
             return this;
         }
 
-        ISqlQuery ISqlQuery.Append(string snippet, params object[] args)
+        ISqlQuery ISqlQuery.Append(string snippet, IList<object> args)
         {
             if (snippet == null) throw new ArgumentNullException(nameof(snippet));
             if (args == null) throw new ArgumentNullException(nameof(args));
@@ -66,28 +66,33 @@ namespace Lotech.Data.Queries
                 var groups = match.Groups;
                 var placeIndex = Convert.ToInt16(groups[2].Value);
 
-                if (placeIndex < 0 || placeIndex >= args.Length)
+                if (placeIndex < 0 || placeIndex >= args.Count)
                     throw new InvalidOperationException($"未找到对应的参数值：{match.Value} ");
 
                 var parameterName = NextParameterName();
-                _parameters.Add(parameterName, args[placeIndex]);
+                var value = args[placeIndex];
+                if (value is SqlQueryParameter)
+                {
+                    _parameters.Add(new SqlQueryParameter(parameterName, ((SqlQueryParameter)value).Type, ((SqlQueryParameter)value).Value));
+                }
+                else
+                {
+                    _parameters.Add(new SqlQueryParameter(parameterName, value));
+                }
                 return groups[1].Value + parameterName + groups[3].Value;
             }));
             return this;
         }
 
-        ISqlQuery ISqlQuery.Append(ISqlQuery subQuery)
+        ISqlQuery ISqlQuery.AppendRaw(string snippet, IEnumerable<SqlQueryParameter> parameters)
         {
-            foreach (var p in subQuery.GetParameters())
-            {
-                _parameters.Add(p.Key, p.Value);
-            }
-            _snippets.Append(subQuery.GetSnippets());
+            _snippets.Append(snippet);
+            _parameters.AddRange(parameters);
             return this;
         }
 
         string ISqlQuery.GetSnippets() { return _snippets.ToString(); }
 
-        IEnumerable<KeyValuePair<string, object>> ISqlQuery.GetParameters() { return _parameters; }
+        IEnumerable<SqlQueryParameter> ISqlQuery.GetParameters() { return _parameters; }
     }
 }

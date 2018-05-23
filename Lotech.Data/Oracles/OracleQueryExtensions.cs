@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+#if ORACLE
+using Lotech.Data.Oracles;
 
+namespace Lotech.Data
+#else
 namespace Lotech.Data.Oracles
+#endif
 {
     /// <summary>
     /// 

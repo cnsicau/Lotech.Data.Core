@@ -2,32 +2,40 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DocumentationFile>bin\Debug\netstandard2.0\Lotech.Data.xml</DocumentationFile>
+    <DocumentationFile>bin\Debug\SQLite\Lotech.Data.xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>2.0.2</Version>
-    <PackageId>Lotech.Data.Core</PackageId>
+    <PackageId>Lotech.Data.SQLite.Core</PackageId>
     <Authors>cnsicau</Authors>
     <Company>lotech</Company>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <PackageProjectUrl>https://github.com/cnsicau/Lotech.Data.Core</PackageProjectUrl>
-    <Description>an ORM like "EnterpriseLib Data Block" for dotnet</Description>
+    <Description>an ORM like "EnterpriseLib Data Block" for dotnet - SQLite</Description>
     <AssemblyVersion>2.0.2.523</AssemblyVersion>
-    <AssemblyName>Lotech.Data</AssemblyName>
+    <AssemblyName>Lotech.Data.SQLite</AssemblyName>
     <RootNamespace>Lotech.Data</RootNamespace>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>bin\Debug\Generic</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ALL</DefineConstants>
+    <OutputPath>bin\Debug\SQLite</OutputPath>
+    <DefineConstants>TRACE;DEBUG;SQLITE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TRACE;ALL</DefineConstants>
+    <DefineConstants>TRACE;SQLITE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Properties\**" />
+    <Compile Remove="Generics\**" />
+    <Compile Remove="SqlServers\**" />
+    <Compile Remove="MySqls\**" />
+    <Compile Remove="Oracles\**" />
+    <Compile Remove="GenericDatabase.cs" />
+    <Compile Remove="SqlServerDatabase.cs" />
+    <Compile Remove="MySqlDatabase.cs" />
+    <Compile Remove="OracleDatabase.cs" />
     <Content Include="database.xml" />
   </ItemGroup>
 </Project>

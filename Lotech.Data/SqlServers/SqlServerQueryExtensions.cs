@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+#if SQLSERVER
+using Lotech.Data.SqlServers;
 
+namespace Lotech.Data
+#else
 namespace Lotech.Data.SqlServers
+#endif
 {
     /// <summary>
     /// 

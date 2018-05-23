@@ -78,23 +78,33 @@ namespace Lotech.Data
             }
             switch (databaseType)
             {
+#if ALL || GENERIC
                 case DatabaseType.Generic:
                     db = new GenericDatabase(provider
                             , connectionSettings.ParameterPrefix ?? "@"
                             , connectionSettings.QuoteName ?? "{0}");
                     break;
+#endif
+#if ALL || SQLSERVER
                 case DatabaseType.SqlServer:
                     db = new SqlServerDatabase(provider);
                     break;
+#endif
+#if ALL || ORACLE
                 case DatabaseType.Oracle:
                     db = new OracleDatabase(provider);
                     break;
+#endif
+#if ALL || MYSQL
                 case DatabaseType.MySql:
                     db = new MySqlDatabase(provider);
                     break;
+#endif
+#if ALL || SQLITE
                 case DatabaseType.SQLite:
                     db = new SQLiteDatabase(provider);
                     break;
+#endif
                 default:
                     throw new NotSupportedException("未支持的库类型");
             }

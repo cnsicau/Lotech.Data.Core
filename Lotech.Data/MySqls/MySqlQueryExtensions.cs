@@ -2,7 +2,13 @@
 using System.Linq;
 using System.Linq.Expressions;
 
+#if MYSQL
+using Lotech.Data.MySqls;
+
+namespace Lotech.Data
+#else
 namespace Lotech.Data.MySqls
+#endif
 {
     /// <summary>
     /// 

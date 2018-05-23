@@ -1,8 +1,13 @@
 ﻿using Lotech.Data.Operations;
 using System;
 using System.Linq.Expressions;
+#if GENERIC
+using Lotech.Data.Generics;
 
+namespace Lotech.Data
+#else
 namespace Lotech.Data.Generics
+#endif
 {
     /// <summary>
     /// 

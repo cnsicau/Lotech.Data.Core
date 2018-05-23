@@ -88,6 +88,7 @@
     <Compile Include="Generics\GenericLoadEntityExpression~1.cs" />
     <Compile Include="Generics\GenericLoadEntity~1.cs" />
     <Compile Include="Generics\GenericLoadEntity~2.cs" />
+    <Compile Include="Generics\GenericQueryExtensions.cs" />
     <Compile Include="Generics\GenericUpdateEntities.cs" />
     <Compile Include="Generics\InsertOperationBuilder.cs" />
     <Compile Include="Generics\UpdateOperationBuilder.cs" />
@@ -132,7 +133,6 @@
     <Compile Include="Operations\Common\CommonLoadEntity~1.cs" />
     <Compile Include="Operations\Common\CommonLoadEntity~2.cs" />
     <Compile Include="Operations\Common\CommonUpdateEntities~2.cs" />
-    <Compile Include="Operations\ExpressionParameter.cs" />
     <Compile Include="Operations\IExpressionNodeVisitor~2.cs" />
     <Compile Include="Operations\IOperationBuilder.cs" />
     <Compile Include="Operations\MemberFilters.cs" />
@@ -208,6 +208,7 @@
     <Compile Include="SQLites\SQLiteUpdateEntities.cs" />
     <Compile Include="SQLites\UpdateOperationBuilder.cs" />
     <Compile Include="SqlQueryExtensions.cs" />
+    <Compile Include="SqlQueryParameter.cs" />
     <Compile Include="SqlServerDatabase.cs" />
     <Compile Include="SqlServers\DeleteOperationBuilder.cs" />
     <Compile Include="SqlServers\InsertOperationBuilder.cs" />

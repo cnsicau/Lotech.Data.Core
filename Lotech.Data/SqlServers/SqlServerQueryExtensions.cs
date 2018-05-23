@@ -17,7 +17,7 @@ namespace Lotech.Data.SqlServers
         /// <returns></returns>
         public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page) where T : class
         {
-            if (page.Index > 0 && page.Orders == null || page.Orders.Length == 0)
+            if (page.Index > 0 && (page.Orders == null || page.Orders.Length == 0))
                 throw new InvalidOperationException("由于第2页之后使用 ROW_NUMBER() OVER(ORDER BY ***)分页，必须给出至少一个排序字段.");
 
             var count = query.Database.SqlQuery("/*CountQuery*/SELECT COUNT(1) FROM (")

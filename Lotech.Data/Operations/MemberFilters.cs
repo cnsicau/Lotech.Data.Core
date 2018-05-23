@@ -20,9 +20,9 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <typeparam name="TExclude"></typeparam>
         /// <returns></returns>
-        internal static Func<IMemberDescriptor, bool> Exclude<TExclude>(Operation operation) where TExclude : class
+        internal static Func<IMemberDescriptor, bool> Exclude<TExclude>() where TExclude : class
         {
-            var members = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TExclude>(operation).Members;
+            var members = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TExclude>(Operation.None).Members;
             var excludeMembers = new HashSet<string>(members.Select(_ => _.Member.Name));
 
             return _ => !excludeMembers.Contains(_.Member.Name);
@@ -32,9 +32,9 @@ namespace Lotech.Data.Operations
         /// </summary>
         /// <typeparam name="TInclude"></typeparam>
         /// <returns></returns>
-        internal static Func<IMemberDescriptor, bool> Include<TInclude>(Operation operation) where TInclude : class
+        internal static Func<IMemberDescriptor, bool> Include<TInclude>() where TInclude : class
         {
-            var members = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TInclude>(operation).Members;
+            var members = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TInclude>(Operation.None).Members;
             var excludeMembers = new HashSet<string>(members.Select(_ => _.Member.Name));
 
             return _ => excludeMembers.Contains(_.Member.Name);

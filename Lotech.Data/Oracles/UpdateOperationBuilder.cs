@@ -28,12 +28,12 @@ namespace Lotech.Data.Oracles
 
         public class Exclude<TExclude> : UpdateOperationBuilder<TEntity> where TExclude : class
         {
-            public Exclude() : base(MemberFilters.Exclude<TExclude>(Operation.Update)) { }
+            public Exclude() : base(MemberFilters.Exclude<TExclude>()) { }
         }
 
         public class Include<TInclude> : UpdateOperationBuilder<TEntity> where TInclude : class
         {
-            public Include() : base(MemberFilters.Include<TInclude>(Operation.Update)) { }
+            public Include() : base(MemberFilters.Include<TInclude>()) { }
         }
 
         #region Constructor

@@ -74,6 +74,7 @@ namespace Lotech.Data.Descriptors
         /// <returns></returns>
         public IEntityDescriptor GetEntityDescriptor<TEntity>(Operation operation) where TEntity : class
         {
+            Console.WriteLine($"build descriptor for {operation} {typeof(TEntity).Name}");
             return AttributeEntityDescriptor<TEntity>.Instance;
         }
     }

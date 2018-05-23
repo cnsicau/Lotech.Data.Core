@@ -69,6 +69,7 @@
     <Compile Include="Descriptors\IMemberDescriptor.cs" />
     <Compile Include="Descriptors\MemberDescriptor.cs" />
     <Compile Include="Descriptors\MemberTuple.cs" />
+    <Compile Include="Descriptors\Operation.cs" />
     <Compile Include="Descriptors\ReflectionEntityDescriptor.cs" />
     <Compile Include="Descriptors\ReflectionMemberDescriptor.cs" />
     <Compile Include="EntityAttribute.cs" />

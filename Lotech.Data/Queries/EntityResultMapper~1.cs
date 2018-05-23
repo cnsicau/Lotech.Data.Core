@@ -155,7 +155,7 @@ namespace Lotech.Data.Queries
         {
             var mappers = new List<KeyValuePair<int, MapDescriptor>>();
             converts = new ValueConverter.ConvertDelegate[source.Columns.Count];
-            var descriptor = Database.DescriptorProvider.GetEntityDescriptor<TEntity>();
+            var descriptor = Database.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.Select);
             var members = MapperContainer.GetDescriptors(descriptor);
             // 分析需要映射列集合（实体中、Reader中共有的列）
             for (int i = source.Columns.Count - 1; i >= 0; i--)

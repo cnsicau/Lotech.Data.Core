@@ -12,7 +12,7 @@ namespace Lotech.Data.SqlServers
         where TEntity : class
     {
         public SqlServerDeleteEntitiesExpression() : base(
-            db => new SqlServerExpressionVisitor<TEntity>(db),
+            db => new SqlServerExpressionVisitor<TEntity>(db, Descriptors.Operation.Delete),
             Quote
         )
         { }

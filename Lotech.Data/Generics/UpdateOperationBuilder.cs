@@ -11,12 +11,12 @@ namespace Lotech.Data.Generics
     {
         public class Exclude<TExclude> : UpdateOperationBuilder<TEntity> where TExclude : class
         {
-            public Exclude() : base(MemberFilters.Exclude<TExclude>()) { }
+            public Exclude() : base(MemberFilters.Exclude<TExclude>(Operation.Update)) { }
         }
 
         public class Include<TInclude> : UpdateOperationBuilder<TEntity> where TInclude : class
         {
-            public Include() : base(MemberFilters.Include<TInclude>()) { }
+            public Include() : base(MemberFilters.Include<TInclude>(Operation.Update)) { }
         }
 
         public UpdateOperationBuilder() : this(MemberFilters.None()) { }

@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace Lotech.Data.Descriptors
 {
     /// <summary>
@@ -11,7 +10,8 @@ namespace Lotech.Data.Descriptors
         /// 获取指定类型的描述符
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
+        /// <param name="operation">操作</param>
         /// <returns></returns>
-        IEntityDescriptor GetEntityDescriptor<TEntity>() where TEntity : class;
+        IEntityDescriptor GetEntityDescriptor<TEntity>(Operation operation) where TEntity : class;
     }
 }

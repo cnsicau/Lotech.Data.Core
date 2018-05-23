@@ -10,6 +10,6 @@ namespace Lotech.Data.SqlServers
     class SqlServerCountEntitiesExpression<TEntity> : Operations.Common.CommonCountEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, int>>
         where TEntity : class
     {
-        public SqlServerCountEntitiesExpression() : base(_ => new SqlServerExpressionVisitor<TEntity>(_), SqlServerDatabase.Quote) { }
+        public SqlServerCountEntitiesExpression() : base(_ => new SqlServerExpressionVisitor<TEntity>(_, Descriptors.Operation.None), SqlServerDatabase.Quote) { }
     }
 }

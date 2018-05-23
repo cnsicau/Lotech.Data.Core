@@ -4,6 +4,6 @@ namespace Lotech.Data.Oracles
 {
     class OracleUpdateEntities<TEntity, TSet> : CommonUpdateEntities<TEntity, TSet> where TEntity : class where TSet : class
     {
-        public OracleUpdateEntities() : base(OracleDatabase.Quote, OracleDatabase.BuildParameter, _ => new OracleExpressionVisitor<TEntity>(_)) { }
+        public OracleUpdateEntities() : base(OracleDatabase.Quote, OracleDatabase.BuildParameter, _ => new OracleExpressionVisitor<TEntity>(_, Descriptors.Operation.Update)) { }
     }
 }

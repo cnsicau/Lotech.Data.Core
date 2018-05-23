@@ -70,7 +70,7 @@ namespace Lotech.Data.SQLites
         }
         #endregion
 
-        public SQLiteExpressionVisitor(IDatabase database) : base(database) { }
+        public SQLiteExpressionVisitor(IDatabase database, Operation operation) : base(database, operation) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
@@ -95,7 +95,7 @@ namespace Lotech.Data.SQLites
             else if (node.Method.Name == "Contains" && node.Method.IsGenericMethod
                     && node.Arguments.Count == 2 && node.Method.DeclaringType == typeof(Enumerable))
             {
-                var collectionVisitor = new SQLiteExpressionVisitor<TEntity>(Database);
+                var collectionVisitor = new SQLiteExpressionVisitor<TEntity>(Database, Operation);
                 collectionVisitor.Visit(node.Arguments[0]);
                 var values = (collectionVisitor.Parameters.FirstOrDefault().Value as IEnumerable)?.GetEnumerator();
 

@@ -10,6 +10,6 @@ namespace Lotech.Data.Oracles
     class OracleCountEntitiesExpression<TEntity> : Operations.Common.CommonCountEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, int>>
         where TEntity : class
     {
-        public OracleCountEntitiesExpression() : base(_ => new OracleExpressionVisitor<TEntity>(_), OracleDatabase.Quote) { }
+        public OracleCountEntitiesExpression() : base(_ => new OracleExpressionVisitor<TEntity>(_, Descriptors.Operation.None), OracleDatabase.Quote) { }
     }
 }

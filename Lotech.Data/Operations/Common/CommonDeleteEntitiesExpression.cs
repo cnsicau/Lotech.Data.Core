@@ -17,7 +17,7 @@ namespace Lotech.Data.Operations.Common
         /// <summary>
         /// 
         /// </summary>
-        protected CommonDeleteEntitiesExpression() : this(db => new SqlExpressionVisitor<TEntity>(db)) { }
+        protected CommonDeleteEntitiesExpression() : this(db => new SqlExpressionVisitor<TEntity>(db, Operation.Delete)) { }
 
         /// <summary>
         /// 

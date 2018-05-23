@@ -77,7 +77,7 @@ namespace Lotech.Data.SqlServers
         }
         #endregion
 
-        public SqlServerExpressionVisitor(IDatabase database) : base(database) { }
+        public SqlServerExpressionVisitor(IDatabase database, Operation operation) : base(database, operation) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
@@ -103,7 +103,7 @@ namespace Lotech.Data.SqlServers
             else if (node.Method.Name == "Contains" && node.Method.IsGenericMethod
                     && node.Arguments.Count == 2 && node.Method.DeclaringType == typeof(Enumerable))
             {
-                var collectionVisitor = new SqlServerExpressionVisitor<TEntity>(Database);
+                var collectionVisitor = new SqlServerExpressionVisitor<TEntity>(Database, Operation);
                 collectionVisitor.Visit(node.Arguments[0]);
                 var values = (collectionVisitor.Parameters.FirstOrDefault().Value as IEnumerable)?.GetEnumerator();
 

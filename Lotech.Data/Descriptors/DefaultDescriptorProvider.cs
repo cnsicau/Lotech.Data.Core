@@ -72,7 +72,7 @@ namespace Lotech.Data.Descriptors
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        public IEntityDescriptor GetEntityDescriptor<TEntity>() where TEntity : class
+        public IEntityDescriptor GetEntityDescriptor<TEntity>(Operation operation) where TEntity : class
         {
             return AttributeEntityDescriptor<TEntity>.Instance;
         }

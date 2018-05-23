@@ -11,6 +11,6 @@ namespace Lotech.Data.MySqls
     class MySqlExistsEntityExpression<TEntity> : Operations.Common.CommonExistsEntityExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, bool>>
        where TEntity : class
     {
-        public MySqlExistsEntityExpression() : base(_ => new MySqlExpressionVisitor<TEntity>(_), Quote) { }
+        public MySqlExistsEntityExpression() : base(_ => new MySqlExpressionVisitor<TEntity>(_, Descriptors.Operation.None), Quote) { }
     }
 }

@@ -12,7 +12,7 @@ namespace Lotech.Data.MySqls
         where TEntity : class
     {
         public MySqlLoadEntityExpression() : base(
-            db => new MySqlExpressionVisitor<TEntity>(db),
+            db => new MySqlExpressionVisitor<TEntity>(db, Descriptors.Operation.Select),
             Quote
         )
         { }

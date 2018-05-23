@@ -13,7 +13,7 @@ namespace Lotech.Data.SqlServers
     {
 
         public SqlServerLoadEntityExpression() : base(
-            db => new SqlServerExpressionVisitor<TEntity>(db),
+            db => new SqlServerExpressionVisitor<TEntity>(db, Descriptors.Operation.Select),
             Quote
         )
         { }

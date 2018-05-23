@@ -17,7 +17,7 @@ namespace Lotech.Data.Operations.Common
         /// <summary>
         /// 
         /// </summary>
-        protected CommonExistsEntityExpression() : this(db => new SqlExpressionVisitor<TEntity>(db)) { }
+        protected CommonExistsEntityExpression() : this(db => new SqlExpressionVisitor<TEntity>(db, Operation.Select)) { }
 
         /// <summary>
         /// 

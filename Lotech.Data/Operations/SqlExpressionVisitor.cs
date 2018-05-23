@@ -56,6 +56,7 @@ namespace Lotech.Data.Operations
         #endregion
 
         private readonly IDatabase _database;
+        private readonly Operation _operation;
         private readonly IEntityDescriptor _descriptor;
         private readonly StringBuilder _sql = new StringBuilder();
         private readonly List<ExpressionParameter> _parameters = new List<ExpressionParameter>();
@@ -65,21 +66,23 @@ namespace Lotech.Data.Operations
         /// 
         /// </summary>
         /// <param name="database"></param>
-        public SqlExpressionVisitor(IDatabase database) : this(database, database.DescriptorProvider.GetEntityDescriptor<EntityType>()) { }
+        /// <param name="operation"></param>
+        public SqlExpressionVisitor(IDatabase database, Operation operation) : this(database, database.DescriptorProvider.GetEntityDescriptor<EntityType>(operation), operation) { }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="database"></param>
         /// <param name="descriptor"></param>
-        SqlExpressionVisitor(IDatabase database, IEntityDescriptor descriptor)
+        /// <param name="operation"></param>
+        SqlExpressionVisitor(IDatabase database, IEntityDescriptor descriptor, Operation operation)
         {
             if (database == null) throw new ArgumentNullException(nameof(database));
             _database = database;
 
             if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
             _descriptor = descriptor;
-
+            _operation = operation;
         }
 
         /// <summary>
@@ -99,6 +102,11 @@ namespace Lotech.Data.Operations
         /// 
         /// </summary>
         protected IDatabase Database { get { return _database; } }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        protected Operation Operation { get { return _operation; } }
 
         /// <summary>
         /// 追加SQL片断

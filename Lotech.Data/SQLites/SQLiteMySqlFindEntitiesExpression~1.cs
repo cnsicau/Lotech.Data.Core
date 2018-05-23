@@ -13,7 +13,7 @@ namespace Lotech.Data.SQLites
        where TEntity : class
     {
         public SQLiteFindEntitiesExpression() : base(
-            db => new SQLiteExpressionVisitor<TEntity>(db),
+            db => new SQLiteExpressionVisitor<TEntity>(db, Descriptors.Operation.Select),
             Quote
         )
         { }

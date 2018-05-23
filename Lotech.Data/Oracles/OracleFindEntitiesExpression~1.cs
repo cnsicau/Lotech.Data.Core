@@ -13,7 +13,7 @@ namespace Lotech.Data.Oracles
        where TEntity : class
     {
         public OracleFindEntitiesExpression() : base(
-            db => new OracleExpressionVisitor<TEntity>(db),
+            db => new OracleExpressionVisitor<TEntity>(db, Descriptors.Operation.Select),
             Quote
         )
         { }

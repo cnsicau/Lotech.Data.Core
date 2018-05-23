@@ -71,7 +71,7 @@ namespace Lotech.Data.MySqls
         }
         #endregion
 
-        public MySqlExpressionVisitor(IDatabase database) : base(database) { }
+        public MySqlExpressionVisitor(IDatabase database, Operation operation) : base(database, operation) { }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
@@ -97,7 +97,7 @@ namespace Lotech.Data.MySqls
             else if (node.Method.Name == "Contains" && node.Method.IsGenericMethod
                     && node.Arguments.Count == 2 && node.Method.DeclaringType == typeof(Enumerable))
             {
-                var collectionVisitor = new MySqlExpressionVisitor<TEntity>(Database);
+                var collectionVisitor = new MySqlExpressionVisitor<TEntity>(Database, Operation);
                 collectionVisitor.Visit(node.Arguments[0]);
                 var values = (collectionVisitor.Parameters.FirstOrDefault().Value as IEnumerable)?.GetEnumerator();
 

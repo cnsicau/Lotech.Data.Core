@@ -12,17 +12,20 @@ namespace Lotech.Data.Example
         class OracleDescriptorProvider : IDescriptorProvider
         {
             internal static readonly IDescriptorProvider Instance = new OracleDescriptorProvider();
-            static readonly ConcurrentDictionary<Type, IEntityDescriptor> descriptors = new ConcurrentDictionary<Type, IEntityDescriptor>();
-
-            public IEntityDescriptor GetEntityDescriptor<TEntity>() where TEntity : class
+            static class Descriptors<TEntity>
             {
-                return descriptors.GetOrAdd(typeof(TEntity), _ =>
+                internal static readonly ConcurrentDictionary<Operation, IEntityDescriptor> Container = new ConcurrentDictionary<Operation, IEntityDescriptor>();
+            }
+
+            public IEntityDescriptor GetEntityDescriptor<TEntity>(Operation operation) where TEntity : class
+            {
+                return Descriptors<TEntity>.Container.GetOrAdd(operation, _=>
                  {
-                     Console.WriteLine("Parse oracle descriptor for :" + typeof(TEntity));
-                     var descriptor = (EntityDescriptor)DefaultDescriptorProvider.Instance.GetEntityDescriptor<TEntity>();
+                     Console.WriteLine("Parse oracle descriptor for " + _ + " " + typeof(TEntity));
+                     var descriptor = (EntityDescriptor)DefaultDescriptorProvider.Instance.GetEntityDescriptor<TEntity>(_);
                      descriptor.Name = descriptor.Name.ToUpper();
-                    // 转换大写
-                    foreach (MemberDescriptor member in descriptor.Members)
+                     // 转换大写
+                     foreach (MemberDescriptor member in descriptor.Members)
                      {
                          if (member.DbType == System.Data.DbType.Boolean)
                              member.DbType = System.Data.DbType.Int16;

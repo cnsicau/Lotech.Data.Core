@@ -12,7 +12,7 @@ namespace Lotech.Data.Oracles
         where TEntity : class
     {
         public OracleDeleteEntitiesExpression() : base(
-            db => new OracleExpressionVisitor<TEntity>(db),
+            db => new OracleExpressionVisitor<TEntity>(db, Descriptors.Operation.Delete),
             Quote
         )
         { }

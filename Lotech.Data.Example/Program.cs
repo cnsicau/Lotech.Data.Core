@@ -55,6 +55,7 @@ namespace Lotech.Data.Example
         {
             // Entity
             var sqlite = new SQLiteExample();
+            sqlite.Database.Update<Example>().Set(new { Code = "C", Deleted = true }).Where(_ => _.Id == 5);
             EntityTests<SQLiteExample.Example>(sqlite);    // SQLite 
             var mysql = new MySqlExample();
             EntityTests<Example>(mysql);                   // MySQL

@@ -2,8 +2,6 @@
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
-using System.Threading;
 
 namespace Lotech.Data
 {
@@ -24,7 +22,8 @@ namespace Lotech.Data
         /// </summary>
         public ConnectionSubstitute(DbConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null)
+                throw new ArgumentNullException("connection");
             connection.Site = this;
             this.connection = connection;
 
@@ -35,6 +34,11 @@ namespace Lotech.Data
         /// 
         /// </summary>
         public DbConnection Connection { get { return connection; } }
+
+        /// <summary>
+        /// 当真正释放时触发
+        /// </summary>
+        public event EventHandler Disposed;
 
         IComponent ISite.Component { get { return component; } }
 
@@ -50,7 +54,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public ConnectionSubstitute Ref()
         {
-            Interlocked.Increment(ref refs);
+            refs++;
             return this;
         }
 
@@ -59,7 +63,7 @@ namespace Lotech.Data
         /// </summary>
         public void Dispose()
         {
-            if (Interlocked.Decrement(ref refs) == 0)
+            if (--refs == 0)
             {
                 if (initState == ConnectionState.Closed && connection.State != ConnectionState.Closed)
                 {
@@ -72,6 +76,9 @@ namespace Lotech.Data
                 }
                 container.Dispose();
                 component.Dispose();
+
+                Disposed?.Invoke(this, EventArgs.Empty);
+                Disposed = null;
             }
         }
 

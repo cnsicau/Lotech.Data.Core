@@ -82,38 +82,65 @@ namespace Lotech.Data.SQLites
         internal Action<IDatabase, DbCommand, TEntity> BuildCommandExecutor()
         {
             // 不带返回
-            if (_identity == null && _outputs.Length == 0) return (db, command, entity) => db.ExecuteNonQuery(command);
-            Action<IDatabase, TEntity> rerverseBindId = (db, entity) => { };
-            Action<IDatabase, TEntity> reverseBind = rerverseBindId;
-
-            if (_identity != null)
+            if (_identity == null && _outputs.Length == 0)
+                return (db, command, entity) => db.ExecuteNonQuery(command);
+            if (_identity != null && _outputs.Length == 0) // 仅返回自增长主键
             {
-                var setId = MemberAccessor<TEntity, object>.GetSetter(_identity.Member);
-                rerverseBindId = (db, entity) =>
+                var setter = MemberAccessor<TEntity, object>.GetSetter(_identity.Member);
+                return (db, command, entity) =>
                 {
-                    setId(entity, db.ExecuteScalar("SELECT LAST_INSERT_ROWID()"));
+                    using (var transactionManager = new TransactionManager())
+                    {
+                        db.ExecuteNonQuery(command);
+                        setter(entity, db.ExecuteScalar("SELECT LAST_INSERT_ROWID()"));
+
+                        transactionManager.Commit();
+                    }
                 };
             }
 
-            if (_outputs.Length > 0)
-            {
-                var assigns = _outputs.Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
+            var sql = string.Concat("SELECT "
+                        , _identity == null ? "" : (Quote(_identity.Name) + ", ")
+                        , string.Join(", ", _outputs.Select(_ => Quote(_.Name)))
+                        , " FROM "
+                        , string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.')
+                        , Quote(_descriptor.Name)
+                        , " WHERE "
+                        , string.Join(", ", _descriptor.Keys.Select((_, i) => _.Name + " = "
+                                + (_ == _identity ? "LAST_INSERT_ROWID()" : BuildParameter("p_sql_" + i)))));
 
-                reverseBind = (db, entity) =>
+            var bindParameters = _descriptor.Keys.Select((key, i) =>
+            {
+                if (key == _identity)
+                    return default(Action<IDatabase, DbCommand, TEntity>);
+
+                var parameterName = BuildParameter("p_sql_" + i);
+                var getter = MemberAccessor<TEntity, object>.GetGetter(key.Member);
+                return (db, command, entity) =>
                 {
-                    var reverseEntity = db.LoadEntity(entity);
-                    foreach (var assign in assigns)
-                        assign(reverseEntity, entity);
+                    db.AddInParameter(command, parameterName, key.DbType, getter(entity));
                 };
-            }
+            }).Where(_ => _ != null).ToArray();
+
+            var reverseAssigns = _outputs.Concat(_identity == null ? new IMemberDescriptor[0] : new[] { _identity })
+                    .Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
+
+
 
             return (db, command, entity) =>
             {
                 using (var transactionManager = new TransactionManager())
                 {
                     db.ExecuteNonQuery(command);
-                    rerverseBindId(db, entity);
-                    reverseBind(db, entity);
+
+                    using (var reverseCommand = db.GetSqlStringCommand(sql))
+                    {
+                        foreach (var bind in bindParameters)
+                            bind(db, reverseCommand, entity);
+                        var reverse = db.ExecuteEntity<TEntity>(reverseCommand);
+                        foreach (var assign in reverseAssigns)
+                            assign(reverse, entity);
+                    }
 
                     transactionManager.Commit();
                 }

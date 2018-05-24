@@ -49,8 +49,8 @@ namespace Lotech.Data.Queries
             {
                 _current = default(TEntity);
                 _mapper.TearDown();
-                _source.Dispose();
                 _disposing?.Invoke(_count);
+                _source.Dispose();
                 _source = null;
             }
 
@@ -108,7 +108,7 @@ namespace Lotech.Data.Queries
                     return new QueryResultEnumerator(source, _mapper, (count) =>
                     {
                         sw.Stop();
-                        _database.Log?.Invoke($"  Complete enumerate {count} records. Elpased times: {sw.Elapsed}.");
+                        _database.Log?.Invoke($"  Complete read {count} {typeof(TEntity).Name} records. Elpased times: {sw.Elapsed}.");
                     });
                 }
                 catch

@@ -185,6 +185,7 @@
     <Compile Include="Queries\QueryResult~1.cs" />
     <Compile Include="Queries\SimpleResultMapper~1.cs" />
     <Compile Include="Queries\SqlQuery.cs" />
+    <Compile Include="Queries\UpdateBuilder.cs" />
     <Compile Include="QueryExtensions.cs" />
     <Compile Include="SQLiteDatabase.cs" />
     <Compile Include="SQLites\DeleteOperationBuilder.cs" />

@@ -21,7 +21,8 @@ namespace Lotech.Data
         /// <returns></returns>
         static public ISqlQuery SqlQuery(this IDatabase database)
         {
-            if (database == null) throw new NullReferenceException(nameof(database));
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
 
             return new SqlQuery(database);
         }
@@ -34,7 +35,8 @@ namespace Lotech.Data
         /// <returns></returns>
         static public ISqlQuery SqlQuery(this IDatabase database, string sql)
         {
-            if (database == null) throw new NullReferenceException(nameof(database));
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
 
             return database.SqlQuery().Append(sql);
         }
@@ -48,7 +50,8 @@ namespace Lotech.Data
         /// <returns></returns>
         static public ISqlQuery SqlQuery(this IDatabase database, string sql, params object[] args)
         {
-            if (database == null) throw new NullReferenceException(nameof(database));
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
 
             return database.SqlQuery().Append(sql, args);
         }
@@ -503,6 +506,20 @@ namespace Lotech.Data
         static public TEntity[] ExecuteSqlEntities<TEntity>(this IDatabase database, string sql, params object[] args) where TEntity : class
         {
             return database.SqlQuery(sql, args).ExecuteEntities<TEntity>();
+        }
+        #endregion
+
+        #region Update
+        /// <summary>
+        /// 扩展 Update 实现
+        ///     db.Update<TEntity>().Set(new {Deleted = true, ModifyTime = DateTime.Now}).Where(_ => _.KeyId == 5);
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="database"></param>
+        /// <returns></returns>
+        static public UpdateBuilder<TEntity> Update<TEntity>(this IDatabase database) where TEntity : class, new()
+        {
+            return new UpdateBuilder<TEntity>(database);
         }
         #endregion
     }

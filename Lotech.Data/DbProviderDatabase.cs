@@ -20,6 +20,7 @@ namespace Lotech.Data
         /// </summary>
         private readonly DbProviderFactory dbProviderFactory;
         private readonly IEntityServices services;
+        private readonly bool trace = Configurations.DatabaseConfiguration.Current?.DatabaseSettings?.Trace ?? false;
 
         static class ResultMapper<ValueType>
         {
@@ -58,9 +59,15 @@ namespace Lotech.Data
             }
         }
 
-        static void TraceLog(string message)
+        static void TraceLog(string message) { Trace.WriteLine(message); }
+
+        void LogCommand(string action, DbCommand command)
         {
-            Trace.WriteLine(message);
+            Log($"\n{action} with {command.CommandType} command :\n" + command.CommandText);
+            foreach (DbParameter p in command.Parameters)
+            {
+                Log($"  -- {p.ParameterName,-12} {p.DbType,10}    =    {p.Value}");
+            }
         }
 
         /// <summary>
@@ -72,15 +79,16 @@ namespace Lotech.Data
         {
             if (dbProviderFactory == null)
                 throw new ArgumentNullException(nameof(dbProviderFactory));
-            ;
-            this.dbProviderFactory = dbProviderFactory;
-
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
+
+            this.dbProviderFactory = dbProviderFactory;
             this.services = services;
             services.Database = this;
-
             DescriptorProvider = DefaultDescriptorProvider.Instance;
+
+            if (trace)
+                Log = TraceLog;
         }
 
         /// <summary>
@@ -156,7 +164,8 @@ namespace Lotech.Data
 
             if (transactionManager != null) // 新连接若已经存在当前事务管理器，则自动开启事务
             {
-                try { BindOpenedConnection(command, connection); }
+                try
+                { BindOpenedConnection(command, connection); }
                 catch
                 {
                     connection.Dispose();
@@ -173,7 +182,8 @@ namespace Lotech.Data
         {
             command.Connection = connection.Connection;
 
-            if (connection.Connection.State == ConnectionState.Open) return;
+            if (connection.Connection.State == ConnectionState.Open)
+                return;
             if (Log == null)
             {
                 connection.Connection.Open();
@@ -182,7 +192,9 @@ namespace Lotech.Data
             {
                 var sw = Stopwatch.StartNew();
                 connection.Connection.Open();
-                Log($"  Open connection at {DateTime.Now}. Elpased times: {sw.Elapsed}.");
+                Log($"open connection at {DateTime.Now}. Elpased times: {sw.Elapsed}.");
+                sw.Restart();
+                connection.Disposed += (s, e) => Log($"close connection at {DateTime.Now}. Used times: {sw.Elapsed}");
             }
         }
 
@@ -335,6 +347,31 @@ namespace Lotech.Data
         /// <returns></returns>
         public abstract string QuoteName(string name);
 
+        TResult ExecuteCommand<TValue, TResult>(string action, DbCommand command, Func<DbCommand, TValue> value, Func<ConnectionSubstitute, TValue, TResult> result)
+        {
+            var substitute = GetConnection(command);
+            try
+            {
+                BindOpenedConnection(command, substitute);
+                TValue val;
+                if (Log == null)
+                    val = value(command);
+                else
+                {
+                    var sw = Stopwatch.StartNew();
+                    LogCommand(action, command);
+                    val = value(command);
+                    Log("  -- elapsed times: " + sw.Elapsed);
+                }
+                return result(substitute, val);
+            }
+            catch
+            {
+                substitute.Dispose();
+                throw;
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -342,26 +379,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual IDataReader ExecuteReader(DbCommand command)
         {
-            var substitute = GetConnection(command);
-            try
-            {
-                BindOpenedConnection(command, substitute);
-                DbDataReader reader;
-                if (Log == null) reader = command.ExecuteReader();
-                else
-                {
-                    var sw = Stopwatch.StartNew();
-                    Log("Execute Reader :(" + command.CommandType + ")\t" + command.CommandText);
-                    reader = command.ExecuteReader();
-                    Log("  Response elapsed times: " + sw.Elapsed);
-                }
-                return new CompositedDataReader(reader, substitute);
-            }
-            catch
-            {
-                substitute.Dispose();
-                throw;
-            }
+            return ExecuteCommand(nameof(ExecuteReader), command, _ => _.ExecuteReader(), (substitute, reader) => new CompositedDataReader(reader, substitute));
         }
         /// <summary>
         /// 
@@ -399,21 +417,11 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual object ExecuteScalar(DbCommand command)
         {
-            using (var substitute = GetConnection(command))
+            return ExecuteCommand(nameof(ExecuteScalar), command, _ => _.ExecuteScalar(), (substitute, val) =>
             {
-                BindOpenedConnection(command, substitute);
-                object val;
-                if (Log == null) val = command.ExecuteScalar();
-                else
-                {
-                    var sw = Stopwatch.StartNew();
-                    Log("Execute Scalar :(" + command.CommandType + ")\t" + command.CommandText);
-                    val = command.ExecuteScalar();
-                    Log("  Response elapsed times: " + sw.Elapsed);
-                }
-
+                substitute.Dispose();
                 return val == DBNull.Value ? null : val;
-            }
+            });
         }
         /// <summary>
         /// 
@@ -445,11 +453,8 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual TScalar ExecuteScalar<TScalar>(DbCommand command)
         {
-            using (var subsitute = GetConnection(command))
-            {
-                return new QueryResult<TScalar>(this, command
-                        , ResultMapper<TScalar>.Create(this)).FirstOrDefault();
-            }
+            return new QueryResult<TScalar>(this, command
+                    , ResultMapper<TScalar>.Create(this)).FirstOrDefault();
         }
         /// <summary>
         /// 
@@ -532,20 +537,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual int ExecuteNonQuery(DbCommand command)
         {
-            using (var substitute = GetConnection(command))
-            {
-                BindOpenedConnection(command, substitute);
-                int val;
-                if (Log == null) val = command.ExecuteNonQuery();
-                else
-                {
-                    var sw = Stopwatch.StartNew();
-                    Log("Execute NonQuery :(" + command.CommandType + ")\t" + command.CommandText);
-                    val = command.ExecuteNonQuery();
-                    Log("  Response elapsed times: " + sw.Elapsed);
-                }
-                return val;
-            }
+            return ExecuteCommand(nameof(ExecuteNonQuery), command, _ => _.ExecuteNonQuery(), (substitute, val) => { using (substitute) { return val; } });
         }
         /// <summary>
         /// 

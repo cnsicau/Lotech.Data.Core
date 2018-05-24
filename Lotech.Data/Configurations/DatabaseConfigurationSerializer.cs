@@ -29,9 +29,13 @@ namespace Lotech.Data.Configurations
                 }
                 return new DatabaseConfiguration
                 {
-                    DatabaseSettings = new DatabaseSettings { DefaultDatabase = configuration?.Settings?.DefaultDatabase },
+                    DatabaseSettings = new DatabaseSettings
+                    {
+                        DefaultDatabase = configuration?.Settings?.DefaultDatabase,
+                        Trace = configuration?.Settings?.Trace ?? false
+                    },
                     ConnectionStrings = new ConnectionStringSettingsCollection(
-                        configuration.ConnectionStrings.ToDictionary(_ => _.Name, _ => new ConnectionStringSettings
+                        configuration.ConnectionStrings.ToDictionary(_ => _.Name ?? string.Empty, _ => new ConnectionStringSettings
                         {
                             ConnectionString = _.ConnectionString,
                             ParameterPrefix = _.ParameterPrefix,
@@ -114,6 +118,11 @@ namespace Lotech.Data.Configurations
             /// </summary>
             [XmlAttribute("defaultDatabase")]
             public string DefaultDatabase { get; set; }
+            /// <summary>
+            /// 
+            /// </summary>
+            [XmlAttribute("trace")]
+            public bool Trace { get; set; }
         }
 
         /// <summary>

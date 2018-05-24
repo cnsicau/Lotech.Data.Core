@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Lotech.Data
@@ -23,9 +24,9 @@ namespace Lotech.Data
         /// </summary>
         public ConnectionSubstitute(DbConnection connection)
         {
-            if(connection  == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException("connection");
             connection.Site = this;
-            this.connection  = connection ;
+            this.connection = connection;
 
             initState = connection.State;
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
+using System.Data.Common;
 using System.Diagnostics;
 
 namespace Lotech.Data.Queries
@@ -10,10 +10,11 @@ namespace Lotech.Data.Queries
     /// 查询结果封装
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public abstract class QueryResult<TEntity> : IEnumerable<TEntity>
+    public class QueryResult<TEntity> : IEnumerable<TEntity>
     {
+        private readonly IDatabase _database;
         private readonly IResultMapper<TEntity> _mapper;
-        private readonly Action<string> _log;
+        private readonly DbCommand _command;
 
         /// <summary>
         /// 结果枚举器
@@ -79,45 +80,27 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 构造查询结果
         /// </summary>
+        /// <param name="database">DB</param>
+        /// <param name="command"></param>
         /// <param name="mapper">结果映射器</param>
-        /// <param name="log"></param>
-        protected QueryResult(IResultMapper<TEntity> mapper, Action<string> log)
+        public QueryResult(IDatabase database, DbCommand command, IResultMapper<TEntity> mapper)
         {
             if (mapper == null)
-                throw new ArgumentNullException("mapper");
+                throw new ArgumentNullException(nameof(mapper));
+            if (database == null)
+                throw new ArgumentNullException(nameof(database));
+            if (command == null)
+                throw new ArgumentNullException(nameof(command));
 
+            _database = database;
             _mapper = mapper;
-            _log = log;
+            _command = command;
         }
 
-        /// <summary>
-        /// 写日志
-        /// </summary>
-        /// <param name="log"></param>
-        protected void Log(string log)
-        {
-            _log?.Invoke(log);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        protected IEnumerator<TEntity> CreateEnumerator(IDbCommand command)
+        IEnumerator<TEntity> Execute()
         {
             var sw = Stopwatch.StartNew();
-            var connection = command.Connection;
-            if (connection == null)
-                throw new InvalidOperationException("command.Connection is null.");
-            var connectionState = connection.State;
-            if (connectionState != ConnectionState.Open)
-            {
-                connection.Open();
-                Log($"  Open connection at {DateTime.Now}. Elpased times: {sw.Elapsed}.");
-                sw.Restart();
-            }
-            var reader = command.ExecuteReader();
+            var reader = _database.ExecuteReader(_command);
             {
                 IResultSource source = new DataReaderResultSource(reader);
                 try
@@ -125,9 +108,7 @@ namespace Lotech.Data.Queries
                     return new QueryResultEnumerator(source, _mapper, (count) =>
                     {
                         sw.Stop();
-                        Log($"  Complete enumerate {count} records. Elpased times: {sw.Elapsed}.");
-                        if (connectionState != ConnectionState.Open && connection.State == ConnectionState.Closed)
-                            Log($"  Close connection at {DateTime.Now}.");
+                        _database.Log?.Invoke($"  Complete enumerate {count} records. Elpased times: {sw.Elapsed}.");
                     });
                 }
                 catch
@@ -137,20 +118,11 @@ namespace Lotech.Data.Queries
                     sw.Stop();
                     throw;
                 }
-                finally
-                {
-                    Log("  Elapsed times: " + sw.Elapsed);
-                }
             }
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        protected abstract IEnumerator<TEntity> GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+        IEnumerator IEnumerable.GetEnumerator() { return Execute(); }
 
-        IEnumerator<TEntity> IEnumerable<TEntity>.GetEnumerator() { return GetEnumerator(); }
+        IEnumerator<TEntity> IEnumerable<TEntity>.GetEnumerator() { return Execute(); }
     }
 }

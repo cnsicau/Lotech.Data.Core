@@ -148,6 +148,7 @@ namespace Lotech.Data
             {
                 // 绑定事务
                 command.Transaction = transaction;
+                command.Connection = transaction.Connection;
                 return new ConnectionSubstitute(transaction.Connection).Ref();
             }
 
@@ -155,12 +156,34 @@ namespace Lotech.Data
 
             if (transactionManager != null) // 新连接若已经存在当前事务管理器，则自动开启事务
             {
-                connection.Connection.Open();
+                try { BindOpenedConnection(command, connection); }
+                catch
+                {
+                    connection.Dispose();
+                    throw;
+                }
                 transactionManager.Completed += (s, e) => connection.Dispose();
                 command.Transaction = transactionManager.EnlistTransaction(connection.Connection, ConnectionString);  // 绑定事务到 DbCommand中
                 connection.Ref();   // 以便上面完成时关闭连接，避免过早关闭
             }
             return connection;
+        }
+
+        void BindOpenedConnection(DbCommand command, ConnectionSubstitute connection)
+        {
+            command.Connection = connection.Connection;
+
+            if (connection.Connection.State == ConnectionState.Open) return;
+            if (Log == null)
+            {
+                connection.Connection.Open();
+            }
+            else
+            {
+                var sw = Stopwatch.StartNew();
+                connection.Connection.Open();
+                Log($"  Open connection at {DateTime.Now}. Elpased times: {sw.Elapsed}.");
+            }
         }
 
         /// <summary>
@@ -322,13 +345,17 @@ namespace Lotech.Data
             var substitute = GetConnection(command);
             try
             {
-                command.Connection = substitute.Connection;
-
-                if (substitute.Connection.State != ConnectionState.Open)
-                    substitute.Connection.Open();
-
-                Log?.Invoke("Execute Reader:" + command.CommandText);
-                return new CompositedDataReader(command.ExecuteReader(), substitute);
+                BindOpenedConnection(command, substitute);
+                DbDataReader reader;
+                if (Log == null) reader = command.ExecuteReader();
+                else
+                {
+                    var sw = Stopwatch.StartNew();
+                    Log("Execute Reader :(" + command.CommandType + ")\t" + command.CommandText);
+                    reader = command.ExecuteReader();
+                    Log("  Response elapsed times: " + sw.Elapsed);
+                }
+                return new CompositedDataReader(reader, substitute);
             }
             catch
             {
@@ -374,13 +401,18 @@ namespace Lotech.Data
         {
             using (var substitute = GetConnection(command))
             {
-                Log?.Invoke("Execute Scalar:" + command.CommandText);
-                command.Connection = substitute.Connection;
-                if (substitute.Connection.State != ConnectionState.Open)
-                    substitute.Connection.Open();
+                BindOpenedConnection(command, substitute);
+                object val;
+                if (Log == null) val = command.ExecuteScalar();
+                else
+                {
+                    var sw = Stopwatch.StartNew();
+                    Log("Execute Scalar :(" + command.CommandType + ")\t" + command.CommandText);
+                    val = command.ExecuteScalar();
+                    Log("  Response elapsed times: " + sw.Elapsed);
+                }
 
-                object ret = command.ExecuteScalar();
-                return ret == DBNull.Value ? null : ret;
+                return val == DBNull.Value ? null : val;
             }
         }
         /// <summary>
@@ -415,9 +447,8 @@ namespace Lotech.Data
         {
             using (var subsitute = GetConnection(command))
             {
-                command.Connection = subsitute.Connection;
-                return new CommandQueryResult<TScalar>(command
-                        , ResultMapper<TScalar>.Create(this), Log).FirstOrDefault();
+                return new QueryResult<TScalar>(this, command
+                        , ResultMapper<TScalar>.Create(this)).FirstOrDefault();
             }
         }
         /// <summary>
@@ -501,13 +532,19 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual int ExecuteNonQuery(DbCommand command)
         {
-            using (var subsitute = GetConnection(command))
+            using (var substitute = GetConnection(command))
             {
-                Log?.Invoke("Execute NonQuery:" + command.CommandText);
-                command.Connection = subsitute.Connection;
-                if (subsitute.Connection.State != ConnectionState.Open)
-                    subsitute.Connection.Open();
-                return command.ExecuteNonQuery();
+                BindOpenedConnection(command, substitute);
+                int val;
+                if (Log == null) val = command.ExecuteNonQuery();
+                else
+                {
+                    var sw = Stopwatch.StartNew();
+                    Log("Execute NonQuery :(" + command.CommandType + ")\t" + command.CommandText);
+                    val = command.ExecuteNonQuery();
+                    Log("  Response elapsed times: " + sw.Elapsed);
+                }
+                return val;
             }
         }
         /// <summary>
@@ -575,14 +612,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic ExecuteEntity(DbCommand command)
         {
-            using (var subsitute = GetConnection(command))
-            {
-                command.Connection = subsitute.Connection;
-                return new CommandQueryResult<object>(
-                        command
-                        , new ObjectResultMapper()
-                        , Log).FirstOrDefault();
-            }
+            return new QueryResult<object>(this, command, new ObjectResultMapper()).FirstOrDefault();
         }
         /// <summary>
         /// 
@@ -591,14 +621,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic[] ExecuteEntities(DbCommand command)
         {
-            using (var subsitute = GetConnection(command))
-            {
-                command.Connection = subsitute.Connection;
-                return new CommandQueryResult<object>(
-                        command
-                        , new ObjectResultMapper()
-                        , Log).ToArray();
-            }
+            return new QueryResult<object>(this, command, new ObjectResultMapper()).ToArray();
         }
         /// <summary>
         /// 
@@ -685,14 +708,8 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType ExecuteEntity<EntityType>(DbCommand command) where EntityType : class
         {
-            using (var subsitute = GetConnection(command))
-            {
-                command.Connection = subsitute.Connection;
-                return new CommandQueryResult<EntityType>(
-                        command
-                        , ResultMapper<EntityType>.Create(this)
-                        , Log).FirstOrDefault();
-            }
+            return new QueryResult<EntityType>(this, command
+                    , ResultMapper<EntityType>.Create(this)).FirstOrDefault();
         }
         /// <summary>
         /// 
@@ -702,14 +719,8 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command) where EntityType : class
         {
-            using (var subsitute = GetConnection(command))
-            {
-                command.Connection = subsitute.Connection;
-                return new CommandQueryResult<EntityType>(
-                    command
-                    , ResultMapper<EntityType>.Create(this)
-                    , Log).ToArray();
-            }
+            return new QueryResult<EntityType>(this, command
+                    , ResultMapper<EntityType>.Create(this)).ToArray();
         }
         /// <summary>
         /// 

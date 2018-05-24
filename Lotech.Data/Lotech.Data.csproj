@@ -175,7 +175,6 @@
     <Compile Include="PageOrderDirection.cs" />
     <Compile Include="ProcedureQueryExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queries\CommandQueryResult~1.cs" />
     <Compile Include="Queries\DataReaderResultSource.cs" />
     <Compile Include="Queries\EntityResultMapper~1.cs" />
     <Compile Include="Queries\IRawParameterValue.cs" />

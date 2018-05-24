@@ -6,12 +6,11 @@
     public enum Operation
     {
         /// <summary>
-        /// 非标明操作
+        /// 非标明操作，包括 Count\Exists\ExecuteEntities\....
         /// </summary>
         None,
         /// <summary>
-        /// TODO Update有 ExecuteEntity, ExecuteEntities 情况
-        /// 查询操作 Load, Find, ExecuteEntities
+        /// 查询操作 Load, Find
         /// </summary>
         Select,
         /// <summary>

@@ -31,6 +31,10 @@ namespace Lotech.Data.Queries
             return new Executer<TSet>(this, set);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TSet"></typeparam>
         public class Executer<TSet> where TSet : class
         {
             static readonly Action<TSet, TEntity> assign;
@@ -69,6 +73,10 @@ namespace Lotech.Data.Queries
                 this.update = update;
             }
 
+            /// <summary>
+            /// 更新满足条件的数据
+            /// </summary>
+            /// <param name="predicate"></param>
             public void Where(Expression<Func<TEntity, bool>> predicate)
             {
                 var entity = new TEntity();

@@ -512,7 +512,7 @@ namespace Lotech.Data
         #region Update
         /// <summary>
         /// 扩展 Update 实现
-        ///     db.Update<TEntity>().Set(new {Deleted = true, ModifyTime = DateTime.Now}).Where(_ => _.KeyId == 5);
+        ///     db.Update&lt;TEntity&gt;().Set(new {Deleted = true, ModifyTime = DateTime.Now}).Where(_ => _.KeyId == 5);
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="database"></param>

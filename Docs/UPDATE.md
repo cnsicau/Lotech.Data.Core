@@ -74,7 +74,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 1.2 排除更新  `UpdateEntityExclude`
+#### 1.2 排除更新 `UpdateEntityExclude`
 用于排除部分字段不更新，如修改数据时排除 `Code`、`Name` 的内容
 * 声明
 ```csharp
@@ -111,7 +111,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 1.3 局部更新  `UpdateEntityInclude`
+#### 1.3 局部更新 `UpdateEntityInclude`
 用于仅更新部分字段，如做逻辑删除时修改数据时的 `Deleted`、`ModifyTime` 内容
 * 声明
 ```csharp
@@ -193,7 +193,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 2.2 排除更新  `UpdateEntitiesExclude`
+#### 2.2 排除更新 `UpdateEntitiesExclude`
 用于批量排除部分字段不更新，如修改数据时排除 `Code`、`Name` 的内容
 * 声明
 ```csharp
@@ -235,7 +235,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 2.3 局部更新  `UpdateEntityInclude`
+#### 2.3 局部更新 `UpdateEntityInclude`
 用于仅更新部分字段，如做逻辑删除时修改数据时的 `Deleted`、`ModifyTime` 内容
 * 声明
 ```csharp

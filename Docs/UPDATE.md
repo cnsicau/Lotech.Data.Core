@@ -235,7 +235,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 2.3 局部更新 `UpdateEntityInclude`
+#### 2.3 局部更新 `UpdateEntitiesInclude`
 用于仅更新部分字段，如做逻辑删除时修改数据时的 `Deleted`、`ModifyTime` 内容
 * 声明
 ```csharp

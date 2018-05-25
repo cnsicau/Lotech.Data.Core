@@ -11,6 +11,6 @@ namespace Lotech.Data.SqlServers
     class SqlServerExistsEntityExpression<TEntity> : Operations.Common.CommonExistsEntityExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, bool>>
        where TEntity : class
     {
-        public SqlServerExistsEntityExpression() : base(_ => new SqlServerExpressionVisitor<TEntity>(_, Descriptors.Operation.None), Quote) { }
+        public SqlServerExistsEntityExpression() : base(_ => new SqlServerExpressionVisitor<TEntity>(_, Descriptors.Operation.Select), Quote) { }
     }
 }

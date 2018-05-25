@@ -19,7 +19,7 @@ namespace Lotech.Data.Operations.Common
         /// <summary>
         /// 
         /// </summary>
-        protected CommonCountEntitiesExpression() : this(db => new SqlExpressionVisitor<TEntity>(db, Operation.None)) { }
+        protected CommonCountEntitiesExpression() : this(db => new SqlExpressionVisitor<TEntity>(db, Operation.Select)) { }
 
         /// <summary>
         /// 

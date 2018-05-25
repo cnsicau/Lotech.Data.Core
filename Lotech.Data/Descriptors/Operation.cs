@@ -10,7 +10,7 @@
         /// </summary>
         None,
         /// <summary>
-        /// 查询操作 Load, Find
+        /// 查询操作 Load, Find, Exists, Count
         /// </summary>
         Select,
         /// <summary>

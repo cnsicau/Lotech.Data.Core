@@ -11,6 +11,6 @@ namespace Lotech.Data.Oracles
     class OracleExistsEntityExpression<TEntity> : Operations.Common.CommonExistsEntityExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, bool>>
        where TEntity : class
     {
-        public OracleExistsEntityExpression() : base(_ => new OracleExpressionVisitor<TEntity>(_, Descriptors.Operation.None), Quote) { }
+        public OracleExistsEntityExpression() : base(_ => new OracleExpressionVisitor<TEntity>(_, Descriptors.Operation.Select), Quote) { }
     }
 }

@@ -348,7 +348,7 @@ namespace Lotech.Data
         public static ISqlQuery AppendExpression<TEntity>(this ISqlQuery query, Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
         {
-            return query.AppendExpression(new SqlExpressionVisitor<TEntity>(query.Database, Descriptors.Operation.None), predicate);
+            return query.AppendExpression(new SqlExpressionVisitor<TEntity>(query.Database, Descriptors.Operation.Select), predicate);
         }
 
         /// <summary>

@@ -10,6 +10,6 @@ namespace Lotech.Data.SQLites
     class SQLiteCountEntitiesExpression<TEntity> : Operations.Common.CommonCountEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, int>>
         where TEntity : class
     {
-        public SQLiteCountEntitiesExpression() : base(_ => new SQLiteExpressionVisitor<TEntity>(_, Descriptors.Operation.None), SQLiteDatabase.Quote) { }
+        public SQLiteCountEntitiesExpression() : base(_ => new SQLiteExpressionVisitor<TEntity>(_, Descriptors.Operation.Select), SQLiteDatabase.Quote) { }
     }
 }

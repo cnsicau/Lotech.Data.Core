@@ -11,6 +11,6 @@ namespace Lotech.Data.SQLites
     class SQLiteExistsEntityExpression<TEntity> : Operations.Common.CommonExistsEntityExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, bool>>
        where TEntity : class
     {
-        public SQLiteExistsEntityExpression() : base(_ => new SQLiteExpressionVisitor<TEntity>(_, Descriptors.Operation.None), Quote) { }
+        public SQLiteExistsEntityExpression() : base(_ => new SQLiteExpressionVisitor<TEntity>(_, Descriptors.Operation.Select), Quote) { }
     }
 }

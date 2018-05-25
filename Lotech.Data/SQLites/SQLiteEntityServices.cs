@@ -12,13 +12,13 @@ namespace Lotech.Data.SQLites
         public Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class
         {
             return Operation<EntityType, Func<IDatabase, Expression<Func<EntityType, bool>>, int>, SQLiteCountEntitiesExpression<EntityType>>
-                .Instance(Database.DescriptorProvider, Descriptors.Operation.None);
+                .Instance(Database.DescriptorProvider, Descriptors.Operation.Select);
         }
 
         public Func<IDatabase, int> Count<EntityType>() where EntityType : class
         {
             return Operation<EntityType, Func<IDatabase, int>, SQLiteCountEntities<EntityType>>
-                .Instance(Database.DescriptorProvider, Descriptors.Operation.None);
+                .Instance(Database.DescriptorProvider, Descriptors.Operation.Select);
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> DeleteEntities<TEntity>() where TEntity : class
@@ -50,19 +50,19 @@ namespace Lotech.Data.SQLites
         public Func<IDatabase, TEntity, bool> Exists<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Func<IDatabase, TEntity, bool>, SQLiteExistsEntity<TEntity>>
-                .Instance(Database.DescriptorProvider, Descriptors.Operation.None);
+                .Instance(Database.DescriptorProvider, Descriptors.Operation.Select);
         }
 
         public Func<IDatabase, TKey, bool> ExistsByKey<TEntity, TKey>() where TEntity : class
         {
             return Operation<TEntity, Func<IDatabase, TKey, bool>, SQLiteExistsEntity<TEntity, TKey>>
-                .Instance(Database.DescriptorProvider, Descriptors.Operation.None);
+                .Instance(Database.DescriptorProvider, Descriptors.Operation.Select);
         }
 
         public Func<IDatabase, Expression<Func<TEntity, bool>>, bool> ExistsByPredicate<TEntity>() where TEntity : class
         {
             return Operation<TEntity, Func<IDatabase, Expression<Func<TEntity, bool>>, bool>, SQLiteExistsEntityExpression<TEntity>>
-                .Instance(Database.DescriptorProvider, Descriptors.Operation.None);
+                .Instance(Database.DescriptorProvider, Descriptors.Operation.Select);
         }
 
         public Func<IDatabase, TEntity[]> FindEntities<TEntity>() where TEntity : class

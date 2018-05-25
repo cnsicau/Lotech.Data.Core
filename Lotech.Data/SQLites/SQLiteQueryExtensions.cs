@@ -66,7 +66,7 @@ namespace Lotech.Data.SQLites
         /// <returns></returns>
         public static ISqlQuery Append<T>(this ISqlQuery query, Expression<Func<T, bool>> predicate) where T : class
         {
-            return query.AppendExpression(new SQLiteExpressionVisitor<T>(query.Database, Descriptors.Operation.None), predicate);
+            return query.AppendExpression(new SQLiteExpressionVisitor<T>(query.Database, Descriptors.Operation.Select), predicate);
         }
         /// <summary>
         /// 通过 Lamda 表达式添加条件

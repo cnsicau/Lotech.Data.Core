@@ -17,7 +17,6 @@
 #
 
 ### 示例代码中 `MyData` 的定义
-[11](#)
 ```csharp
 public class MyData
 {

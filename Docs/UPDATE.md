@@ -1,7 +1,7 @@
 ## 数据更新 `Update`
  
 * ####  [单条更新](#1-单条更新-top)
-  > ##### [`UpdateEntity`](#11-更新-updateuntity)
+  > ##### [`UpdateEntity`](#11-更新-updateentity)
   > ##### [`UpdateEntityExclude`](#12-排除更新-updateentityexclude)
   > ##### [`UpdateEntityInclude`](#13-局部更新-updateentityinclude)
 

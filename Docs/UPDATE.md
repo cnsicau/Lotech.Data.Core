@@ -1,18 +1,18 @@
 ## 数据更新 `Update`
  
-* ####  [单条更新](#1)
-  > ##### [`UpdateEntity`](#11)
-  > ##### [`UpdateEntityExclude`](#1.2)
-  > ##### [`UpdateEntityInclude`](#1.3)
+* ####  [单条更新](#1-单条更新-Top)
+  > ##### [`UpdateEntity`](#1.1-更新-UpdateEntity)
+  > ##### [`UpdateEntityExclude`](#1.2-排除更新-UpdateEntityExclude)
+  > ##### [`UpdateEntityInclude`](#1.3-局部更新-UpdateEntityInclude)
 
-* #### [批量更新](#2)
-  > ##### [`UpdateEntities`](#2.1)
-  > ##### [`UpdateEntitiesExclude`](#2.2)
-  > ##### [`UpdateEntitiesInclude`](#2.3)
+* #### [批量更新](#2-批量更新-Top)
+  > ##### [`UpdateEntities`](#2.1-更新-UpdateEntities)
+  > ##### [`UpdateEntitiesExclude`](#2.2-排除更新-UpdateEntitiesExclude)
+  > ##### [`UpdateEntitiesInclude`](#2.3-局部更新-UpdateEntitiesInclude)
 
-* #### [条件更新](#3)
-  > ##### [`UpdateEntities`](#3.1)
-  > ##### [`Update`](#11)
+* #### [条件更新](#3-条件更新-Top)
+  > ##### [`UpdateEntities`](#3.1-原生写法-UpdateEntities)
+  > ##### [`Update`](#3.2-扩展写法-update)
 
 #
 
@@ -34,10 +34,10 @@ public class MyData
 
 #
 
-### [1**单条更新**](#)
+### **1 单条更新** [[Top](#数据更新-Update)]
 
 
-#### 全更新 `UpdateEntity`
+#### 1.1 更新 `UpdateEntity`
 用于更新模型中除主键外的各个字段。
 * 声明
 ```csharp
@@ -74,7 +74,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 排除更新  `UpdateEntityExclude`
+#### 1.2 排除更新  `UpdateEntityExclude`
 用于排除部分字段不更新，如修改数据时排除 `Code`、`Name` 的内容
 * 声明
 ```csharp
@@ -111,7 +111,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 局部更新  `UpdateEntityInclude`
+#### 1.3 局部更新  `UpdateEntityInclude`
 用于仅更新部分字段，如做逻辑删除时修改数据时的 `Deleted`、`ModifyTime` 内容
 * 声明
 ```csharp
@@ -149,8 +149,8 @@ using(var update = db.GetSqlStringCommand(sql)) {
 ```
 #
 
-### [2 **批量更新**](#)
-#### 全更新 `UpdateEntities`
+### **2 批量更新** [[Top](#数据更新-Update)]
+#### 2.1 更新 `UpdateEntities`
 用于批量更新模型中除主键外的各个字段。
 * 声明
 ```csharp
@@ -193,7 +193,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 排除更新  `UpdateEntitiesExclude`
+#### 2.2 排除更新  `UpdateEntitiesExclude`
 用于批量排除部分字段不更新，如修改数据时排除 `Code`、`Name` 的内容
 * 声明
 ```csharp
@@ -235,7 +235,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### 局部更新  `UpdateEntityInclude`
+#### 2.3 局部更新  `UpdateEntityInclude`
 用于仅更新部分字段，如做逻辑删除时修改数据时的 `Deleted`、`ModifyTime` 内容
 * 声明
 ```csharp
@@ -278,8 +278,8 @@ using(var update = db.GetSqlStringCommand(sql)) {
 ```
 #
 
-### [3 条件更新](#)
-#### [3.1 原生写法  `UpdateEntities`](#3)
+### **3 条件更新** [[Top](#数据更新-Update)]
+#### 3.1 原生写法 `UpdateEntities`
 用于批量更新满足给定条件数据的部分字段
 * 声明
 ```csharp
@@ -321,7 +321,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 }
 ```
 
-#### [3.2](#) 扩展写法  `Update`</span>
+#### 3.2 扩展写法 `Update`
 用于简化原生方法调用的复杂度，提高可读性.
 * **声明**
 ```csharp

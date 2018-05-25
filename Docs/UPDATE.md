@@ -1,18 +1,18 @@
 ## 数据更新 `Update`
  
-* ####  [单条更新](#1-单条更新-Top)
-  > ##### [`UpdateEntity`](#1.1-更新-UpdateEntity)
-  > ##### [`UpdateEntityExclude`](#1.2-排除更新-UpdateEntityExclude)
-  > ##### [`UpdateEntityInclude`](#1.3-局部更新-UpdateEntityInclude)
+* ####  [单条更新](#1-单条更新-top)
+  > ##### [`UpdateEntity`](#11-更新-updateuntity)
+  > ##### [`UpdateEntityExclude`](#12-排除更新-updateentityexclude)
+  > ##### [`UpdateEntityInclude`](#13-局部更新-updateentityinclude)
 
-* #### [批量更新](#2-批量更新-Top)
-  > ##### [`UpdateEntities`](#2.1-更新-UpdateEntities)
-  > ##### [`UpdateEntitiesExclude`](#2.2-排除更新-UpdateEntitiesExclude)
-  > ##### [`UpdateEntitiesInclude`](#2.3-局部更新-UpdateEntitiesInclude)
+* #### [批量更新](#2-批量更新-top)
+  > ##### [`UpdateEntities`](#21-更新-updateentities)
+  > ##### [`UpdateEntitiesExclude`](#22-排除更新-updateentitiesexclude)
+  > ##### [`UpdateEntitiesInclude`](#23-局部更新-updateentitiesinclude)
 
-* #### [条件更新](#3-条件更新-Top)
-  > ##### [`UpdateEntities`](#3.1-原生写法-UpdateEntities)
-  > ##### [`Update`](#3.2-扩展写法-update)
+* #### [条件更新](#3-条件更新-top)
+  > ##### [`UpdateEntities`](#31-原生写法-updateentities)
+  > ##### [`Update`](#32-扩展写法-update)
 
 #
 
@@ -34,7 +34,7 @@ public class MyData
 
 #
 
-### **1 单条更新** [[Top](#数据更新-Update)]
+### **1 单条更新** [[Top](#数据更新-update)]
 
 
 #### 1.1 更新 `UpdateEntity`
@@ -149,7 +149,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 ```
 #
 
-### **2 批量更新** [[Top](#数据更新-Update)]
+### **2 批量更新** [[Top](#数据更新-update)]
 #### 2.1 更新 `UpdateEntities`
 用于批量更新模型中除主键外的各个字段。
 * 声明
@@ -278,7 +278,7 @@ using(var update = db.GetSqlStringCommand(sql)) {
 ```
 #
 
-### **3 条件更新** [[Top](#数据更新-Update)]
+### **3 条件更新** [[Top](#数据更新-update)]
 #### 3.1 原生写法 `UpdateEntities`
 用于批量更新满足给定条件数据的部分字段
 * 声明

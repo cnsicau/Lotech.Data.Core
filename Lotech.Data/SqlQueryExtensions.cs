@@ -15,7 +15,7 @@ namespace Lotech.Data
         #region Instance Methods
 
         /// <summary>
-        /// 
+        /// 构建无初始SQL的实例
         /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
@@ -28,7 +28,7 @@ namespace Lotech.Data
         }
 
         /// <summary>
-        /// 
+        /// 构建指定初始SQL的实例
         /// </summary>
         /// <param name="database"></param>
         /// <param name="sql"></param>
@@ -41,12 +41,26 @@ namespace Lotech.Data
             return database.SqlQuery().Append(sql);
         }
 
+
         /// <summary>
-        /// 
+        /// 构建指定初始SQL的实例并在末尾追加换行
         /// </summary>
         /// <param name="database"></param>
         /// <param name="sql"></param>
-        /// <param name="args"></param>
+        /// <returns></returns>
+        static public ISqlQuery SqlQueryLine(this IDatabase database, string sql)
+        {
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
+
+            return database.SqlQuery(sql).AppendLine();
+        }
+
+        /// <summary>构建指定初始SQL、参数实例</summary>
+        /// <param name="database"></param>
+        /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
+        /// <param name="args">用于sql中的参数引用</param>
+
         /// <returns></returns>
         static public ISqlQuery SqlQuery(this IDatabase database, string sql, params object[] args)
         {
@@ -54,6 +68,16 @@ namespace Lotech.Data
                 throw new NullReferenceException(nameof(database));
 
             return database.SqlQuery().Append(sql, args);
+        }
+
+        /// <summary>构建指定初始SQL、参数实例并在末尾追加换行</summary>
+        /// <param name="database"></param>
+        /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
+        /// <param name="args">用于sql中的参数引用</param>
+        /// <returns></returns>
+        static public ISqlQuery SqlQueryLine(this IDatabase database, string sql, params object[] args)
+        {
+            return database.SqlQuery(sql, args).AppendLine();
         }
 
         #endregion
@@ -429,6 +453,19 @@ namespace Lotech.Data
         static public object ExecuteSqlScalar(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteScalar();
+        }
+
+        /// <summary>
+        /// 执行指定SQL，并传入给定参数
+        /// </summary>
+        /// <example>db.ExecuteSqlScalar("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">参数清单</param>
+        /// <returns></returns>
+        static public T ExecuteSqlScalar<T>(this IDatabase database, string sql, params object[] args)
+        {
+            return database.SqlQuery(sql, args).ExecuteScalar<T>();
         }
 
         /// <summary>

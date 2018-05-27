@@ -1,4 +1,5 @@
 ﻿using Lotech.Data.Descriptors;
+using Lotech.Data.Providers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +11,7 @@ namespace Lotech.Data
     /// <summary>
     /// 数据库操作接口
     /// </summary>
-    public interface IDatabase
+    public partial interface IDatabase
     {
         #region Properties
         /// <summary>
@@ -31,6 +32,11 @@ namespace Lotech.Data
         /// 获取描述符提供者
         /// </summary>
         IDescriptorProvider DescriptorProvider { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        ITransactionManagerProvider TransactionManagerProvider { get; set; }
         #endregion
 
         #region Connection

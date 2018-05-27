@@ -1,4 +1,8 @@
-﻿using Lotech.Data.Descriptors;
+﻿
+
+
+using Lotech.Data.Descriptors;
+using Lotech.Data.Providers;
 using Lotech.Data.Queries;
 using System;
 using System.Collections.Generic;
@@ -13,7 +17,7 @@ namespace Lotech.Data
     /// <summary>
     /// DbProvider 实现
     /// </summary>
-    public abstract class DbProviderDatabase : IDatabase
+    public abstract partial class DbProviderDatabase
     {
         /// <summary>
         /// 
@@ -86,6 +90,7 @@ namespace Lotech.Data
             this.services = services;
             services.Database = this;
             DescriptorProvider = DefaultDescriptorProvider.Instance;
+            TransactionManagerProvider = Providers.TransactionManagerProvider.Default;
 
             if (trace)
                 Log = TraceLog;
@@ -95,6 +100,11 @@ namespace Lotech.Data
         /// 
         /// </summary>
         public virtual IDescriptorProvider DescriptorProvider { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual ITransactionManagerProvider TransactionManagerProvider { get; set; }
 
         /// <summary>
         /// 
@@ -149,10 +159,10 @@ namespace Lotech.Data
             if (connection != null)
                 return connection;
 
-            var transactionManager = TransactionManager.Current;
+            var transactionManager = TransactionManagerProvider.GetTransactionManager();
             DbTransaction transaction;
             if (transactionManager != null
-                && TransactionManager.TryGetTransaction(ConnectionString, out transaction))
+                && transactionManager.TryGetTransaction(ConnectionString, out transaction))
             {
                 // 绑定事务
                 command.Transaction = transaction;

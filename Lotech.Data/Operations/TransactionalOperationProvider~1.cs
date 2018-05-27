@@ -41,13 +41,13 @@ namespace Lotech.Data.Operations
 
                     using (var command = createCommand(db))
                     {
-                        if (TransactionManager.Current != null) // 事务范围探测
+                        if (db.TransactionManagerProvider.GetTransactionManager() != null) // 事务范围探测
                         {
                             LoopInvoke(db, command, enumerator, invoker);
                         }
                         else    // 开启事务
                         {
-                            using (var transactionManager = new TransactionManager())
+                            using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                             {
                                 LoopInvoke(db, command, enumerator, invoker);
 

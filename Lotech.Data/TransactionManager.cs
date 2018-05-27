@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lotech.Data.Providers;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -15,20 +16,27 @@ namespace Lotech.Data
     {
         #region Fields
 
-        [ThreadStatic]
-        static Stack<TransactionManager> transactionManagers;
-
         private readonly Guid id = Guid.NewGuid();
         private readonly Dictionary<string, DbTransaction> transactions = new Dictionary<string, DbTransaction>();
         private readonly TransactionManager parentManager;
         private readonly IsolationLevel? isolationLevel;
         #endregion
 
-        #region Event
+        #region Event && Properties
         /// <summary>
         /// 完成
         /// </summary>
         public event EventHandler Completed;
+
+        /// <summary>
+        /// 父级管理器
+        /// </summary>
+        public TransactionManager Parent { get { return parentManager; } }
+
+        /// <summary>
+        /// 隔离级别
+        /// </summary>
+        public IsolationLevel IsolationLevel { get { return isolationLevel ?? (IsolationLevel.Unspecified); } }
         #endregion
 
         #region Constructor
@@ -36,48 +44,48 @@ namespace Lotech.Data
         /// <summary>
         /// 
         /// </summary>
-        public TransactionManager() : this(false, null) { }
+        /// <param name="provider"></param>
+        public TransactionManager(ITransactionManagerProvider provider) : this(false, null, provider) { }
 
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="isolationLevel"></param>
-        public TransactionManager(IsolationLevel isolationLevel) : this(false, (IsolationLevel?)isolationLevel) { }
+        /// <param name="provider"></param>
+        public TransactionManager(IsolationLevel isolationLevel, ITransactionManagerProvider provider) : this(false, (IsolationLevel?)isolationLevel, provider) { }
 
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="requireNew"></param>
-        public TransactionManager(bool requireNew) : this(requireNew, null) { }
+        /// <param name="requiresNew"></param>
+        /// <param name="provider"></param>
+        public TransactionManager(bool requiresNew, ITransactionManagerProvider provider) : this(requiresNew, null, provider) { }
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="requireNew"></param>
+        /// <param name="requiresNew"></param>
         /// <param name="isolationLevel"></param>
-        public TransactionManager(bool requireNew, IsolationLevel isolationLevel) : this(requireNew, (IsolationLevel?)isolationLevel) { }
+        /// <param name="provider"></param>
+        public TransactionManager(bool requiresNew, IsolationLevel isolationLevel, ITransactionManagerProvider provider) : this(requiresNew, (IsolationLevel?)isolationLevel, provider) { }
 
-        TransactionManager(bool requireNew, IsolationLevel? isolationLevel)
+        TransactionManager(bool requiresNew, IsolationLevel? isolationLevel, ITransactionManagerProvider provider)
         {
             this.isolationLevel = isolationLevel;
-            if (transactionManagers == null || transactionManagers.Count == 0)
+
+            if (!requiresNew)
             {
-                transactionManagers = new Stack<TransactionManager>(new[] { this });
-            }
-            else if (requireNew)
-            {
-                transactionManagers.Push(this);
-            }
-            else // 存在父管理器时向上使用
-            {
-                parentManager = transactionManagers.Peek();
-                // 继承上级
-                id = parentManager.id;
-                transactions = parentManager.transactions;
-                isolationLevel = parentManager.isolationLevel;
-                // 同步事务回调
-                parentManager.Completed += (s, e) => Completed?.Invoke(this, e);
+                parentManager = provider.GetTransactionManager();
+                if (parentManager != null)
+                {
+                    // 继承上级
+                    id = parentManager.id;
+                    transactions = parentManager.transactions;
+                    isolationLevel = parentManager.isolationLevel;
+                    // 同步事务回调
+                    parentManager.Completed += (s, e) => Completed?.Invoke(this, e);
+                }
             }
         }
 
@@ -139,19 +147,6 @@ namespace Lotech.Data
                 }
             }
         }
-        #endregion
-
-        #region Static Method
-        /// <summary>
-        /// 获取当前事务管理器
-        /// </summary>
-        public static TransactionManager Current
-        {
-            get
-            {
-                return transactionManagers?.Count > 0 ? transactionManagers.Peek() : null;
-            }
-        }
 
         /// <summary>
         /// 获取当前连接
@@ -159,21 +154,19 @@ namespace Lotech.Data
         /// <param name="connectionString"></param>
         /// <param name="transaction"></param>
         /// <returns></returns>
-        static public bool TryGetTransaction(string connectionString, out DbTransaction transaction)
+        public bool TryGetTransaction(string connectionString, out DbTransaction transaction)
         {
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (transactionManagers != null && transactionManagers.Count > 0)
-            {
-                foreach (var tm in transactionManagers)
-                {
-                    if (tm.transactions.TryGetValue(connectionString, out transaction)) return true;
-                }
-            }
+            TransactionManager transactionManager = this;
 
-            transaction = null;
-            return false;
+            while (!transactionManager.transactions.TryGetValue(connectionString, out transaction)
+                && transactionManager.parentManager != null)
+            {
+                transactionManager = transactionManager.parentManager;
+            }
+            return transaction != null;
         }
         #endregion
 
@@ -196,12 +189,9 @@ namespace Lotech.Data
                 }
                 finally
                 {
-                    transactionManagers.Pop();
-                    if (transactionManagers.Count == 0)
-                        transactionManagers = null;
+                    Completed?.Invoke(this, EventArgs.Empty);
                 }
 
-                Completed?.Invoke(this, EventArgs.Empty);
             }
         }
         #endregion

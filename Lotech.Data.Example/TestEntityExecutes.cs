@@ -148,7 +148,7 @@ namespace Lotech.Data.Example
         {
             var entity = db.LoadEntity<TExample>(_ => _.Id > 0);
             // Commit Test
-            using (var tm = new TransactionManager())
+            using (var tm = db.TransactionManagerProvider.CreateTransactionManager())
             {
                 db.InsertEntity(entity);
                 tm.Commit();
@@ -157,7 +157,7 @@ namespace Lotech.Data.Example
             Console.WriteLine($"Transaction commit {(db.Exists(entity) ? "success" : "failed")}");
 
             // Rollback Test
-            using (var tm = new TransactionManager())
+            using (var tm = db.TransactionManagerProvider.CreateTransactionManager())
             {
                 db.InsertEntity(entity);
             }

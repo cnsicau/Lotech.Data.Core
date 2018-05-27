@@ -42,13 +42,13 @@ namespace Lotech.Data.Operations
 
                     using (var command = createCommand(db))
                     {
-                        if (TransactionManager.Current != null) // 已有事务时不重复开启
+                        if (db.TransactionManagerProvider.GetTransactionManager() != null) // 已有事务时不重复开启
                         {
                             return LoopInvoke(db, command, enumerator, invoker);
                         }
                         else    // 开启事务
                         {
-                            using (var transactionManager = new TransactionManager())
+                            using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                             {
                                 var result = LoopInvoke(db, command, enumerator, invoker);
                                 transactionManager.Commit();

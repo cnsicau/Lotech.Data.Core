@@ -89,7 +89,7 @@ namespace Lotech.Data.SQLites
                 var setter = MemberAccessor<TEntity, object>.GetSetter(_identity.Member);
                 return (db, command, entity) =>
                 {
-                    using (var transactionManager = new TransactionManager())
+                    using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                     {
                         db.ExecuteNonQuery(command);
                         setter(entity, db.ExecuteScalar("SELECT LAST_INSERT_ROWID()"));
@@ -129,7 +129,7 @@ namespace Lotech.Data.SQLites
 
             return (db, command, entity) =>
             {
-                using (var transactionManager = new TransactionManager())
+                using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                 {
                     db.ExecuteNonQuery(command);
 

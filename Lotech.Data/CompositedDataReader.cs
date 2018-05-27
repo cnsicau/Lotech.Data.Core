@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lotech.Data
 {
@@ -295,6 +297,51 @@ namespace Lotech.Data
         public override object this[int ordinal]
         {
             get { return reader[ordinal]; }
+        }
+        #endregion
+
+        #region Async
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<bool> ReadAsync(CancellationToken cancellationToken)
+        {
+            return reader.ReadAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ordinal"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
+        {
+            return reader.IsDBNullAsync(ordinal, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ordinal"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
+        {
+            return reader.GetFieldValueAsync<T>(ordinal, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+        {
+            return reader.NextResultAsync(cancellationToken);
         }
         #endregion
     }

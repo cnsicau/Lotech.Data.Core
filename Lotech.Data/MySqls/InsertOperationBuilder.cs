@@ -46,7 +46,7 @@ namespace Lotech.Data.MySqls
             if (descriptor.Type != typeof(TEntity)) throw new InvalidOperationException("实体描述符与当前类型不匹配.");
 
             if (descriptor == _descriptor) return;  // 避免重复初始化
-            
+
             _members = descriptor.Members.Where(_ => !_.DbGenerated && _setFilter(_)).ToArray();
             if (_members.Length == 0)
                 throw new InvalidOperationException("未找到需要更新的列.");
@@ -87,7 +87,7 @@ namespace Lotech.Data.MySqls
                 var setter = MemberAccessor<TEntity, object>.GetSetter(_identity.Member);
                 return (db, command, entity) =>
                 {
-                    using (var transactionManager = new TransactionManager())
+                    using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                     {
                         db.ExecuteNonQuery(command);
                         setter(entity, db.ExecuteScalar("SELECT LAST_INSERT_ID()"));
@@ -126,7 +126,7 @@ namespace Lotech.Data.MySqls
 
             return (db, command, entity) =>
             {
-                using (var transactionManager = new TransactionManager())
+                using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                 {
                     db.ExecuteNonQuery(command);
 

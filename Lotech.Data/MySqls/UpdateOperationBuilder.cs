@@ -118,7 +118,7 @@ namespace Lotech.Data.MySqls
 
             return (db, command, entity) =>
             {
-                using (var transactionManager = new TransactionManager())
+                using (var transactionManager = db.TransactionManagerProvider.CreateTransactionManager())
                 {
                     db.ExecuteNonQuery(command);
                     reverseBind(db, command, entity);

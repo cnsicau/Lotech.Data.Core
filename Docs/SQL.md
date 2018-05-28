@@ -148,13 +148,13 @@ s.AppendNotNull(name, " AND Name LIKE {0} + '%'");
 
     IDataReader reader = db.ExecuteSqlReader("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
 
-    dynamic[] dynamics = query.ExecuteSqlEntities("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
+    dynamic[] dynamics = db.ExecuteSqlEntities("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
 
-    MyData[] datas = query.ExecuteSqlEntities<MyData>("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
+    MyData[] datas = db.ExecuteSqlEntities<MyData>("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
 
-    dynamic dynamicData = query.ExecuteSqlEntity("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
+    dynamic dynamicData = db.ExecuteSqlEntity("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
 
-    MyData entity = query.ExecuteSqlEntity<MyData>("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
+    MyData entity = db.ExecuteSqlEntity<MyData>("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
 
-    int ret = query.ExecuteSqlNonQuery("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
+    int ret = db.ExecuteSqlNonQuery("SELECT * FROM example WHERE KeyId BETWEEN {0} AND {1}", 2, 10);
 ```

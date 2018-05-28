@@ -4,7 +4,8 @@
 
 ```csharp
 // sp_Example @uid, @name
-var sp = db.ProcedureQuery("sp_Example", new {uid = form.userId, form.name});
+var examples = db.ProcedureQuery("sp_Example", new {uid = form.userId, form.name})
+  .ExecuteEntities<Example>();
 ```
 
 需要获取存储过程返回值时，需要使用原生 DbCommand 方式执行，可通过 IProcedureQuery先绑定输入参数，后通过 AddOutParameter 添加返回.
@@ -21,6 +22,7 @@ using(var command = db.ProcedureQuery("sp_Example", new {uid = form.userId, form
 
 用于完成`存储过程`执行，并获取需要的结果。
 
+```csharp
     var query = db.ProcedureQuery("sp_Example", new {uid = form.userId, form.name});
 
     DataSet dataSet = query.ExecuteDataSet();
@@ -40,6 +42,7 @@ using(var command = db.ProcedureQuery("sp_Example", new {uid = form.userId, form
     MyData entity = query.ExecuteEntity<MyData>();
 
     int ret = query.ExecuteNonQuery();
+```
 
 ### 其他
 

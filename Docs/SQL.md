@@ -13,7 +13,6 @@ var query = db.SqlQuery("SELECT * FROM example")
 > -- @p_0_0 = 2
 > -- @p_0_1 = 3
 >```
-
 > **2.** 当 `name = null` 、 `code = "A"`时，可拼接为如下SQL
 > ```sql
 > SELECT * FROM example WHERE @p_0_0 < @p_0_1
@@ -22,7 +21,6 @@ var query = db.SqlQuery("SELECT * FROM example")
 > -- @p_0_1 = 3
 > -- @p_0_2 = A
 > ```
-
 > **3.**  当 `name = "名称"` 、 `code = "A"`时，可拼接为如下SQL
 > ```sql
 > SELECT * FROM example WHERE @p_0_0 < @p_0_1
@@ -32,6 +30,32 @@ var query = db.SqlQuery("SELECT * FROM example")
 > -- @p_0_2 = 名称
 > -- @p_0_3 = A
 > ```
+
+  使用 `AppendIn` 扩展方法添加 `In` 多项值
+```csharp
+    var query = db.SqlQuery("SELECT * FROM example WHERE 1 = 1")
+            .AppendIn(" AND KeyId IN ({0})", new[] { 1, 2, 3, 4, 5 })
+            .AppendIn(" AND KeyId IN ({0})", new[] { 1 })
+            .AppendIn(" AND KeyId IN ({0})", new int[0])
+            .AppendIn(" AND KeyId IN ({0})", (int[])null)
+            .AppendIn(" AND Code IN ({0})", "0")
+            .AppendIn(" AND Code IN ({0})", 'A', 'B', 'C', 'D');
+```
+拼接结果：
+```sql
+  SELECT * FROM example WHERE 1 = 1 AND KeyId IN (@p_el_0, @p_el_1, @p_el_2, @p_el_3, @p_el_4) AND KeyId (@p_el_5) AND Code IN (@p_el_6) AND Code IN (@p_el_7, @p_el_8, @p_el_9, @p_el_10)
+  --  @p_el_0 = 1
+  --  @p_el_1 = 2
+  --  @p_el_2 = 3
+  --  @p_el_3 = 4
+  --  @p_el_4 = 5
+  --  @p_el_5 = 1
+  --  @p_el_6 = 0
+  --  @p_el_7 = A
+  --  @p_el_8 = B
+  --  @p_el_9 = C
+  --  @p_el_10 = D
+```
 
 ### **创建 `ISqlQuery` 实例**
 

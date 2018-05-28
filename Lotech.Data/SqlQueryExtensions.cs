@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace Lotech.Data
 {
@@ -12,6 +13,9 @@ namespace Lotech.Data
     /// </summary>
     public static class SqlQueryExtensions
     {
+        [ThreadStatic]
+        static uint parameterIndex = 0;
+
         #region Instance Methods
 
         /// <summary>
@@ -316,7 +320,6 @@ namespace Lotech.Data
             return query;
         }
 
-
         /// <summary>
         /// 当给定的 str 非空时添加片断，可将 str 作为 {0}的占用
         /// </summary>
@@ -424,6 +427,70 @@ namespace Lotech.Data
         {
             expressionVisitor.Visit(predicate);
             return query.AppendRaw("( ").AppendRaw(expressionVisitor.Sql, expressionVisitor.Parameters).AppendRaw(" )");
+        }
+
+        /// <summary>
+        /// 如果 items 集合非空，追加 snippet 片断，并使用集合替换 {0}
+        /// 已知：oracle 在 in 超过1000时超出限制
+        /// </summary>
+        /// <typeparam name="TItem"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="items"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, IEnumerable<TItem> items)
+        {
+            if (items == null) return query;
+
+            using (var enumerator = items.GetEnumerator())
+            {
+                // 无元素
+                if (!enumerator.MoveNext()) return query;
+
+                var parameterNames = new StringBuilder();
+                var parameters = new List<SqlQueryParameter>();
+                while (true)
+                {
+                    var name = query.Database.BuildParameterName("el_" + (parameterIndex++));
+                    parameters.Add(new SqlQueryParameter(name, enumerator.Current));
+                    parameterNames.Append(name);
+                    if (!enumerator.MoveNext())
+                    {
+                        break;
+                    }
+                    parameterNames.Append(", ");
+                }
+                return query.AppendRaw(string.Format(snippet, parameterNames), parameters);
+            }
+        }
+
+
+        /// <summary>
+        /// 如果 items 集合非空，追加 snippet 片断，并使用集合替换 {0}
+        /// 已知：oracle 在 in 超过1000时超出限制
+        /// </summary>
+        /// <typeparam name="TItem"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="items"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, params TItem[] items)
+        {
+            return query.AppendIn(snippet, (IEnumerable<TItem>)items);
+        }
+
+        /// <summary>
+        /// 如果 items 集合非空，追加 snippet 片断，并使用集合替换 {0}
+        /// 已知：oracle 在 in 超过1000时超出限制
+        /// </summary>
+        /// <typeparam name="TItem"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="items"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendLineIn<TItem>(this ISqlQuery query, string snippet, params TItem[] items)
+        {
+            return query.AppendIn(snippet, items).AppendLine();
         }
         #endregion
 

@@ -118,7 +118,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\DataReaderResultSource.cs" />
     <Compile Include="Queries\EntityResultMapper~1.cs" />
-    <Compile Include="Queries\IRawParameterValue.cs" />
     <Compile Include="Queries\IResultMapper~1.cs" />
     <Compile Include="Queries\IResultSource.cs" />
     <Compile Include="Queries\ObjectResultMapper.cs" />

@@ -10,7 +10,6 @@ namespace Lotech.Data.Example
         public TestMethodCall(IDatabaseExample example)
         {
             db = example.Database;
-            ((DbProviderDatabase)db).EnableTraceLog();
         }
 
         public void Test()

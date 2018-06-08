@@ -21,7 +21,6 @@ namespace Lotech.Data.Example
         {
             this.example = example;
             this.db = example.Database;
-            ((DbProviderDatabase)db).EnableTraceLog();
         }
         public void ExecuteDataSetTest()
         {

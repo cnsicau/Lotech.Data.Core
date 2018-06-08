@@ -93,29 +93,6 @@ namespace Lotech.Data.MySqls
                     AddFragment(")");
                 }
             }
-            // list.Contains(_.Member) ...
-            else if (node.Method.Name == "Contains" && node.Method.IsGenericMethod
-                    && node.Arguments.Count == 2 && node.Method.DeclaringType == typeof(Enumerable))
-            {
-                var collectionVisitor = new MySqlExpressionVisitor<TEntity>(Database, Operation);
-                collectionVisitor.Visit(node.Arguments[0]);
-                var values = (collectionVisitor.Parameters.FirstOrDefault().Value as IEnumerable)?.GetEnumerator();
-
-                Visit(node.Arguments[1]);
-                AddFragment(" IN (");
-                if (values == null || !values.MoveNext()) AddFragment("NULL");
-                else
-                {
-                    var elementType = node.Method.GetGenericArguments().Single();
-                    AddParameter(elementType, values.Current);
-                    while (values.MoveNext())
-                    {
-                        AddFragment(", ");
-                        AddParameter(elementType, values.Current);
-                    }
-                }
-                AddFragment(")");
-            }
             else
             {
                 return base.VisitMethodCall(node);

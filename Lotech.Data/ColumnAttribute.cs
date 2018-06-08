@@ -80,5 +80,10 @@ namespace Lotech.Data
         /// 是否由库生成，如：自增长、计算列
         /// </summary>
         public bool DbGenerated { get; set; }
+
+        /// <summary>
+        /// 该成员忽略参与数据的任何操作，包含但不限于SELECT 、 DELETE、 INSERT、 UPDATE 
+        /// </summary>
+        public bool Ignore { get; set; }
     }
 }

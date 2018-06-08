@@ -35,9 +35,9 @@ namespace Lotech.Data.Operations
         internal static Func<IMemberDescriptor, bool> Include<TInclude>() where TInclude : class
         {
             var members = ReflectionEntityDescriptor<TInclude>.Prototype.Members;
-            var excludeMembers = new HashSet<string>(members.Select(_ => _.Member.Name));
+            var includeMembers = new HashSet<string>(members.Select(_ => _.Member.Name));
 
-            return _ => excludeMembers.Contains(_.Member.Name);
+            return _ => includeMembers.Contains(_.Member.Name);
         }
     }
 }

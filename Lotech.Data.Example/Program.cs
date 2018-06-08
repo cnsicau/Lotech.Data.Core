@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Lotech.Data.Example
 {
@@ -18,6 +19,14 @@ namespace Lotech.Data.Example
             test.TestFind();
             test.TestCount();
             test.TestUpdate2();
+            test.TestBug1();    // bug#1 fixed test
+
+            var arr = new long[] { 1, 2 };
+            var list = new System.Collections.Generic.List<long>(arr);
+            list.Add(25);
+            var srr = new string[] { "3", "4" };
+            var el = example.Database.LoadEntity<Example>(_ => srr.Contains(_.Id.ToString()) && arr.Contains(_.Id) || list.Contains(_.Id));
+            example.Database.Update<Example>().Set(new { Code = "C", Deleted = true }).Where(_ => _.Id == 5);
         }
 
         static void SqlTests<TExample>(IDatabaseExample example)
@@ -55,7 +64,6 @@ namespace Lotech.Data.Example
         {
             // Entity
             var sqlite = new SQLiteExample();
-            sqlite.Database.Update<Example>().Set(new { Code = "C", Deleted = true }).Where(_ => _.Id == 5);
             EntityTests<SQLiteExample.Example>(sqlite);    // SQLite 
             var mysql = new MySqlExample();
             EntityTests<Example>(mysql);                   // MySQL

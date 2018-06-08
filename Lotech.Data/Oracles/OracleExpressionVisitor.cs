@@ -92,40 +92,43 @@ namespace Lotech.Data.Oracles
                     Visit(node.Object);
                 }
             }
-            // list.Contains(_.Member) ...
-            else if (node.Method.Name == "Contains" && node.Method.IsGenericMethod
-                    && node.Arguments.Count == 2 && node.Method.DeclaringType == typeof(Enumerable))
-            {
-                var collectionVisitor = new OracleExpressionVisitor<TEntity>(Database, Operation);
-                collectionVisitor.Visit(node.Arguments[0]);
-                var values = (collectionVisitor.Parameters.FirstOrDefault().Value as IEnumerable)?.GetEnumerator();
-
-                if (values == null || !values.MoveNext())
-                {
-                    Visit(node.Arguments[1]);
-                    AddFragment(" IN (NULL)");
-                }
-                else
-                {
-                    var elementType = node.Method.GetGenericArguments().Single();
-                    AddFragment("("); //  mem = 1 or mem = 2 or ....
-                    Visit(node.Arguments[1]);
-                    AddFragment(" = ");
-                    AddParameter(elementType, values.Current);
-                    while (values.MoveNext())
-                    {
-                        AddFragment(" OR ");
-                        Visit(node.Arguments[1]);
-                        AddFragment(" = ");
-                        AddParameter(elementType, values.Current);
-                    }
-                    AddFragment(")");
-                }
-            }
             else
             {
                 return base.VisitMethodCall(node);
             }
+            return null;
+        }
+        protected override Expression VisitContainsCall(MethodCallExpression call, Expression element, Expression collection)
+        {
+            var valueVisitor = new OracleExpressionVisitor<TEntity>(Database, Operation);
+            valueVisitor.Visit(element);
+            var field = valueVisitor.Sql;
+            valueVisitor.Visit(collection);
+            var values = (valueVisitor.Parameters.LastOrDefault().Value as IEnumerable)?.GetEnumerator();
+            {
+                if (values == null || !values.MoveNext())
+                {
+                    AddFragment(field);
+                    AddFragment(" IS NULL");
+                }
+                else
+                {
+                    AddFragment("(");
+                    var elementType = element.Type;
+                    var next = true;
+                    while (next)
+                    {
+                        AddFragment(field);
+                        AddFragment(" = ");
+                        AddParameter(elementType, values.Current);
+                        if (next = values.MoveNext())
+                            AddFragment(" OR ");
+                    }
+                    AddFragment(")");
+                }
+            }
+
+            if (values is IDisposable) ((IDisposable)values).Dispose();
             return null;
         }
     }

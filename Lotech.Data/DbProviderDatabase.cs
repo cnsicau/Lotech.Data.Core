@@ -15,6 +15,7 @@ namespace Lotech.Data
     /// </summary>
     public abstract class DbProviderDatabase : IDatabase
     {
+        static readonly bool debugging = Debugger.IsAttached;
         /// <summary>
         /// 
         /// </summary>
@@ -87,8 +88,7 @@ namespace Lotech.Data
             services.Database = this;
             DescriptorProvider = DefaultDescriptorProvider.Instance;
 
-            if (trace)
-                Log = TraceLog;
+            if (trace || debugging) Log = TraceLog;
         }
 
         /// <summary>
@@ -104,6 +104,7 @@ namespace Lotech.Data
         /// <summary>
         /// 启用跟踪日志，便于输出执行中的SQL语句
         /// </summary>
+        [Obsolete]
         public virtual void EnableTraceLog()
         {
             Log = TraceLog;

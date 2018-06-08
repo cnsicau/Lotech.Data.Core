@@ -5,6 +5,7 @@ using Lotech.Data.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -226,7 +227,55 @@ namespace Lotech.Data.Operations
         /// <returns></returns>
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
+            var method = node.Method;
+            if (method.Name == nameof(List<EntityType>.Contains))
+            {
+                if (!method.IsStatic && method.DeclaringType.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    return VisitContainsCall(node, node.Arguments[0], node.Object);
+                }
+                else if (method.IsStatic && method.DeclaringType == typeof(System.Linq.Enumerable))
+                {
+                    return VisitContainsCall(node, node.Arguments[1], node.Arguments[0]);
+                }
+            }
             return base.VisitMethodCall(node);
+        }
+
+        /// <summary>
+        /// 访问 Contains 调用, 用于生成 IN 调用
+        /// </summary>
+        /// <param name="call"></param>
+        /// <param name="element"></param>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        protected virtual Expression VisitContainsCall(MethodCallExpression call, Expression element, Expression collection)
+        {
+            Visit(element);
+
+            var valueVisitor = new SqlExpressionVisitor<EntityType>(Database, Operation);
+            valueVisitor.Visit(collection);
+            var values = (valueVisitor.Parameters.FirstOrDefault().Value as System.Collections.IEnumerable)?.GetEnumerator();
+            {
+                AddFragment(" IN (");
+                if (values == null || !values.MoveNext()) AddFragment("NULL");
+                else
+                {
+                    var elementType = element.Type;
+                    var next = true;
+                    while (next)
+                    {
+                        AddParameter(elementType, values.Current);
+                        if (next = values.MoveNext())
+                            AddFragment(", ");
+                    }
+                }
+                AddFragment(")");
+            }
+
+            if (values is IDisposable) ((IDisposable)values).Dispose();
+
+            return null;
         }
 
         /// <summary>

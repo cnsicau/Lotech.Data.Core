@@ -11,7 +11,6 @@ namespace Lotech.Data.Example
         public TestEntityExecutes(IDatabaseExample example)
         {
             this.db = example.Database;
-            ((DbProviderDatabase)db).EnableTraceLog();
         }
 
         public void TestInsert()
@@ -185,5 +184,21 @@ namespace Lotech.Data.Example
             count = db.Count<TExample>(_ => _.Code.StartsWith("T"));
             Console.WriteLine("Count(_ => _.Code.StartsWith(\"T\")) = " + count);
         }
+
+        #region Bug#1
+        public class ExampleMain
+        {
+            public int Id { get; set; }
+
+            public List<ExampleDetail> Details { get; set; }
+        }
+
+        public class ExampleDetail { }
+
+        public void TestBug1()
+        {
+            var entity = db.ExecuteEntity<ExampleMain>("SELECT Id FROM Example");
+        }
+        #endregion
     }
 }

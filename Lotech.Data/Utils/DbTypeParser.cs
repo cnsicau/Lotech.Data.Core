@@ -61,7 +61,8 @@ namespace Lotech.Data.Utils
             if (type.IsGenericType && type.GetGenericArguments()[0].IsEnum)
                 return DbType.Int32;
 
-            return mapping[type];
+            DbType dbType;
+            return mapping.TryGetValue(type, out dbType) ? dbType : DbType.Object;
         }
     }
 }

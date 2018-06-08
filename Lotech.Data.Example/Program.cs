@@ -19,6 +19,7 @@ namespace Lotech.Data.Example
             test.TestFind();
             test.TestCount();
             test.TestUpdate2();
+            test.TestBug1();    // bug#1 fixed test
 
             var arr = new long[] { 1, 2 };
             var list = new System.Collections.Generic.List<long>(arr);

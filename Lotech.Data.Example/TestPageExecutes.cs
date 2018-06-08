@@ -10,8 +10,6 @@ namespace Lotech.Data.Example
         public TestPageExecutes(IDatabaseExample example)
         {
             this.example = example;
-            ((DbProviderDatabase)example.Database).EnableTraceLog();
-            this.example = example;
         }
 
         public void TestConcatQuery()

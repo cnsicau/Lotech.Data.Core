@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lotech.Data.Utils;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -23,10 +24,35 @@ namespace Lotech.Data.Descriptors
             prototype.Name = typeof(TEntity).Name;
             prototype.Schema = null;
             prototype.Members = typeof(TEntity).GetMembers(BindingFlags.Public | BindingFlags.Instance)
-                    .Where(_ => _.MemberType == MemberTypes.Property || _.MemberType == MemberTypes.Field)
+                    .Where(FilterMember)
                     .Select(_ => new ReflectionMemberDescriptor(_))
                     .ToArray();
             prototype.Keys = prototype.Members.Where(_ => _.PrimaryKey).ToArray();
+        }
+
+        /// <summary>
+        /// 过滤有效成员
+        ///     仅允许简单类型的 Field和Property
+        /// </summary>
+        /// <param name="member"></param>
+        /// <returns></returns>
+        static bool FilterMember(MemberInfo member)
+        {
+            Type valueType;
+            if (member.MemberType == MemberTypes.Field)
+            {
+                valueType = ((FieldInfo)member).FieldType;
+            }
+            else if (member.MemberType == MemberTypes.Property)
+            {
+                valueType = ((PropertyInfo)member).PropertyType;
+            }
+            else    //  忽略非 Field 或 Property
+            {
+                return false;
+            }
+
+            return DbTypeParser.Parse(valueType) != System.Data.DbType.Object;  // 忽略非简单类型成员
         }
 
         /// <summary>

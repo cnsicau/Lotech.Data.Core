@@ -63,7 +63,7 @@ namespace Lotech.Data.Descriptors
                     .Select(_ => new KeyValuePair<ColumnAttribute, MemberDescriptor>(
                         Attribute.GetCustomAttribute(_.Member, typeof(ColumnAttribute)) as ColumnAttribute,
                          _))
-                    .Where(_ => _.Key != null).ToArray();
+                    .Where(_ => _.Key != null && !_.Key.Ignore).ToArray();
             }
         }
 

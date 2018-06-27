@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <DocumentationFile>bin\Debug\netstandard2.0\Lotech.Data.xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.6</Version>
+    <Version>2.0.7</Version>
     <PackageId>Lotech.Data.Core</PackageId>
     <Authors>cnsicau</Authors>
     <Company>lotech</Company>
@@ -12,7 +12,7 @@
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <PackageProjectUrl>https://github.com/cnsicau/Lotech.Data.Core</PackageProjectUrl>
     <Description>an ORM like "EnterpriseLib Data Block" for dotnet and dotnet core</Description>
-    <AssemblyVersion>2.0.6.608</AssemblyVersion>
+    <AssemblyVersion>2.0.7.627</AssemblyVersion>
     <AssemblyName>Lotech.Data</AssemblyName>
     <RootNamespace>Lotech.Data</RootNamespace>
   </PropertyGroup>

@@ -62,6 +62,11 @@ namespace Lotech.Data
 
         static void TraceLog(string message) { Trace.WriteLine(message); }
 
+        /// <summary>
+        /// 获取 DbProviderFactory 实例
+        /// </summary>
+        protected DbProviderFactory Factory { get { return dbProviderFactory; } }
+
         void LogCommand(string action, DbCommand command)
         {
             Log($"\n{action} with {command.CommandType} command :\n" + command.CommandText);
@@ -348,7 +353,17 @@ namespace Lotech.Data
         /// <returns></returns>
         public abstract string QuoteName(string name);
 
-        TResult ExecuteCommand<TValue, TResult>(string action, DbCommand command, Func<DbCommand, TValue> value, Func<ConnectionSubstitute, TValue, TResult> result)
+        /// <summary>
+        /// 执行 Command 
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="command"></param>
+        /// <param name="value"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        protected TResult ExecuteCommand<TValue, TResult>(string action, DbCommand command, Func<DbCommand, TValue> value, Func<ConnectionSubstitute, TValue, TResult> result)
         {
             var substitute = GetConnection(command);
             try

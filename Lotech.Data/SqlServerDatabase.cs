@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Data.Common;
+﻿using System.Data.Common;
 using Lotech.Data.SqlServers;
 
 namespace Lotech.Data
@@ -49,32 +48,5 @@ namespace Lotech.Data
         /// <param name="name"></param>
         /// <returns></returns>
         public override string QuoteName(string name) => Quote(name);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        public override DataSet ExecuteDataSet(DbCommand command)
-        {
-            return ExecuteCommand(nameof(ExecuteDataSet), command
-                , _ =>
-                {
-                    using (var reader = _.ExecuteReader())
-                    {
-                        var dataSet = new DataSet();
-                        do
-                        {
-                            dataSet.Tables.Add().Load(reader);
-                        } while (!reader.IsClosed && reader.NextResult());
-                        return dataSet;
-                    }
-                }
-                , (connection, dataSet) =>
-                {
-                    connection.Dispose();
-                    return dataSet;
-                });
-        }
     }
 }

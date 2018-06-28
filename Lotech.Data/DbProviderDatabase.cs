@@ -507,17 +507,21 @@ namespace Lotech.Data
             using (var reader = ExecuteReader(command))
             {
                 var dataSet = new DataSet(command.CommandText);
-                var table = dataSet.Tables.Add("Result");
-                for (int i = 0; i < reader.FieldCount; i++)
+                var index = 0;
+                do
                 {
-                    table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
-                }
-                var rows = new object[reader.FieldCount];
-                while (reader.Read())
-                {
-                    reader.GetValues(rows);
-                    table.Rows.Add(rows);
-                }
+                    var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                    }
+                    var rows = new object[reader.FieldCount];
+                    while (reader.Read())
+                    {
+                        reader.GetValues(rows);
+                        table.Rows.Add(rows);
+                    }
+                } while (reader.NextResult());
 
                 return dataSet;
             }
@@ -543,7 +547,7 @@ namespace Lotech.Data
         {
             using (var command = GetCommand(commandType, commandText))
             {
-                return this.ExecuteDataSet(command);
+                return ExecuteDataSet(command);
             }
         }
         /// <summary>

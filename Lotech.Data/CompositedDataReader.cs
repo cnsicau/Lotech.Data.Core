@@ -23,6 +23,13 @@ namespace Lotech.Data
         }
         #endregion
 
+        #region Properties
+        /// <summary>
+        /// 内部读取器
+        /// </summary>
+        public DbDataReader Reader { get { return reader; } }
+        #endregion
+
         #region DbDataReader Members
 
         /// <summary>

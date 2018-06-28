@@ -504,27 +504,34 @@ namespace Lotech.Data
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000")]
         public virtual DataSet ExecuteDataSet(DbCommand command)
         {
-            using (var reader = ExecuteReader(command))
-            {
-                var dataSet = new DataSet(command.CommandText);
-                var index = 0;
-                do
+            return ExecuteCommand(nameof(ExecuteDataSet), command, _ => _.ExecuteReader(),
+                (connection, reader) =>
                 {
-                    var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    using (connection)
                     {
-                        table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
-                    }
-                    var rows = new object[reader.FieldCount];
-                    while (reader.Read())
-                    {
-                        reader.GetValues(rows);
-                        table.Rows.Add(rows);
-                    }
-                } while (reader.NextResult());
+                        using (reader)
+                        {
+                            var dataSet = new DataSet(command.CommandText);
+                            var index = 0;
+                            do
+                            {
+                                var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                                }
+                                var rows = new object[reader.FieldCount];
+                                while (reader.Read())
+                                {
+                                    reader.GetValues(rows);
+                                    table.Rows.Add(rows);
+                                }
+                            } while (reader.NextResult());
 
-                return dataSet;
-            }
+                            return dataSet;
+                        }
+                    }
+                });
         }
         /// <summary>
         /// 

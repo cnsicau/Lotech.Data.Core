@@ -93,16 +93,19 @@ namespace Lotech.Data.Queries
                                         : ((FieldInfo)member).FieldType;
 
                 // entity.MEMBER = (MemberValueType)ReadValue(memberType, realType, source, columnIndex);
+                Func<object, Type, object> convert = Convert.ChangeType;
                 return Expression.Lambda<MapReaderValueDelegate>(
                         Expression.Assign(
                             Expression.MakeMemberAccess(entityParameter, member),
                             Expression.Convert(
-                                Expression.Call(readValue.Method,
-                                    sourceParameter,
-                                    columnParameter,
-                                    convertParameter
-                                ),
-                                memberValueType)
+                                Expression.Call(convert.Method,
+                                    Expression.Call(readValue.Method,
+                                        sourceParameter,
+                                        columnParameter,
+                                        convertParameter
+                                    ),
+                                    Expression.Constant(memberValueType))
+                                , memberValueType)
                         )
                     , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();
             }
@@ -187,7 +190,8 @@ namespace Lotech.Data.Queries
             {
                 result = default(TEntity);
                 return false;
-            }else if (!initialized)
+            }
+            else if (!initialized)
             {
                 Initialize();
             }
@@ -204,11 +208,22 @@ namespace Lotech.Data.Queries
                 }
                 catch (Exception e)
                 {
-                    throw new InvalidCastException($"{description.MemberName} 列映射失败，值“{source[columnIndex]}”对于类型 {description.MemberValueType} 无效", e);
+                    throw new MapFailedException(description, source[columnIndex], e);
                 }
             }
             return true;
         }
         #endregion
+
+        class MapFailedException : InvalidCastException
+        {
+            public MapFailedException(MapDescriptor description, object value, Exception exception)
+                : base($"{description.MemberName} 列映射失败，值“{value}”对于类型 {description.MemberValueType} 无效", exception)
+            {
+                this.Value = value;
+            }
+
+            public object Value { get; private set; }
+        }
     }
 }

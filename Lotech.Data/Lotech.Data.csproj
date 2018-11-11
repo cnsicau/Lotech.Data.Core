@@ -182,6 +182,7 @@
     <Compile Include="Queries\ObjectResultMapper.cs" />
     <Compile Include="Queries\ProcedureQuery.cs" />
     <Compile Include="Queries\QueryResult~1.cs" />
+    <Compile Include="Queries\ReaderExtensions.cs" />
     <Compile Include="Queries\SimpleResultMapper~1.cs" />
     <Compile Include="Queries\SqlQuery.cs" />
     <Compile Include="Queries\UpdateBuilder.cs" />

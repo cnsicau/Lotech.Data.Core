@@ -125,5 +125,21 @@ namespace Lotech.Data
             return query.Database.ExecuteScalar(query.CreateCommand());
         }
         #endregion
+
+        #region ReadEntities
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        static public IEnumerable<TEntity> ReadEntities<TEntity>(this IQuery query)
+        {
+            using(var reader = query.ExecuteReader())
+            {
+                return query.Database.ReadEntities<TEntity>(reader);
+            }
+        }
+        #endregion
     }
 }

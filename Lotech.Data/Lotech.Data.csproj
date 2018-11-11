@@ -60,6 +60,7 @@
     <Compile Include="Configurations\DatabaseType.cs" />
     <Compile Include="Configurations\DbProviderFactories.cs" />
     <Compile Include="ConnectionSubstitute.cs" />
+    <Compile Include="DatabaseExtensions.cs" />
     <Compile Include="DatabaseFactory.cs" />
     <Compile Include="DbProviderDatabase.cs" />
     <Compile Include="Descriptors\DefaultDescriptorProvider.cs" />

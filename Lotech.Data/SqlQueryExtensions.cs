@@ -611,6 +611,19 @@ namespace Lotech.Data
         {
             return database.SqlQuery(sql, args).ExecuteEntities<TEntity>();
         }
+
+        /// <summary>
+        /// 执行指定SQL，并传入给定参数
+        /// </summary>
+        /// <example>db.ExecuteSqlEntities("SELECT * FROM example WHERE Name LIKE {0} +'%'", "ad")</example>
+        /// <param name="database"></param>
+        /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
+        /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        static public IEnumerable<TEntity> ReadSqlEntities<TEntity>(this IDatabase database, string sql, params object[] args) where TEntity : class
+        {
+            return database.SqlQuery(sql, args).ReadEntities<TEntity>();
+        }
         #endregion
 
         #region Update

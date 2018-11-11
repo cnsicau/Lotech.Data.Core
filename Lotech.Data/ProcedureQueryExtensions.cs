@@ -2,6 +2,7 @@
 using Lotech.Data.Queries;
 using Lotech.Data.Utils;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 
@@ -14,7 +15,7 @@ namespace Lotech.Data
     {
         static class ModelParameter<TParameter> where TParameter : class
         {
-            internal static readonly Action<IProcedureQuery, TParameter>[] binders 
+            internal static readonly Action<IProcedureQuery, TParameter>[] binders
                 = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TParameter>(Operation.Select).Members
                 .Select<IMemberDescriptor, Action<IProcedureQuery, TParameter>>(member =>
                 {
@@ -147,6 +148,20 @@ namespace Lotech.Data
         static public dynamic[] ExecuteProcedureEntities<TParameter>(this IDatabase database, string procedureName, TParameter namedParameter) where TParameter : class
         {
             return database.ProcedureQuery(procedureName, namedParameter).ExecuteEntities();
+        }
+
+        /// <summary>
+        /// 执行指定存储过程，并使用命名参数绑定
+        /// </summary>
+        /// <example>db.ExecuteProcedureEntities("proc", org => new { name = 4 })</example>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="database"></param>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="namedParameter">命名参数如:   new { name = "OK", code = "ok" }</param>
+        /// <returns></returns>
+        static public IEnumerable<TEntity> ReadProcedureEntities<TParameter>(this IDatabase database, string procedureName, TParameter namedParameter) where TParameter : class
+        {
+            return database.ProcedureQuery(procedureName, namedParameter).ReadEntities<TEntity>();
         }
         #endregion
     }

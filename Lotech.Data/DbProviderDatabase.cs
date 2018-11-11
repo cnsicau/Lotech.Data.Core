@@ -23,7 +23,7 @@ namespace Lotech.Data
         private readonly IEntityServices services;
         private readonly bool trace = Configurations.DatabaseConfiguration.Current?.DatabaseSettings?.Trace ?? false;
 
-        static class ResultMapper<ValueType>
+        internal static class ResultMapper<ValueType>
         {
             readonly static Func<IResultMapper<ValueType>> New;
             static ResultMapper()

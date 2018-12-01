@@ -16,7 +16,7 @@ namespace Lotech.Data.Descriptors
         /// <summary>
         /// 获取原型描述符
         /// </summary>
-        public static IEntityDescriptor Prototype { get { return prototype; } }
+        public static EntityDescriptor Prototype { get { return prototype; } }
 
         static ReflectionEntityDescriptor()
         {

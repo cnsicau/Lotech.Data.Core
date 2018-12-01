@@ -16,6 +16,7 @@ namespace Lotech.Data
         /// <param name="dbProviderFactory"></param>
         public OracleDatabase(DbProviderFactory dbProviderFactory) : base(dbProviderFactory, new OracleEntityServices())
         {
+            this.DescriptorProvider = new UpperCaseDescriptorProvider();
         }
 
         /// <summary>
@@ -25,6 +26,7 @@ namespace Lotech.Data
         /// <param name="services"></param>
         public OracleDatabase(DbProviderFactory dbProviderFactory, IEntityServices services) : base(dbProviderFactory, services)
         {
+            this.DescriptorProvider = new UpperCaseDescriptorProvider();
         }
 
         internal static string Quote(string name) => string.Concat('"', name, '"');

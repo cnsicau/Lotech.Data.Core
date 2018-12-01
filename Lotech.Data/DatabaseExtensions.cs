@@ -1,9 +1,7 @@
-Ôªøusing Lotech.Data.Queries;
-using System;
+using Lotech.Data.Queries;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
+using System.Data.Common;
 
 namespace Lotech.Data
 {
@@ -11,7 +9,7 @@ namespace Lotech.Data
     {
 
         /// <summary>
-        /// ‰ªé Reader ‰∏≠ËØªÂèñÂÆû‰Ωì
+        /// ¥” Reader ÷–∂¡»° µÃÂ
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="database"></param>
@@ -24,7 +22,7 @@ namespace Lotech.Data
             mapper.TearUp(new DataReaderResultSource(reader));
             try
             {
-                TEntity entity;
+                TEntity entity = default(TEntity);
                 while (reader.Read() && mapper.MapNext(out entity))
                 {
                     yield return entity;
@@ -37,7 +35,7 @@ namespace Lotech.Data
         }
 
         /// <summary>
-        /// ËØªÂèñ
+        /// ∂¡»°
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="database"></param>
@@ -53,7 +51,7 @@ namespace Lotech.Data
 
 
         /// <summary>
-        /// ËØªÂèñ
+        /// ∂¡»°
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="database"></param>
@@ -77,7 +75,7 @@ namespace Lotech.Data
         /// <returns></returns>
         static public IEnumerable<TEntity> ReadEntities<TEntity>(this IDatabase database, CommandType commandType, string text)
         {
-            using (var command = database.GetCommand(CommandType, text))
+            using (var command = database.GetCommand(commandType, text))
             {
                 return database.ReadEntities<TEntity>(command);
             }

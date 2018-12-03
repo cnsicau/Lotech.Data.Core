@@ -93,18 +93,15 @@ namespace Lotech.Data.Queries
                                         : ((FieldInfo)member).FieldType;
 
                 // entity.MEMBER = (MemberValueType)ReadValue(memberType, realType, source, columnIndex);
-                Func<object, Type, object> convert = Convert.ChangeType;
                 return Expression.Lambda<MapReaderValueDelegate>(
                         Expression.Assign(
                             Expression.MakeMemberAccess(entityParameter, member),
                             Expression.Convert(
-                                Expression.Call(convert.Method,
                                     Expression.Call(readValue.Method,
                                         sourceParameter,
                                         columnParameter,
                                         convertParameter
-                                    ),
-                                    Expression.Constant(memberValueType))
+                                    )
                                 , memberValueType)
                         )
                     , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();

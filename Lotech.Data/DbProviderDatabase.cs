@@ -7,6 +7,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 
 namespace Lotech.Data
 {
@@ -69,11 +70,16 @@ namespace Lotech.Data
 
         void LogCommand(string action, DbCommand command)
         {
-            Log($"\n{action} with {command.CommandType} command :\n" + command.CommandText);
+            var log = new StringBuilder();
+            log.AppendLine().Append(action).Append(" with ").Append(command.CommandType)
+                .AppendLine(" command :").Append(command.CommandText);
             foreach (DbParameter p in command.Parameters)
             {
-                Log($"  -- {p.ParameterName,-12} {p.DbType,10}    =    {p.Value}");
+                log.Append("  -- ").AppendFormat("{0,-12}", p.ParameterName)
+                    .AppendFormat("{0,10}", p.DbType).Append("    =    ")
+                    .Append(p.Value).AppendLine();
             }
+            Log(log.ToString());
         }
 
         /// <summary>
@@ -374,8 +380,8 @@ namespace Lotech.Data
                     val = value(command);
                 else
                 {
-                    var sw = Stopwatch.StartNew();
                     LogCommand(action, command);
+                    var sw = Stopwatch.StartNew();
                     val = value(command);
                     Log("  -- elapsed times: " + sw.Elapsed);
                 }

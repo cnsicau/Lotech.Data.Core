@@ -1,12 +1,10 @@
 ﻿using Lotech.Data.Descriptors;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lotech.Data.Oracles
 {
+    /// <summary>
+    /// 全大写名称
+    /// </summary>
     class UpperCaseDescriptorProvider : IDescriptorProvider
     {
         class UpperCaseEntityDescriptor<TEntity> : EntityDescriptor where TEntity : class

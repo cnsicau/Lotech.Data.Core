@@ -71,8 +71,8 @@ namespace Lotech.Data
         void LogCommand(string action, DbCommand command)
         {
             var log = new StringBuilder();
-            log.AppendLine().Append(action).Append(" with ").Append(command.CommandType)
-                .AppendLine(" command :").Append(command.CommandText);
+            log.AppendLine().Append(action).Append('(').Append(command.CommandType)
+                .AppendLine(") :").Append(command.CommandText);
             foreach (DbParameter p in command.Parameters)
             {
                 log.Append("  -- ").AppendFormat("{0,-12}", p.ParameterName)

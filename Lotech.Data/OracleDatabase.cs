@@ -14,10 +14,7 @@ namespace Lotech.Data
         /// 
         /// </summary>
         /// <param name="dbProviderFactory"></param>
-        public OracleDatabase(DbProviderFactory dbProviderFactory) : base(dbProviderFactory, new OracleEntityServices())
-        {
-            this.DescriptorProvider = new UpperCaseDescriptorProvider();
-        }
+        public OracleDatabase(DbProviderFactory dbProviderFactory) : this(dbProviderFactory, new OracleEntityServices(dbProviderFactory)) { }
 
         /// <summary>
         /// 

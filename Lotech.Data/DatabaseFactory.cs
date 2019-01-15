@@ -11,6 +11,9 @@ namespace Lotech.Data
     public static class DatabaseFactory
     {
         static readonly ConcurrentDictionary<DbProviderFactory, DatabaseType> providerDatabaseTypes = new ConcurrentDictionary<DbProviderFactory, DatabaseType>();
+        static readonly ConcurrentDictionary<ConnectionStringSettings, Func<IDatabase>> databaseProviders
+            = new ConcurrentDictionary<ConnectionStringSettings, Func<IDatabase>>();
+
         /// <summary>
         /// 
         /// </summary>
@@ -69,48 +72,51 @@ namespace Lotech.Data
         /// <returns></returns>
         public static IDatabase CreateDatabase(ConnectionStringSettings connectionSettings)
         {
-            IDatabase db;
+            var db = databaseProviders.GetOrAdd(connectionSettings, CreateDatabaseProvider)();
+            db.ConnectionString = connectionSettings.ConnectionString;
+            return db;
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="connectionSettings"></param>
+        /// <returns></returns>
+        public static Func<IDatabase> CreateDatabaseProvider(ConnectionStringSettings connectionSettings)
+        {
             var provider = Configurations.DbProviderFactories.GetFactory(connectionSettings.ProviderName);
             var databaseType = connectionSettings.Type;
             if (databaseType == DatabaseType.Default)
             {
                 databaseType = providerDatabaseTypes.GetOrAdd(provider, DetectDatabaseType);
             }
+            var connectionString = connectionSettings.ConnectionString;
             switch (databaseType)
             {
 #if ALL || GENERIC
                 case DatabaseType.Generic:
-                    db = new GenericDatabase(provider
-                            , connectionSettings.ParameterPrefix ?? "@"
-                            , connectionSettings.QuoteName ?? "{0}");
-                    break;
+                    var parameter = connectionSettings.ParameterPrefix ?? "@";
+                    var quote = connectionSettings.QuoteName ?? "{0}";
+                    return () => new GenericDatabase(provider, parameter, quote) { ConnectionString = connectionString };
 #endif
 #if ALL || SQLSERVER
                 case DatabaseType.SqlServer:
-                    db = new SqlServerDatabase(provider);
-                    break;
+                    return () => new SqlServerDatabase(provider);
 #endif
 #if ALL || ORACLE
                 case DatabaseType.Oracle:
-                    db = new OracleDatabase(provider);
-                    break;
+                    return () => new OracleDatabase(provider);
 #endif
 #if ALL || MYSQL
                 case DatabaseType.MySql:
-                    db = new MySqlDatabase(provider);
-                    break;
+                    return () => new MySqlDatabase(provider);
 #endif
 #if ALL || SQLITE
                 case DatabaseType.SQLite:
-                    db = new SQLiteDatabase(provider);
-                    break;
+                    return () => new SQLiteDatabase(provider);
 #endif
                 default:
-                    throw new NotSupportedException("未支持的库类型");
+                    return () => { throw new NotSupportedException("未支持的库类型"); };
             }
-
-            db.ConnectionString = connectionSettings.ConnectionString;
-            return db;
         }
     }
 }

@@ -2,11 +2,40 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Data.Common;
+using System.Collections.Concurrent;
 
 namespace Lotech.Data.Oracles
 {
     class OracleEntityServices : IEntityServices
     {
+        static readonly ConcurrentDictionary<DbProviderFactory, Action<DbCommand, int>> arrayBindFeatures = new ConcurrentDictionary<DbProviderFactory, Action<DbCommand, int>>();
+
+        readonly Action<DbCommand, int> arrayBindFeature;
+
+        public OracleEntityServices(DbProviderFactory dbProviderFactory)
+        {
+            arrayBindFeature = arrayBindFeatures.GetOrAdd(dbProviderFactory, ParseArrayBindFeature);
+        }
+
+        static Action<DbCommand, int> ParseArrayBindFeature(DbProviderFactory dbProviderFactory)
+        {
+            using (var command = dbProviderFactory.CreateCommand())
+            {
+                var bind = command.GetType().GetProperty("ArrayBindCount");
+                var commandParameter = Expression.Parameter(typeof(DbCommand), "command");
+                var arrayBindCount = Expression.Parameter(typeof(int), "arrayBindCount");
+                return Expression.Lambda<Action<DbCommand, int>>(
+                        Expression.Assign(
+                                Expression.MakeMemberAccess(
+                                    Expression.Convert(commandParameter, bind.DeclaringType), bind)
+                                , arrayBindCount
+                            )
+                        , commandParameter, arrayBindCount
+                    ).Compile();
+            }
+        }
+
         public IDatabase Database { get; set; }
 
         public Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class
@@ -20,10 +49,15 @@ namespace Lotech.Data.Oracles
             return Operation<EntityType, Func<IDatabase, int>, OracleCountEntities<EntityType>>
                 .Instance(Database.DescriptorProvider, Descriptors.Operation.Select);
         }
-        
+
         public Action<IDatabase, IEnumerable<TEntity>> DeleteEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
+            OracleDeleteEntities<TEntity>.ArrayBind = arrayBindFeature;
+
+            return arrayBindFeature != null
+                ? Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, OracleDeleteEntities<TEntity>>
+                    .Instance(Database.DescriptorProvider, Descriptors.Operation.Insert)
+                : Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<DeleteOperationBuilder<TEntity>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Delete);
         }
@@ -78,8 +112,13 @@ namespace Lotech.Data.Oracles
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, TransactionalOperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>
-                .Instance(Database.DescriptorProvider, Descriptors.Operation.Insert);
+            OracleInsertEntities<TEntity>.ArrayBind = arrayBindFeature;
+
+            return arrayBindFeature != null
+                ? Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, OracleInsertEntities<TEntity>>
+                    .Instance(Database.DescriptorProvider, Descriptors.Operation.Insert)
+                : Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, TransactionalOperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>
+                    .Instance(Database.DescriptorProvider, Descriptors.Operation.Insert);
         }
 
         public Action<IDatabase, TEntity> InsertEntity<TEntity>() where TEntity : class
@@ -108,16 +147,24 @@ namespace Lotech.Data.Oracles
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntities<TEntity>() where TEntity : class
         {
-            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
-                    TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>>
-                >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);
+            OracleUpdateEntities<TEntity>.ArrayBind = arrayBindFeature;
+            return arrayBindFeature != null
+                ? Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, OracleUpdateEntities<TEntity>
+                    >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update)
+                : Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
+                        TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>>
+                    >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);
         }
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntitiesExclude<TEntity, TExclude>()
             where TEntity : class
             where TExclude : class
         {
-            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
+            OracleUpdateEntities<TEntity>.ArrayBind = arrayBindFeature;
+            return arrayBindFeature != null
+                ? Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, OracleUpdateEntities<TEntity>.Exclude<TExclude>
+                    >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update)
+                : Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Exclude<TExclude>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);
         }
@@ -126,7 +173,11 @@ namespace Lotech.Data.Oracles
             where TEntity : class
             where TInclude : class
         {
-            return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
+            OracleUpdateEntities<TEntity>.ArrayBind = arrayBindFeature;
+            return arrayBindFeature != null
+                ? Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, OracleUpdateEntities<TEntity>.Include<TInclude>
+                    >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update)
+                : Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Include<TInclude>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);
         }

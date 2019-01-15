@@ -159,6 +159,7 @@
     <Compile Include="Oracles\InsertOperationBuilder.cs" />
     <Compile Include="Oracles\OracleCountEntitiesExpression~1.cs" />
     <Compile Include="Oracles\OracleCountEntities~1.cs" />
+    <Compile Include="Oracles\OracleDeleteEntities~1.cs" />
     <Compile Include="Oracles\OracleDeleteEntitiesExpression~1.cs" />
     <Compile Include="Oracles\OracleDeleteEntity~2.cs" />
     <Compile Include="Oracles\OracleEntityServices.cs" />
@@ -168,11 +169,13 @@
     <Compile Include="Oracles\OracleExpressionVisitor.cs" />
     <Compile Include="Oracles\OracleFindEntitiesExpression~1.cs" />
     <Compile Include="Oracles\OracleFindEntities~1.cs" />
+    <Compile Include="Oracles\OracleUpdateEntities~1.cs" />
+    <Compile Include="Oracles\OracleInsertEntities~1.cs" />
     <Compile Include="Oracles\OracleLoadEntityExpression~1.cs" />
     <Compile Include="Oracles\OracleLoadEntity~1.cs" />
     <Compile Include="Oracles\OracleLoadEntity~2.cs" />
     <Compile Include="Oracles\OracleQueryExtensions.cs" />
-    <Compile Include="Oracles\OracleUpdateEntities.cs" />
+    <Compile Include="Oracles\OracleUpdateEntities~2.cs" />
     <Compile Include="Oracles\UpdateOperationBuilder.cs" />
     <Compile Include="Oracles\UpperCaseDescriptorProvider.cs" />
     <Compile Include="Page.cs" />

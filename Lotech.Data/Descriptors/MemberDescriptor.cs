@@ -53,7 +53,8 @@ namespace Lotech.Data.Descriptors
                 DbType = DbType,
                 Name = Name,
                 Type = Type,
-                Member = Member
+                Member = Member,
+                PrimaryKey = PrimaryKey,
             };
         }
 

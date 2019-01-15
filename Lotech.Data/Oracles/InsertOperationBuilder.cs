@@ -93,7 +93,7 @@ namespace Lotech.Data.Oracles
                     ParameterName = BuildParameterName(parameterIndex),
                     Assign = new Action<DbCommand, TEntity>((command, entity) => assign(entity, command.Parameters[parameterIndex].Value))
                 };
-            });
+            }).ToArray();
 
             return (db, command, entity) =>
             {

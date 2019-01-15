@@ -11,7 +11,7 @@ namespace Lotech.Data.Oracles
         {
             internal static readonly UpperCaseEntityDescriptor<TEntity> Instance = new UpperCaseEntityDescriptor<TEntity>();
 
-            UpperCaseEntityDescriptor():base(ReflectionEntityDescriptor<TEntity>.Prototype)
+            UpperCaseEntityDescriptor():base((EntityDescriptor)DefaultDescriptorProvider.Instance.GetEntityDescriptor<TEntity>(Operation.None).Clone())
             {
                 Name = Name?.ToUpper();
                 Schema = Schema?.ToUpper();

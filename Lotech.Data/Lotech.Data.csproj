@@ -54,6 +54,7 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SqlServers\BulkDeleteOperationBuilder.cs" />
     <Compile Include="ColumnAttribute.cs" />
     <Compile Include="CompositedDataReader.cs" />
     <Compile Include="Configurations\ConnectionStringSettings.cs" />
@@ -218,8 +219,10 @@
     <Compile Include="SqlQueryExtensions.cs" />
     <Compile Include="SqlQueryParameter.cs" />
     <Compile Include="SqlServerDatabase.cs" />
+    <Compile Include="SqlServers\BulkCopy.cs" />
     <Compile Include="SqlServers\BulkCopyDataReader.cs" />
-    <Compile Include="SqlServers\BulkCopyOperationBuilder.cs" />
+    <Compile Include="SqlServers\BulkInsertOperationBuilder.cs" />
+    <Compile Include="SqlServers\BulkUpdateOperationBuilder.cs" />
     <Compile Include="SqlServers\DeleteOperationBuilder.cs" />
     <Compile Include="SqlServers\InsertOperationBuilder.cs" />
     <Compile Include="SqlServers\SqlServerCountEntitiesExpression~1.cs" />

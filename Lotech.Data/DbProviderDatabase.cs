@@ -66,7 +66,7 @@ namespace Lotech.Data
         /// <summary>
         /// 获取 DbProviderFactory 实例
         /// </summary>
-        protected DbProviderFactory Factory { get { return dbProviderFactory; } }
+        public DbProviderFactory DbProviderFactory { get { return dbProviderFactory; } }
 
         void LogCommand(string action, DbCommand command)
         {

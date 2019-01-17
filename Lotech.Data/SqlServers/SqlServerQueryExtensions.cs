@@ -136,16 +136,29 @@ namespace Lotech.Data.SqlServers
             return query;
         }
 
-        #region NET_4 & BulkCopy
-#if NET_4
-        static public void BulkCopy<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
+        #region Bulk****
+        static public void BulkInsertEntities<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
         {
             Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
-                , BulkCopyOperationBuilder<TEntity>>.Instance(
+                , BulkInsertOperationBuilder<TEntity>>.Instance(
                 db.DescriptorProvider, Descriptors.Operation.Insert
             )(db, entities);
         }
-#endif
+        static public void BulkUpdateEntities<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
+        {
+            Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
+                , BulkUpdateOperationBuilder<TEntity>>.Instance(
+                db.DescriptorProvider, Descriptors.Operation.Insert
+            )(db, entities);
+        }
+
+        static public void BulkDeleteEntities<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
+        {
+            Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
+                , BulkDeleteOperationBuilder<TEntity>>.Instance(
+                db.DescriptorProvider, Descriptors.Operation.Insert
+            )(db, entities);
+        }
         #endregion
     }
 }

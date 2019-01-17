@@ -1,5 +1,4 @@
-﻿#if NET_4
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using Lotech.Data.Descriptors;
@@ -99,4 +98,3 @@ namespace Lotech.Data.SqlServers
         }
     }
 }
-#endif

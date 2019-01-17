@@ -212,7 +212,7 @@ namespace Lotech.Data.SqlServers
                         var connection = db.GetConnection(command);
                         if (connection.Connection.State == ConnectionState.Closed)
                             connection.Connection.Open();
-
+                        if (db.Log != null) db.Log("BulkCopy to " + destinationTableName);
                         using (var reader = new BulkCopyDataReader<TEntity>(entities, columns))
                         {
                             provider.Instance()(connection.Connection, command.Transaction, columns, destinationTableName, reader);

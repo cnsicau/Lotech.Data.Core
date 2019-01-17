@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Lotech.Data.Operations;
 #if SQLSERVER
 using Lotech.Data.SqlServers;
 
@@ -133,5 +135,17 @@ namespace Lotech.Data.SqlServers
             }
             return query;
         }
+
+        #region NET_4 & BulkCopy
+#if NET_4
+        static public void BulkCopy<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
+        {
+            Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
+                , BulkCopyOperationBuilder<TEntity>>.Instance(
+                db.DescriptorProvider, Descriptors.Operation.Insert
+            )(db, entities);
+        }
+#endif
+        #endregion
     }
 }

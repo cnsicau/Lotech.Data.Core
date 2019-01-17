@@ -218,6 +218,8 @@
     <Compile Include="SqlQueryExtensions.cs" />
     <Compile Include="SqlQueryParameter.cs" />
     <Compile Include="SqlServerDatabase.cs" />
+    <Compile Include="SqlServers\BulkCopyDataReader.cs" />
+    <Compile Include="SqlServers\BulkCopyOperationBuilder.cs" />
     <Compile Include="SqlServers\DeleteOperationBuilder.cs" />
     <Compile Include="SqlServers\InsertOperationBuilder.cs" />
     <Compile Include="SqlServers\SqlServerCountEntitiesExpression~1.cs" />

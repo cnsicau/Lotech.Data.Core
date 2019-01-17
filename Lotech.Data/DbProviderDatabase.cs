@@ -150,7 +150,7 @@ namespace Lotech.Data
         /// 
         /// </summary>
         /// <returns></returns>
-        protected virtual ConnectionSubstitute GetConnection(DbCommand command)
+        internal virtual ConnectionSubstitute GetConnection(DbCommand command)
         {
             if (command?.Connection?.Site is ConnectionSubstitute)
             {

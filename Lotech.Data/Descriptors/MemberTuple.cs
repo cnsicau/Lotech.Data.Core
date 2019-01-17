@@ -3,6 +3,7 @@ using System.Data;
 
 namespace Lotech.Data.Descriptors
 {
+    [System.Diagnostics.DebuggerDisplay("{DbType} {Name,nq}")]
     class MemberTuple<TEntity> where TEntity : class
     {
         internal MemberTuple(string name, DbType dbType, string parameterName

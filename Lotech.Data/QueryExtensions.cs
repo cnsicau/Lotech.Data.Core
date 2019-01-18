@@ -133,11 +133,11 @@ namespace Lotech.Data
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="query"></param>
         /// <returns></returns>
-        static public IEnumerable<TEntity> ReadEntities<TEntity>(this IQuery query)
+        static public IEntityReader<TEntity> ExecuteEntityReader<TEntity>(this IQuery query)
         {
-            using(var reader = query.ExecuteReader())
+            using(var command = query.CreateCommand())
             {
-                return query.Database.ReadEntities<TEntity>(reader);
+                return query.Database.ExecuteEntityReader<TEntity>(command);
             }
         }
         #endregion

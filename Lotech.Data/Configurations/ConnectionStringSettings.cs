@@ -1,10 +1,23 @@
-﻿namespace Lotech.Data.Configurations
+﻿using System.Collections.Generic;
+
+namespace Lotech.Data.Configurations
 {
     /// <summary>
     /// 连接串设置
     /// </summary>
     public class ConnectionStringSettings
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="items"></param>
+        public ConnectionStringSettings(IReadOnlyDictionary<string, string> items) { Items = items; }
+
+        /// <summary>
+        /// 额外属性
+        /// </summary>
+        public IReadOnlyDictionary<string, string> Items { get; }
+
         /// <summary>
         /// 提供者名称，如：System.Data.SqlClient
         /// </summary>

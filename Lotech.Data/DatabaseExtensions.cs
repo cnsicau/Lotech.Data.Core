@@ -1,12 +1,30 @@
 using Lotech.Data.Queries;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
 namespace Lotech.Data
 {
-    static class DatabaseExtensions
+    /// <summary>
+    /// 扩展
+    /// </summary>
+    static public class DatabaseExtensions
     {
+        class EntityReader<TEntity> : IEntityReader<TEntity>
+        {
+            private readonly IEnumerator<TEntity> enumerator;
+
+            public EntityReader(IEnumerator<TEntity> enumerator) { this.enumerator = enumerator; }
+
+            public void Close() { enumerator.Dispose(); }
+
+            public void Dispose() { enumerator.Dispose(); }
+
+            public TEntity GetValue() { return enumerator.Current; }
+
+            public bool Read() { return enumerator.MoveNext(); }
+        }
 
         /// <summary>
         /// 从 Reader 中读取实体
@@ -15,22 +33,25 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="reader"></param>
         /// <returns></returns>
-        static public IEnumerable<TEntity> ReadEntities<TEntity>(this IDatabase database, IDataReader reader)
+        static IEnumerable<TEntity> CreateEntityReader<TEntity>(IDatabase database, IDataReader reader)
         {
-            var mapper = DbProviderDatabase.ResultMapper<TEntity>.Create(database);
+            using (reader)
+            {
+                var mapper = DbProviderDatabase.ResultMapper<TEntity>.Create(database);
 
-            mapper.TearUp(new DataReaderResultSource(reader));
-            try
-            {
-                TEntity entity = default(TEntity);
-                while (reader.Read() && mapper.MapNext(out entity))
+                mapper.TearUp(new DataReaderResultSource(reader));
+                try
                 {
-                    yield return entity;
+                    TEntity entity = default(TEntity);
+                    while (mapper.MapNext(out entity))
+                    {
+                        yield return entity;
+                    }
                 }
-            }
-            finally
-            {
-                mapper.TearDown();
+                finally
+                {
+                    mapper.TearDown();
+                }
             }
         }
 
@@ -41,11 +62,14 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="command"></param>
         /// <returns></returns>
-        static public IEnumerable<TEntity> ReadEntities<TEntity>(this IDatabase database, DbCommand command)
+        static public IEntityReader<TEntity> ExecuteEntityReader<TEntity>(this IDatabase database, DbCommand command)
         {
-            using (var reader = database.ExecuteReader(command))
+            var reader = database.ExecuteReader(command);
+            try { return new EntityReader<TEntity>(CreateEntityReader<TEntity>(database, reader).GetEnumerator()); }
+            catch
             {
-                return database.ReadEntities<TEntity>(reader);
+                try { reader.Dispose(); } catch { }
+                throw;
             }
         }
 
@@ -57,11 +81,11 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="query"></param>
         /// <returns></returns>
-        static public IEnumerable<TEntity> ReadEntities<TEntity>(this IDatabase database, string query)
+        static public IEntityReader<TEntity> ExecuteEntityReader<TEntity>(this IDatabase database, string query)
         {
             using (var command = database.GetSqlStringCommand(query))
             {
-                return database.ReadEntities<TEntity>(command);
+                return database.ExecuteEntityReader<TEntity>(command);
             }
         }
 
@@ -73,11 +97,11 @@ namespace Lotech.Data
         /// <param name="commandType"></param>
         /// <param name="text"></param>
         /// <returns></returns>
-        static public IEnumerable<TEntity> ReadEntities<TEntity>(this IDatabase database, CommandType commandType, string text)
+        static public IEntityReader<TEntity> ExecuteEntityReader<TEntity>(this IDatabase database, CommandType commandType, string text)
         {
             using (var command = database.GetCommand(commandType, text))
             {
-                return database.ReadEntities<TEntity>(command);
+                return database.ExecuteEntityReader<TEntity>(command);
             }
         }
     }

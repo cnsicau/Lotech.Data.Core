@@ -22,6 +22,9 @@ namespace Lotech.Data.SqlServers
         }
         public Action<IDatabase, IEnumerable<TEntity>> DeleteEntities<TEntity>() where TEntity : class
         {
+            var sql = Database as SqlServerDatabase;
+            if (sql != null && sql.Bulk) return SqlServerQueryExtensions.BulkDeleteEntities;
+
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<DeleteOperationBuilder<TEntity>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Delete);
@@ -77,6 +80,9 @@ namespace Lotech.Data.SqlServers
         }
         public Action<IDatabase, IEnumerable<TEntity>> InsertEntities<TEntity>() where TEntity : class
         {
+            var sql = Database as SqlServerDatabase;
+            if (sql != null && sql.Bulk) return SqlServerQueryExtensions.BulkInsertEntities;
+
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>, TransactionalOperationProvider<TEntity>.Instance<InsertOperationBuilder<TEntity>>>
                 .Instance(Database.DescriptorProvider, Descriptors.Operation.Insert);
         }
@@ -107,6 +113,9 @@ namespace Lotech.Data.SqlServers
 
         public Action<IDatabase, IEnumerable<TEntity>> UpdateEntities<TEntity>() where TEntity : class
         {
+            var sql = Database as SqlServerDatabase;
+            if (sql != null && sql.Bulk) return SqlServerQueryExtensions.BulkUpdateEntities;
+
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);

@@ -21,6 +21,7 @@ namespace Lotech.Data.Configurations
             using (var stream = File.OpenRead(configurationFile))
             {
                 var serializer = new XmlSerializer(typeof(Configuration));
+                serializer.UnknownAttribute += AppendConnectionStringsConfigurationItems;
                 var configuration = (Configuration)serializer.Deserialize(stream);
                 if (configuration?.DbProviderFactories != null)
                 {
@@ -35,7 +36,7 @@ namespace Lotech.Data.Configurations
                         Trace = configuration?.Settings?.Trace ?? false
                     },
                     ConnectionStrings = new ConnectionStringSettingsCollection(
-                        configuration.ConnectionStrings.ToDictionary(_ => _.Name ?? string.Empty, _ => new ConnectionStringSettings
+                        configuration.ConnectionStrings.ToDictionary(_ => _.Name ?? string.Empty, _ => new ConnectionStringSettings(_.Items)
                         {
                             ConnectionString = _.ConnectionString,
                             ParameterPrefix = _.ParameterPrefix,
@@ -45,6 +46,17 @@ namespace Lotech.Data.Configurations
                         })
                     )
                 };
+            }
+        }
+
+        private void AppendConnectionStringsConfigurationItems(object sender, XmlAttributeEventArgs e)
+        {
+            if (e.ObjectBeingDeserialized is ConnectionStringsConfiguration)
+            {
+                ((ConnectionStringsConfiguration)e.ObjectBeingDeserialized).Items.Add(
+                    e.Attr.Name,
+                    e.Attr.Value
+                );
             }
         }
 
@@ -71,6 +83,14 @@ namespace Lotech.Data.Configurations
         /// </summary>
         public class ConnectionStringsConfiguration
         {
+            public ConnectionStringsConfiguration()
+            {
+                Items = new Dictionary<string, string>();
+            }
+
+            [XmlIgnore]
+            public Dictionary<string, string> Items { get; }
+
             /// <summary>
             /// 
             /// </summary>

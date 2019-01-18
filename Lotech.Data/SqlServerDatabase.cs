@@ -31,6 +31,8 @@ namespace Lotech.Data
         {
         }
 
+        internal bool Bulk { get; set; }
+
         internal static string Quote(string name) => string.Concat('[', name, ']');
 
         internal static string BuildParameter(string name) => string.Concat('@', name);

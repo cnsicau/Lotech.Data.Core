@@ -100,7 +100,9 @@ namespace Lotech.Data
 #endif
 #if ALL || SQLSERVER
                 case DatabaseType.SqlServer:
-                    return () => new SqlServerDatabase(provider);
+                    bool bulk = connectionSettings.Items != null && connectionSettings.Items.ContainsKey("bulk")
+                        && connectionSettings.Items["bulk"] == "on";
+                    return () => new SqlServerDatabase(provider) { Bulk = bulk };
 #endif
 #if ALL || ORACLE
                 case DatabaseType.Oracle:

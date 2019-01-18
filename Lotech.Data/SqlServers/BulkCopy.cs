@@ -4,17 +4,17 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
 using Lotech.Data.Descriptors;
 using Lotech.Data.Operations;
 using Lotech.Data.Utils;
 
 namespace Lotech.Data.SqlServers
 {
-    public class BulkCopy<TEntity> : IDisposable where TEntity : class
+    class BulkCopy<TEntity> : IDisposable where TEntity : class
     {
-        delegate void WriteToDelegate(SqlServerDatabase database, string destinationTableName, BulkCopyProvider provider, IEnumerable<TEntity> entities);
+        delegate void WriteToDelegate(SqlServerDatabase database, string destinationTableName, BulkCopyProvider provider, IEnumerable<TEntity> entities, Func<MemberTuple<TEntity>, bool> columnFilter);
 
         delegate void BulkCopyDelegate(DbConnection connection, DbTransaction transaction, MemberTuple<TEntity>[] columns, string destinationTableName, BulkCopyDataReader<TEntity> reader);
         #region Static members
@@ -46,108 +46,96 @@ namespace Lotech.Data.SqlServers
                     this.addColumnMapping = addColumnMapping;
                     this.writeToServer = writeToServer;
 
-                    bulkCopy = Initialize();
+                    bulkCopy = CompileBulkCopy();
                 }
 
-                BulkCopyDelegate Initialize()
+                BulkCopyDelegate CompileBulkCopy()
                 {
-                    var bulkCopyMethod = new DynamicMethod("BulkCopy" + sqlBulkCopyType.MetadataToken.ToString("X")
-                        , typeof(void), new Type[]
-                        {
-                            typeof(DbConnection),   //connection
-                            typeof(DbTransaction),  //transaction
-                            typeof(MemberTuple<TEntity>[]),  //columns
-                            typeof(string),  //destinationTableName
-                            typeof(BulkCopyDataReader<TEntity>),  //reader
-                        }
-                        , true);
+                    var connection = Expression.Parameter(typeof(DbConnection));
+                    var transaction = Expression.Parameter(typeof(DbTransaction));
+                    var columns = Expression.Parameter(typeof(MemberTuple<TEntity>[]));
+                    var destinationTableName = Expression.Parameter(typeof(string));
+                    var reader = Expression.Parameter(typeof(BulkCopyDataReader<TEntity>));
 
-                    var il = bulkCopyMethod.GetILGenerator();
+                    var bulkCopy = Expression.Variable(sqlBulkCopyType);
+                    var index = Expression.Variable(typeof(int));
+                    var loopLabel = Expression.Label();
+                    var returnLabel = Expression.Label();
 
-                    // SqlBulkCopy(SqlConnection connection, SqlBulkCopyOptions copyOptions, SqlTransaction externalTransaction)
-                    // SqlBulkCopy(SqlConnection connection);
-                    var checkTransaction = il.DefineLabel();
-                    var enter = il.DefineLabel();
-                    var bulkCopy = il.DeclareLocal(sqlBulkCopyType);
-                    var ctor3 = sqlBulkCopyType.GetConstructors().First(_ =>
+                    #region Constructor
+                    Type sqlConnectionType = null, sqlTransactionType = null;
+
+                    var transactionalConstructor = sqlBulkCopyType.GetConstructors().First(_ =>
                     {
                         var parameters = _.GetParameters();
                         return parameters.Length == 3
-                            && parameters[0].ParameterType.IsSubclassOf(typeof(DbConnection))
+                            && (sqlConnectionType = parameters[0].ParameterType).IsSubclassOf(typeof(DbConnection))
                             && parameters[1].ParameterType == sqlBulkCopyOptionsType
-                            && parameters[2].ParameterType.IsSubclassOf(typeof(DbTransaction));
+                            && (sqlTransactionType = parameters[2].ParameterType).IsSubclassOf(typeof(DbTransaction));
 
                     });
 
-                    var ctor1 = sqlBulkCopyType.GetConstructors().First(_ =>
+                    var connectionConstructor = sqlBulkCopyType.GetConstructors().First(_ =>
                     {
                         var parameters = _.GetParameters();
                         return parameters.Length == 1 && parameters[0].ParameterType.IsSubclassOf(typeof(DbConnection));
                     });
 
-                    il.Emit(OpCodes.Ldarg_0);  //connection
-                    il.Emit(OpCodes.Castclass, ctor1.GetParameters()[0].ParameterType);
+                    #endregion
 
-                    il.Emit(OpCodes.Ldarg_1);
-                    il.Emit(OpCodes.Brfalse_S, checkTransaction);
+                    var block = Expression.Block(
+                        new ParameterExpression[] { bulkCopy, index },
+                        // var bulkCopy = transaction == null 
+                        //      ? new SqlBulkCopy(connection)
+                        //      : new SqlBulkCopy(connection, 0, transaction);
+                        Expression.Assign(
+                                bulkCopy, Expression.Condition(
+                                        Expression.Equal(transaction, Expression.Constant(null))
+                                        , Expression.New(connectionConstructor, Expression.Convert(connection, sqlConnectionType))
+                                        , Expression.New(transactionalConstructor, Expression.Convert(connection, sqlConnectionType)
+                                                , Expression.Convert(Expression.Constant(0), sqlBulkCopyOptionsType)
+                                                , Expression.Convert(transaction, sqlTransactionType))
+                                    )
+                        ),
 
-                    il.Emit(OpCodes.Ldc_I4_0); //options
-                    il.Emit(OpCodes.Ldarg_1);  //transaction
-                    il.Emit(OpCodes.Castclass, ctor3.GetParameters()[2].ParameterType);
-                    il.Emit(OpCodes.Newobj, ctor3);
-                    il.Emit(OpCodes.Br_S, enter);
-                    il.MarkLabel(checkTransaction);
+                        // bulkCopy.DestinationTableName = destinationTableName;
+                        Expression.Assign(
+                            Expression.MakeMemberAccess(bulkCopy, this.destinationTableName), destinationTableName),
 
-                    il.Emit(OpCodes.Newobj, ctor1);
+                        // var index = columns.Length;
+                        Expression.Assign(
+                                index, Expression.ArrayLength(columns)
+                            ),
+                        // while(index >= 0) bulkCopy.ColumnMappings.Add(index, columns[index].Name);
+                        Expression.Loop(
+                                Expression.IfThenElse(
+                                        Expression.LessThan(
+                                            Expression.Assign(index, Expression.Decrement(index))
+                                            , Expression.Constant(0, typeof(int))),
+                                        Expression.Break(loopLabel),
+                                        Expression.Call(
+                                                Expression.MakeMemberAccess(bulkCopy, this.columnMappings),
+                                                addColumnMapping,
+                                                index,
+                                                Expression.MakeMemberAccess(
+                                                        Expression.ArrayIndex(columns, index),
+                                                        typeof(MemberTuple<TEntity>).GetProperty("Name", BindingFlags.NonPublic | BindingFlags.Instance)
+                                                    )
+                                            )
+                                    )
+                                , loopLabel
+                            ),
+                        //// bulkCopy.WriteTo(reader);
+                        Expression.Call(bulkCopy, writeToServer, reader),
+                        Expression.Return(returnLabel),
+                        Expression.Label(returnLabel)
+                    );
 
-                    il.MarkLabel(enter);
-                    il.Emit(OpCodes.Stloc, bulkCopy);
-
-                    // bulkCopy.DestinationTableName = destinationTableName;
-                    il.Emit(OpCodes.Ldloc, bulkCopy);
-                    il.Emit(OpCodes.Ldarg_3);
-                    il.Emit(OpCodes.Call, destinationTableName.GetSetMethod());
-
-                    // var index = columns.Length - 1;
-                    var index = il.DeclareLocal(typeof(int));
-                    il.Emit(OpCodes.Ldc_I4_1);
-                    il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldlen);
-                    il.Emit(OpCodes.Sub);
-                    il.Emit(OpCodes.Stloc, index);
-
-                    var columnMappings = il.DeclareLocal(this.columnMappings.PropertyType);
-                    // var columnMappings = bulkCopy.ColumnMappings;
-                    il.Emit(OpCodes.Ldloc, bulkCopy);
-                    il.Emit(OpCodes.Call, this.columnMappings.GetGetMethod());
-                    il.Emit(OpCodes.Stloc, columnMappings);
-
-                    var loop = il.DefineLabel();
-                    // while( index >= 0) 
-                    il.Emit(OpCodes.Ldloc, index);
-                    il.Emit(OpCodes.Ldc_I4_0);
-                    il.Emit(OpCodes.Blt_S, loop);
-                    //    columnMappings.Add(index, columns[index].Name);
-                    il.Emit(OpCodes.Ldloc, columnMappings);
-                    il.Emit(OpCodes.Ldloc, index);
-                    il.Emit(OpCodes.Ldarg_2);
-                    il.Emit(OpCodes.Ldloc, index);
-                    il.Emit(OpCodes.Ldelem);
-                    il.Emit(OpCodes.Call, typeof(MemberTuple<TEntity>).GetProperty("Name", BindingFlags.NonPublic | BindingFlags.Instance).GetGetMethod(true));
-                    il.Emit(OpCodes.Call, addColumnMapping);
-                    // index --
-                    il.Emit(OpCodes.Ldc_I4_1);
-                    il.Emit(OpCodes.Ldloc, index);
-                    il.Emit(OpCodes.Sub);
-                    il.MarkLabel(loop);
-
-                    il.Emit(OpCodes.Ldloc, bulkCopy);
-                    il.Emit(OpCodes.Ldarg, 4);
-                    il.Emit(OpCodes.Call, writeToServer);
-
-                    il.Emit(OpCodes.Ret);
-
-                    return (BulkCopyDelegate)bulkCopyMethod.CreateDelegate(typeof(BulkCopyDelegate));
+                    return Expression.Lambda<BulkCopyDelegate>(
+                            block,
+                            connection, transaction, columns, destinationTableName, reader
+                        )
+                        .Compile();
                 }
 
                 public override BulkCopyDelegate Instance()
@@ -197,7 +185,7 @@ namespace Lotech.Data.SqlServers
                 if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
                 if (descriptor.Type != typeof(TEntity)) throw new InvalidOperationException("实体描述符与当前类型不匹配.");
 
-                var columns = descriptor.Members.Where(_ => !_.DbGenerated)
+                var members = descriptor.Members.Where(_ => !_.DbGenerated)
                         .Select((_, i) => new MemberTuple<TEntity>(
                             _.Name,
                             _.DbType,
@@ -205,7 +193,7 @@ namespace Lotech.Data.SqlServers
                            MemberAccessor<TEntity, object>.GetGetter(_.Member)
                         )).ToArray();
 
-                return (db, destinationTableName, provider, entities) =>
+                return (db, destinationTableName, provider, entities, columnFilter) =>
                 {
                     using (var command = db.GetSqlStringCommand("SELECT 1"))
                     {
@@ -213,9 +201,12 @@ namespace Lotech.Data.SqlServers
                         if (connection.Connection.State == ConnectionState.Closed)
                             connection.Connection.Open();
                         if (db.Log != null) db.Log("BulkCopy to " + destinationTableName);
+                        var columns = columnFilter == null ? members : (members.Where(columnFilter).ToArray());
                         using (var reader = new BulkCopyDataReader<TEntity>(entities, columns))
                         {
-                            provider.Instance()(connection.Connection, command.Transaction, columns, destinationTableName, reader);
+                            provider.Instance()(connection.Connection, command.Transaction
+                                , columns
+                                , destinationTableName, reader);
                         }
                     }
                 };
@@ -235,7 +226,7 @@ namespace Lotech.Data.SqlServers
             this.writeTo = writeTo;
         }
 
-        static public BulkCopy<TEntity> Create(SqlServerDatabase database, Operation operation)
+        static internal BulkCopy<TEntity> Create(SqlServerDatabase database, Operation operation)
         {
             var provider = BulkCopyProvider.Create(database.DbProviderFactory);
             if (provider == BulkCopyProvider.NotSupport) return null;
@@ -245,14 +236,14 @@ namespace Lotech.Data.SqlServers
 
         }
 
-        public void WriteTo(string destinationTableName, IEnumerable<TEntity> entities)
+        internal void WriteTo(string destinationTableName, IEnumerable<TEntity> entities, Func<MemberTuple<TEntity>, bool> columnFilter = null)
         {
             if (destinationTableName == null) throw new ArgumentNullException(nameof(destinationTableName));
             if (entities == null) throw new ArgumentNullException(nameof(entities));
 
-            writeTo(database, destinationTableName, provider, entities);
+            writeTo(database, destinationTableName, provider, entities, columnFilter);
         }
 
-        public void Dispose() { }
+        void IDisposable.Dispose() { }
     }
 }

@@ -137,6 +137,12 @@ namespace Lotech.Data.SqlServers
         }
 
         #region Bulk****
+        /// <summary>
+        /// 大批量插入数据
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="entities"></param>
         static public void BulkInsertEntities<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
         {
             Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
@@ -144,6 +150,13 @@ namespace Lotech.Data.SqlServers
                 db.DescriptorProvider, Descriptors.Operation.Insert
             )(db, entities);
         }
+
+        /// <summary>
+        /// 大批量更新数据
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="entities"></param>
         static public void BulkUpdateEntities<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
         {
             Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
@@ -152,6 +165,12 @@ namespace Lotech.Data.SqlServers
             )(db, entities);
         }
 
+        /// <summary>
+        /// 大批量删除数据
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="entities"></param>
         static public void BulkDeleteEntities<TEntity>(this IDatabase db, IEnumerable<TEntity> entities) where TEntity : class
         {
             Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>

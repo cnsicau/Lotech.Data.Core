@@ -29,7 +29,7 @@ namespace Lotech.Data.SqlServers
                                         + "/" + DateTime.Now.Ticks.ToString("x"));
             var createTempTable = "SELECT TOP 0 * INTO " + temporaryTableName + " FROM " + destinationTableName;
             var updateSql = "UPDATE t SET " + set + " FROM " + destinationTableName + " t JOIN " + temporaryTableName + " s ON " + join
-                        + ";\r\nDROP TABLE" + temporaryTableName;
+                        + ";\r\nDROP TABLE " + temporaryTableName;
 
             return (db, entities) =>
             {

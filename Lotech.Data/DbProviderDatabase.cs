@@ -72,11 +72,11 @@ namespace Lotech.Data
         {
             var log = new StringBuilder();
             log.AppendLine().Append(action).Append('(').Append(command.CommandType)
-                .AppendLine(") :").Append(command.CommandText);
+                .AppendLine(") :").AppendLine(command.CommandText);
             foreach (DbParameter p in command.Parameters)
             {
                 log.Append("  -- ").AppendFormat("{0,-12}", p.ParameterName)
-                    .AppendFormat("{0,10}", p.DbType).Append("    =    ")
+                    .AppendFormat("{0,10}", p.DbType).Append("    =  ")
                     .Append(p.Value).AppendLine();
             }
             Log(log.ToString());

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Lotech.Data.Descriptors;
+using Lotech.Data.Utils;
 
 namespace Lotech.Data.SqlServers
 {
@@ -28,8 +30,52 @@ namespace Lotech.Data.SqlServers
             var temporaryTableName = Quote("#BulkUpdate/" + descriptor.Name + "/" + Guid.NewGuid().ToString("N")
                                         + "/" + DateTime.Now.Ticks.ToString("x"));
             var createTempTable = "SELECT TOP 0 * INTO " + temporaryTableName + " FROM " + destinationTableName;
-            var updateSql = "UPDATE t SET " + set + " FROM " + destinationTableName + " t JOIN " + temporaryTableName + " s ON " + join
+
+            var outputColumns = descriptor.Members.Where(_ => _.DbGenerated).ToArray();
+
+            var updateSql = "UPDATE t SET " + set
+                        + (outputColumns.Length > 0 ? " OUTPUT " + string.Join(", ", descriptor.Keys.Concat(outputColumns).Select(_ => "INSERTED." + Quote(_.Name))) : null)
+                        + " FROM " + destinationTableName + " t JOIN " + temporaryTableName + " s ON " + join
                         + ";\r\nDROP TABLE " + temporaryTableName;
+
+            Action<IDatabase, BulkCopy<TEntity>, IEnumerable<TEntity>> executeUpdate;
+
+            if (outputColumns.Length == 0)
+                executeUpdate = (db, bulkCopy, entities) =>
+                {
+                    bulkCopy.WriteTo(temporaryTableName, entities);
+                    db.ExecuteNonQuery(updateSql);
+                };
+            else
+            {
+                var hash = MemberAccessor.CreateHashKey<TEntity>(descriptor.Keys);
+                var outputAssign = MemberAccessor.CreateAssign<TEntity>(descriptor.Members.Where(_ => _.DbGenerated).Select(_ => _.Member));
+
+                executeUpdate = (db, bulkCopy, entities) =>
+                {
+                    var source = (entities as IList<TEntity>) ?? entities.ToArray();
+                    bulkCopy.WriteTo(temporaryTableName, source);
+
+                    using (var entityReader = db.ExecuteEntityReader<TEntity>(updateSql))
+                    {
+                        var dictionary = new Dictionary<IStructuralEquatable, TEntity>(source.Count + 8);
+                        while (entityReader.Read())
+                        {
+                            var value = entityReader.GetValue();
+                            dictionary.Add(hash(value), value);
+                        }
+
+                        foreach (var entity in source)
+                        {
+                            TEntity value;
+                            if (dictionary.TryGetValue(hash(entity), out value))
+                            {
+                                outputAssign(entity, value);
+                            }
+                        }
+                    }
+                };
+            }
 
             return (db, entities) =>
             {
@@ -42,8 +88,8 @@ namespace Lotech.Data.SqlServers
                 using (var transaction = new TransactionManager())
                 {
                     db.ExecuteNonQuery(createTempTable);
-                    bulkCopy.WriteTo(temporaryTableName, entities);
-                    db.ExecuteNonQuery(updateSql);
+
+                    executeUpdate(db, bulkCopy, entities);
 
                     transaction.Commit();
                 }

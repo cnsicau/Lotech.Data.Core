@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Lotech.Data.Descriptors;
 
 namespace Lotech.Data.SqlServers
@@ -26,26 +25,12 @@ namespace Lotech.Data.SqlServers
             var destinationTableName = string.IsNullOrEmpty(descriptor.Schema) ? Quote(descriptor.Name)
                         : (Quote(descriptor.Schema) + "." + Quote(descriptor.Name));
 
-            var outputs = descriptor.Members.Where(_ => _.DbGenerated)
-                    .Select((_, i) => new MemberTuple<TEntity>(
-                        _.Name,
-                        _.DbType,
-                        string.Empty,
-                       MemberAccessor<TEntity, object>.GetGetter(_.Member),
-                       MemberAccessor<TEntity, object>.GetSetter(_.Member)
-                    )).ToArray();
+            var outputColumns = descriptor.Members.Where(_ => _.DbGenerated).Select(_ => _.Name).ToArray();
 
-            if (outputs.Length == 0)
-                return (db, entities) =>
-                {
-                    var sqlserver = db as SqlServerDatabase;
-                    if (sqlserver == null) throw new NotSupportedException();
+            Action<IDatabase, BulkCopy<TEntity>, IEnumerable<TEntity>> execute;
 
-                    var bulkCopy = BulkCopy<TEntity>.Create(sqlserver, Operation.Insert);
-                    if (bulkCopy == null) throw new NotSupportedException();
-
-                    bulkCopy.WriteTo(destinationTableName, entities);
-                };
+            if (outputColumns.Length == 0)
+                execute = (db, bulkCopy, entities) => bulkCopy.WriteTo(destinationTableName, entities);
             else
             {
                 var temporaryTableName = Quote("#BulkInsert/" + descriptor.Name + "/" + Guid.NewGuid().ToString("N")
@@ -53,20 +38,14 @@ namespace Lotech.Data.SqlServers
                 var columnNames = string.Join(", ", columns.Select(_ => Quote(_.Name)));
                 var createTempTableSql = "SELECT TOP 0 * INTO " + temporaryTableName + " FROM " + destinationTableName;
                 var insertSql = "INSERT TOP (@count) INTO " + destinationTableName + "(" + columnNames + ")"
-                            + "\r\n OUTPUT " + string.Join(", ", outputs.Select(_ => "INSERTED." + Quote(_.Name)))
-                            + "\r\n SELECT " + columnNames + " FROM " + temporaryTableName + " OPTION(KEEPFIXED PLAN, OPTIMIZE FOR (@count=0));"
+                            + "\r\n OUTPUT " + string.Join(", ", outputColumns.Select(_ => "INSERTED." + Quote(_)))
+                            + "\r\n SELECT " + columnNames + " FROM " + temporaryTableName + " OPTION(KEEPFIXED PLAN, OPTIMIZE FOR (@count=1));"
                             + "\r\nDROP TABLE " + temporaryTableName;
 
-                var output = CompileOutputAction(descriptor.Members);
+                var outputAssign = MemberAccessor.CreateAssign<TEntity>(descriptor.Members.Where(_ => _.DbGenerated).Select(_ => _.Member));
 
-                return (db, entities) =>
+                execute = (db, bulkCopy, entities) =>
                 {
-                    var sqlserver = db as SqlServerDatabase;
-                    if (sqlserver == null) throw new NotSupportedException();
-
-                    var bulkCopy = BulkCopy<TEntity>.Create(sqlserver, Operation.Insert);
-                    if (bulkCopy == null) throw new NotSupportedException();
-
                     var entityList = (entities as IList<TEntity> ?? entities.ToArray());
                     if (entityList.Count == 0) return;
 
@@ -83,27 +62,23 @@ namespace Lotech.Data.SqlServers
                             using (var reader = db.ExecuteEntityReader<TEntity>(command))// 执行并回写输出字段
                             {
                                 for (var index = 0; reader.Read(); index++)
-                                    output(entityList[index], reader.GetValue());
+                                    outputAssign(entityList[index], reader.GetValue());
                             }
                         }
                         transaction.Commit();
                     }
                 };
             }
-        }
+            return (db, entities) =>
+            {
+                var sqlserver = db as SqlServerDatabase;
+                if (sqlserver == null) throw new NotSupportedException();
 
-        static Action<TEntity, TEntity> CompileOutputAction(IList<IMemberDescriptor> members)
-        {
-            var entity = Expression.Parameter(typeof(TEntity), "entity");
-            var value = Expression.Parameter(typeof(TEntity), "value");
+                var bulkCopy = BulkCopy<TEntity>.Create(sqlserver, Operation.Insert);
+                if (bulkCopy == null) throw new NotSupportedException();
 
-            return Expression.Lambda<Action<TEntity, TEntity>>(
-                    Expression.Block(members.Where(_ => _.DbGenerated).Select(_ => Expression.Assign(
-                            Expression.MakeMemberAccess(entity, _.Member),
-                                Expression.MakeMemberAccess(value, _.Member))
-                        ))
-                    , entity, value
-                ).Compile();
+                execute(db, bulkCopy, entities);
+            };
         }
     }
 }

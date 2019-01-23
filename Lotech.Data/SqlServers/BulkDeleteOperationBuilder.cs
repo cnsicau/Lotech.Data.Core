@@ -23,7 +23,8 @@ namespace Lotech.Data.SqlServers
 
             var temporaryTableName = Quote("#BulkDelete/" + descriptor.Name + "/" + Guid.NewGuid().ToString("N")
                                         + "/" + DateTime.Now.Ticks.ToString("x"));
-            var createtemporarySql = "SELECT TOP 0 * INTO " + temporaryTableName + " FROM " + destinationTableName;
+            var createtemporarySql = "SELECT TOP 0 " + string.Join(", ", descriptor.Keys.Select(_ => Quote(_.Name)))
+                        + " INTO " + temporaryTableName + " FROM " + destinationTableName;
             var deleteSql = "DELETE t FROM " + destinationTableName + " t JOIN " + temporaryTableName + " s ON " + join
                             + ";\r\nDROP TABLE " + temporaryTableName;
             var keys = descriptor.Keys.Select(_ => _.Name).ToArray();

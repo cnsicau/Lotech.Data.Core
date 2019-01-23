@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Lotech.Data.Descriptors;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
 
 namespace Lotech.Data.Utils
 {
@@ -123,6 +124,75 @@ namespace Lotech.Data.Utils
         static public Action<TEntity, TEntity> GetAssign<TEntity>(MemberInfo member) where TEntity : class
         {
             return AssignContainer<TEntity>.GetAssign(member);
+        }
+
+        /// <summary>
+        /// 创建成员赋值方式
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="members"></param>
+        /// <returns>(source, target) => { target.Member1 = source.Member1; target.Member1 = source.Member1; } </returns>
+        static public Action<TEntity, TEntity> CreateAssign<TEntity>(IEnumerable<MemberInfo> members) where TEntity : class
+        {
+            var entity = Expression.Parameter(typeof(TEntity), "entity");
+            var value = Expression.Parameter(typeof(TEntity), "value");
+
+            return Expression.Lambda<Action<TEntity, TEntity>>(
+                    Expression.Block(members.Select(_ => Expression.Assign(
+                            Expression.MakeMemberAccess(entity, _),
+                                Expression.MakeMemberAccess(value, _))
+                        ))
+                    , entity, value
+                ).Compile();
+        }
+
+        static readonly Dictionary<int, Type> tupleBaseTypes = new Dictionary<int, Type>
+        {
+            {1, typeof(Tuple<>) },{2, typeof(Tuple<,>) },{3, typeof(Tuple<,,>) },{4, typeof(Tuple<,,,>) },
+            {5, typeof(Tuple<,,,,>) },{6, typeof(Tuple<,,,,,>) },{7, typeof(Tuple<,,,,,,>) }
+        };
+
+        /// <summary>
+        /// 创建 Hash键方法
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="members"></param>
+        /// <returns></returns>
+        static public Func<TEntity, System.Collections.IStructuralEquatable> CreateHashKey<TEntity>(IMemberDescriptor[] members) where TEntity : class
+        {
+            Type tupleType;
+            Func<TEntity, System.Collections.IStructuralEquatable> r8 = null;
+            var blocks = new List<Expression>();
+
+            var entity = Expression.Parameter(typeof(TEntity));
+            for (int i = 0; i < 7 && i < members.Length; i++)
+            {
+                blocks.Add(Expression.MakeMemberAccess(entity, members[i].Member));
+            }
+
+            if (members.Length <= 7)
+            {
+                tupleType = tupleBaseTypes[members.Length].MakeGenericType(members.Select(_ => _.Type).ToArray());
+            }
+            else
+            {
+                var types = new Type[8];
+                for (int i = 0; i < 7; i++) types[i] = members[i].Type;
+
+                var retains = new IMemberDescriptor[members.Length - 7];
+                Array.Copy(members, 7, retains, 0, retains.Length);
+
+                r8 = CreateHashKey<TEntity>(retains);
+                blocks.Add(Expression.Call(r8.Method, entity));
+                types[7] = typeof(System.Collections.IStructuralEquatable);
+
+                tupleType = typeof(Tuple<,,,,,,,>).MakeGenericType(types);
+            }
+
+            return Expression.Lambda<Func<TEntity, System.Collections.IStructuralEquatable>>(
+                    Expression.New(tupleType.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Single(), blocks.ToArray())
+                , entity
+            ).Compile();
         }
 
         class AssignContainer<TEntity> where TEntity : class

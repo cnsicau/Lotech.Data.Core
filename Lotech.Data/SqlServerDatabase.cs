@@ -31,7 +31,7 @@ namespace Lotech.Data
         {
         }
 
-        internal bool Bulk { get; set; }
+        public bool Bulk { get; set; }
 
         internal static string Quote(string name) => string.Concat('[', name, ']');
 

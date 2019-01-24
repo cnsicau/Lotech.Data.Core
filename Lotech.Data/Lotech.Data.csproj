@@ -54,6 +54,7 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IEntityReader.cs" />
     <Compile Include="SqlServers\BulkDeleteOperationBuilder.cs" />
     <Compile Include="ColumnAttribute.cs" />
     <Compile Include="CompositedDataReader.cs" />

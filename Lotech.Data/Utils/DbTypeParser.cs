@@ -46,7 +46,7 @@ namespace Lotech.Data.Utils
             mapping.Add(typeof(Guid?), DbType.Guid);
 
             mapping.Add(typeof(byte[]), DbType.Binary);
-            mapping.Add(typeof(string), DbType.AnsiString);
+            mapping.Add(typeof(string), DbType.String);
         }
 
         /// <summary>

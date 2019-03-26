@@ -1,6 +1,7 @@
 ﻿using Lotech.Data.Descriptors;
 using Lotech.Data.Utils;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -15,7 +16,21 @@ namespace Lotech.Data.Queries
     public class EntityResultMapper<TEntity> : IResultMapper<TEntity> where TEntity : class
     {
         static readonly Func<TEntity> New = Expression.Lambda<Func<TEntity>>(Expression.New(typeof(TEntity))).Compile();
+        private static readonly ConcurrentDictionary<Type, ValueConverter.ConvertDelegate> typedConverters = new ConcurrentDictionary<Type, ValueConverter.ConvertDelegate>();
 
+        static ValueConverter.ConvertDelegate CreateTypedConverter(Type type)
+        {
+            var realType = Nullable.GetUnderlyingType(type);
+
+            if (realType != null) // nullable type
+            {
+                return _ => _ == null || _ == DBNull.Value ? null : Convert.ChangeType(_, realType);
+            }
+            else
+            {
+                return _ => Convert.ChangeType(_, type);
+            }
+        }
         /// <summary>
         /// 映射值
         /// </summary>
@@ -132,6 +147,7 @@ namespace Lotech.Data.Queries
         private bool initialized = false;
         private KeyValuePair<int, MapDescriptor>[] mappers;
         private ValueConverter.ConvertDelegate[] converts;
+
         private IResultSource source;
 
         /// <summary>
@@ -196,12 +212,20 @@ namespace Lotech.Data.Queries
             {
                 var columnIndex = descriptor.Key;
                 var description = descriptor.Value;
+                var converter = converts[columnIndex];
                 try
                 {
-                    description.Map(result, source, columnIndex, converts[columnIndex]);
+                    description.Map(result, source, columnIndex, converter);
                 }
                 catch (Exception e)
                 {
+                    var typedConverter = typedConverters.GetOrAdd(description.ValueType, CreateTypedConverter);
+                    if (typedConverter != converter) // 使用强转
+                    {
+                        converts[columnIndex] = typedConverter;
+                        try { description.Map(result, source, columnIndex, typedConverter); continue; }
+                        catch { }
+                    }
                     throw new MapFailedException(description, source[columnIndex], e);
                 }
             }
@@ -212,7 +236,7 @@ namespace Lotech.Data.Queries
         class MapFailedException : InvalidCastException
         {
             public MapFailedException(MapDescriptor description, object value, Exception exception)
-                : base($"{description.MemberName} 列映射失败，值“{value}”对于类型 {description.MemberValueType} 无效", exception)
+                : base($"{description.MemberName} 列映射失败，值“{value}”({value?.GetType() })对于类型 {description.MemberValueType} 无效", exception)
             {
                 this.Value = value;
             }

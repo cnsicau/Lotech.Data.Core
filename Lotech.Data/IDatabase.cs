@@ -280,7 +280,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="command">命令</param>
         /// <returns></returns>
-        EntityType ExecuteEntity<EntityType>(DbCommand command) where EntityType : class;
+        EntityType ExecuteEntity<EntityType>(DbCommand command);
 
         /// <summary>
         /// 执行返回指定实体集合
@@ -288,7 +288,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="command">命令</param>
         /// <returns>返回可枚举的实体集合</returns>
-        EntityType[] ExecuteEntities<EntityType>(DbCommand command) where EntityType : class;
+        EntityType[] ExecuteEntities<EntityType>(DbCommand command);
         /// <summary>
         /// 执行返回指定实体
         /// </summary>
@@ -296,7 +296,7 @@ namespace Lotech.Data
         /// <param name="commandType">命令类型</param>
         /// <param name="commandText">命令文本</param>
         /// <returns></returns>
-        EntityType ExecuteEntity<EntityType>(CommandType commandType, string commandText) where EntityType : class;
+        EntityType ExecuteEntity<EntityType>(CommandType commandType, string commandText);
 
         /// <summary>
         /// 执行返回指定实体集合
@@ -305,14 +305,14 @@ namespace Lotech.Data
         /// <param name="commandType">命令类型</param>
         /// <param name="commandText">命令文本</param>
         /// <returns>返回可枚举的实体集合</returns>
-        EntityType[] ExecuteEntities<EntityType>(CommandType commandType, string commandText) where EntityType : class;
+        EntityType[] ExecuteEntities<EntityType>(CommandType commandType, string commandText);
         /// <summary>
         /// 执行返回指定实体
         /// </summary>
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="commandText">命令文本</param>
         /// <returns></returns>
-        EntityType ExecuteEntity<EntityType>(string commandText) where EntityType : class;
+        EntityType ExecuteEntity<EntityType>(string commandText);
 
         /// <summary>
         /// 执行返回指定实体集合
@@ -320,7 +320,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType">实体类型</typeparam>
         /// <param name="commandText">命令文本</param>
         /// <returns>返回可枚举的实体集合</returns>
-        EntityType[] ExecuteEntities<EntityType>(string commandText) where EntityType : class;
+        EntityType[] ExecuteEntities<EntityType>(string commandText);
         #endregion
 
         #region Object Entity

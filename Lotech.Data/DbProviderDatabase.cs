@@ -731,7 +731,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="command"></param>
         /// <returns></returns>
-        public virtual EntityType ExecuteEntity<EntityType>(DbCommand command) where EntityType : class
+        public virtual EntityType ExecuteEntity<EntityType>(DbCommand command)
         {
             return new QueryResult<EntityType>(this, command
                     , ResultMapper<EntityType>.Create(this)).FirstOrDefault();
@@ -742,7 +742,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="command"></param>
         /// <returns></returns>
-        public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command) where EntityType : class
+        public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command)
         {
             return new QueryResult<EntityType>(this, command
                     , ResultMapper<EntityType>.Create(this)).ToArray();
@@ -753,7 +753,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual EntityType ExecuteEntity<EntityType>(string commandText) where EntityType : class
+        public virtual EntityType ExecuteEntity<EntityType>(string commandText)
         {
             return ExecuteEntity<EntityType>(CommandType.Text, commandText);
         }
@@ -765,7 +765,6 @@ namespace Lotech.Data
         /// <param name="commandText"></param>
         /// <returns></returns>
         public virtual EntityType ExecuteEntity<EntityType>(CommandType commandType, string commandText)
-             where EntityType : class
         {
             using (var command = dbProviderFactory.CreateCommand())
             {
@@ -781,7 +780,7 @@ namespace Lotech.Data
         /// <typeparam name="EntityType"></typeparam>
         /// <param name="commandText"></param>
         /// <returns></returns>
-        public virtual EntityType[] ExecuteEntities<EntityType>(string commandText) where EntityType : class
+        public virtual EntityType[] ExecuteEntities<EntityType>(string commandText)
         {
             return ExecuteEntities<EntityType>(CommandType.Text, commandText);
         }
@@ -793,7 +792,6 @@ namespace Lotech.Data
         /// <param name="commandText"></param>
         /// <returns></returns>
         public virtual EntityType[] ExecuteEntities<EntityType>(CommandType commandType, string commandText)
-            where EntityType : class
         {
             using (var command = dbProviderFactory.CreateCommand())
             {

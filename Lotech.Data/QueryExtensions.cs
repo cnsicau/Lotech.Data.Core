@@ -46,7 +46,7 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public static TEntity[] ExecuteEntities<TEntity>(this IQuery query) where TEntity : class
+        public static TEntity[] ExecuteEntities<TEntity>(this IQuery query)
         {
             if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
 
@@ -70,7 +70,7 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
-        public static TEntity ExecuteEntity<TEntity>(this IQuery query) where TEntity : class
+        public static TEntity ExecuteEntity<TEntity>(this IQuery query)
         {
             if (query.Database == null) throw new InvalidOperationException("必须给出 query 的 Database");
 

@@ -16,21 +16,7 @@ namespace Lotech.Data.Queries
     public class EntityResultMapper<TEntity> : IResultMapper<TEntity> where TEntity : class
     {
         static readonly Func<TEntity> New = Expression.Lambda<Func<TEntity>>(Expression.New(typeof(TEntity))).Compile();
-        private static readonly ConcurrentDictionary<Type, ValueConverter.ConvertDelegate> typedConverters = new ConcurrentDictionary<Type, ValueConverter.ConvertDelegate>();
 
-        static ValueConverter.ConvertDelegate CreateTypedConverter(Type type)
-        {
-            var realType = Nullable.GetUnderlyingType(type);
-
-            if (realType != null) // nullable type
-            {
-                return _ => _ == null || _ == DBNull.Value ? null : Convert.ChangeType(_, realType);
-            }
-            else
-            {
-                return _ => Convert.ChangeType(_, type);
-            }
-        }
         /// <summary>
         /// 映射值
         /// </summary>
@@ -219,7 +205,7 @@ namespace Lotech.Data.Queries
                 }
                 catch (Exception e)
                 {
-                    var typedConverter = typedConverters.GetOrAdd(description.ValueType, CreateTypedConverter);
+                    var typedConverter = ValueConverter.GetTypedConvert(description.ValueType);
                     if (typedConverter != converter) // 使用强转
                     {
                         converts[columnIndex] = typedConverter;

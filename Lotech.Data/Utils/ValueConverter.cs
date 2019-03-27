@@ -16,6 +16,7 @@ namespace Lotech.Data.Utils
         internal delegate object ConvertDelegate(object value);
 
         static readonly ConcurrentDictionary<Tuple<Type, Type>, ConvertDelegate> converts = new ConcurrentDictionary<Tuple<Type, Type>, ConvertDelegate>();
+        static readonly ConcurrentDictionary<Type, ValueConverter.ConvertDelegate> typedConverts = new ConcurrentDictionary<Type, ValueConverter.ConvertDelegate>();
 
         /// <summary>
         /// 创建转换
@@ -26,6 +27,30 @@ namespace Lotech.Data.Utils
         internal static ConvertDelegate GetConvert(Type sourceType, Type targetType)
         {
             return converts.GetOrAdd(Tuple.Create(sourceType, targetType), CreateConvert);
+        }
+
+        /// <summary>
+        /// 强转
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        internal static ConvertDelegate GetTypedConvert(Type type)
+        {
+            return typedConverts.GetOrAdd(type, CreateTypedConvert);
+        }
+
+        static ConvertDelegate CreateTypedConvert(Type type)
+        {
+            var realType = Nullable.GetUnderlyingType(type);
+
+            if (realType != null) // nullable type
+            {
+                return _ => _ == null || _ == DBNull.Value ? null : Convert.ChangeType(_, realType);
+            }
+            else
+            {
+                return _ => Convert.ChangeType(_, type);
+            }
         }
 
         /// <summary>

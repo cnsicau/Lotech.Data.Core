@@ -42,18 +42,27 @@ namespace Lotech.Data.Queries
             if (source.Next())
             {
                 var value = source[0];
+                var convert = this.convert.Value;
                 try
                 {
-                    result = (T)convert.Value(value);
+                    result = (T)convert(value);
                 }
-                catch (FormatException e)
+                catch (Exception e)
                 {
-                    throw new InvalidCastException($"列{source.Columns[0]}的值“{value}”无法转换为{typeof(T)}.", e);
+                    var typedConvert = Utils.ValueConverter.GetTypedConvert(typeof(T));
+                    if (convert != typedConvert)
+                    {
+                        try
+                        {
+                            result = (T)typedConvert(value);
+                            convert = typedConvert;
+                            return true;
+                        }
+                        catch { }
+                    }
+                    throw new InvalidCastException($"列{source.Columns[0]}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
                 }
-                catch (InvalidCastException e)
-                {
-                    throw new InvalidCastException($"列{source.Columns[0]}的值“{value}”无法转换为{typeof(T)}.", e);
-                }
+
                 return true;
             }
 

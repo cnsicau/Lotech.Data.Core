@@ -10,7 +10,7 @@ namespace Lotech.Data.Configurations
     {
         static readonly string ConfigurationFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "database.xml");
         static readonly Lazy<DatabaseConfiguration> configuration
-                = new Lazy<DatabaseConfiguration>(() => new DatabaseConfigurationSerializer().Parse(ConfigurationFile));
+                = new Lazy<DatabaseConfiguration>(() => new DatabaseConfigurationSerializer().Parse(ConfigurationFile), true);
 
         /// <summary>
         /// 获取当前设置

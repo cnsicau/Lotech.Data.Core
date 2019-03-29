@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace Lotech.Data.Configurations
@@ -18,9 +20,25 @@ namespace Lotech.Data.Configurations
         /// <returns></returns>
         public DatabaseConfiguration Parse(string configurationFile)
         {
+            if (!File.Exists(configurationFile))
+            {
+                Trace.TraceWarning("未找到配置文件 " + configurationFile + ", 使用空配置");
+                return new DatabaseConfiguration
+                {
+                    ConnectionStrings = new ConnectionStringSettingsCollection(),
+                };
+            }
             using (var stream = File.OpenRead(configurationFile))
             {
-                var serializer = new XmlSerializer(typeof(Configuration));
+                var reader = XmlReader.Create(stream);
+                string xmlns = reader.MoveToContent() == XmlNodeType.Element
+                    && reader.IsStartElement("database")
+                    && reader.MoveToAttribute("xmlns")
+                    && reader.ReadAttributeValue() ? reader.Value : string.Empty;
+
+                stream.Seek(0, SeekOrigin.Begin);
+
+                var serializer = new XmlSerializer(typeof(Configuration), xmlns);
                 serializer.UnknownAttribute += AppendConnectionStringsConfigurationItems;
                 var configuration = (Configuration)serializer.Deserialize(stream);
                 if (configuration?.DbProviderFactories != null)
@@ -83,11 +101,17 @@ namespace Lotech.Data.Configurations
         /// </summary>
         public class ConnectionStringsConfiguration
         {
+            /// <summary>
+            /// 
+            /// </summary>
             public ConnectionStringsConfiguration()
             {
                 Items = new Dictionary<string, string>();
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             [XmlIgnore]
             public Dictionary<string, string> Items { get; }
 

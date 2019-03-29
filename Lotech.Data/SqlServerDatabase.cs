@@ -13,6 +13,11 @@ namespace Lotech.Data
         /// 
         /// </summary>
         public SqlServerDatabase() : this(System.Data.SqlClient.SqlClientFactory.Instance) { }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public SqlServerDatabase(string connectionString) : this() { ConnectionString = connectionString; }
 #endif
         /// <summary>
         /// 
@@ -31,6 +36,9 @@ namespace Lotech.Data
         {
         }
 
+        /// <summary>
+        /// 大批量装载模式
+        /// </summary>
         public bool Bulk { get; set; }
 
         internal static string Quote(string name) => string.Concat('[', name, ']');

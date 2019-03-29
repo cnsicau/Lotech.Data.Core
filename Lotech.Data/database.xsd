@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified"
+           targetNamespace="https://github.com/cnsicau/lotech.data.core/database"
+           xmlns="https://github.com/cnsicau/lotech.data.core/database"
+           xmlns:db="https://github.com/cnsicau/lotech.data.core/database"
+           elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="database">
+    <xs:annotation>
+      <xs:documentation>Lotech.Data数据库配置</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="dbProviderFactories" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>ADO.NET 驱动注册</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="add" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                  <xs:documentation>添加驱动注册</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                  <xs:attribute name="name" use="required">
+                    <xs:annotation>
+                      <xs:documentation>驱动名, 如: System.Data.SQLiteClient</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:pattern value="^\S+$" />
+                        <xs:minLength value="1" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                  <xs:attribute name="type" use="required">
+                    <xs:annotation>
+                      <xs:documentation>驱动类型DbProviderFactory实现, 如: Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite</xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:pattern value="^.*,.*$" />
+                        <xs:minLength value="1" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="connectionStrings" minOccurs="0">
+          <xs:annotation>
+            <xs:documentation>数据库连接串</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="add" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" use="required">
+                    <xs:annotation>
+                      <xs:documentation>连接名称</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="providerName" type="xs:string" use="required" >
+                    <xs:annotation>
+                      <xs:documentation>ADO.NET 驱动名，如：System.Data.SQLiteClient</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="connectionString" type="xs:string" use="required">
+                    <xs:annotation>
+                      <xs:documentation>ADO.NET 连接字符串，如：Data Source=example.db3;</xs:documentation>
+                    </xs:annotation>
+                  </xs:attribute>
+                  <xs:attribute name="type" use="optional">
+                    <xs:annotation></xs:annotation>
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="Default">
+                          <xs:annotation>
+                            <xs:documentation>自动探测最优，未找到时通用</xs:documentation>
+                          </xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="Generic">
+                          <xs:annotation>
+                            <xs:documentation>通用 DbProviderFactory 实例</xs:documentation>
+                          </xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="SqlServer">
+                          <xs:annotation>
+                            <xs:documentation>SqlServer库</xs:documentation>
+                          </xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="MySql">
+                          <xs:annotation>
+                            <xs:documentation>MySql库</xs:documentation>
+                          </xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="Oracle">
+                          <xs:annotation>
+                            <xs:documentation>Oracle库</xs:documentation>
+                          </xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="SQLite">
+                          <xs:annotation>
+                            <xs:documentation>SqlLite库</xs:documentation>
+                          </xs:annotation>
+                        </xs:enumeration>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="databaseSettings" minOccurs="0">
+          <xs:complexType>
+            <xs:attribute name="defaultDatabase" type="xs:string" use="required">
+              <xs:annotation>
+                <xs:documentation>默认连接名称，引用 connections/name 指定的连接设置</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="parameterPrefix" type="xs:string" use="optional">
+              <xs:annotation>
+                <xs:documentation>[通用库适用]参数前缀， 如 @</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="quoteName" use="optional">
+              <xs:annotation>
+                <xs:documentation>[通用库适用]标识符格式串，如SQL Server 中使用[]来包裹名称，该值为：[{0}]</xs:documentation>
+              </xs:annotation>
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:pattern value="^.*\{\s*0\s*\}.*$" />
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
+          </xs:complexType>
+          <xs:keyref name="defaultDatabase" refer="db:connectionStringName">
+            <xs:selector xpath="." />
+            <xs:field xpath="@defaultDatabase" />
+          </xs:keyref>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:unique name="connectionStringName">
+      <xs:selector xpath="db:connectionStrings/db:add" />
+      <xs:field xpath="@name" />
+    </xs:unique>
+  </xs:element>
+</xs:schema>

@@ -27,6 +27,12 @@
 
   <ItemGroup>
     <Compile Remove="Properties\**" />
-    <Content Include="database.xml" />
+    <None Remove="database.xsd" />
+    <EmbeddedResource Include="database.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <Content Include="database.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

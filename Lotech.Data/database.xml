@@ -1,12 +1,12 @@
-﻿<database>
+﻿<database xmlns="https://github.com/cnsicau/lotech.data.core/database">
   <dbProviderFactories>
     <add name="System.Data.SQLiteClient" type="Microsoft.Data.Sqlite.SqliteFactory, Microsoft.Data.Sqlite"/>
   </dbProviderFactories>
 
   <connectionStrings>
-    <add name="default" providerName="System.Data.SQLiteClient"
+    <add name="" providerName="System.Data.SQLiteClient"
          connectionString="Data Source=example.db3;" />
+    <add name="defaultx" providerName="System.Data.SqlClient"
+         connectionString="Data Source=example.db3;" type="SqlServer" />
   </connectionStrings>
-
-  <databaseSettings defaultDatabase="default" />
 </database>

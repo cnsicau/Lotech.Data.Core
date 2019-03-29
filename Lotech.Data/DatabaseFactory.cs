@@ -21,12 +21,9 @@ namespace Lotech.Data
         public static IDatabase CreateDatabase()
         {
             var settings = DatabaseConfiguration.Current?.DatabaseSettings;
-            if (settings == null)
-                throw new InvalidProgramException("missing defaultDatabase");
-
             var defaultDatabase = settings?.DefaultDatabase;
             if (string.IsNullOrEmpty(defaultDatabase))
-                throw new InvalidOperationException("未给出默认连接名.");
+                defaultDatabase = string.Empty; // 未给出时，以默认空名称作为默认连接
 
             return CreateDatabase(defaultDatabase);
         }
@@ -61,7 +58,7 @@ namespace Lotech.Data
                 case "mysqlclientfactory": return DatabaseType.MySql;
                 // SQLiteFactory
                 case "sqlitefactory": return DatabaseType.SQLite;
-                default: return DatabaseType.Default;
+                default: return DatabaseType.Generic;
             }
         }
 

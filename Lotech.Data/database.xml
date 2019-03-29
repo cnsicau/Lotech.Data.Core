@@ -4,9 +4,9 @@
   </dbProviderFactories>
 
   <connectionStrings>
-    <add name="" providerName="System.Data.SQLiteClient"
-         connectionString="Data Source=example.db3;" />
-    <add name="defaultx" providerName="System.Data.SqlClient"
+    <add name="default" providerName="System.Data.SqlClient"
          connectionString="Data Source=example.db3;" type="SqlServer" />
   </connectionStrings>
+
+  <databaseSettings defaultDatabase="default"/>
 </database>

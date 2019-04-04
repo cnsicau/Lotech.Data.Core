@@ -55,13 +55,13 @@ namespace Lotech.Data.Queries
 
         static class MapperContainer
         {
-            static readonly ConcurrentDictionary<IEntityDescriptor, IDictionary<string, MapDescriptor>>
-                memberMappers = new ConcurrentDictionary<IEntityDescriptor, IDictionary<string, MapDescriptor>>();
+            static readonly ConcurrentDictionary<IDescriptorProvider, IDictionary<string, MapDescriptor>>
+                memberMappers = new ConcurrentDictionary<IDescriptorProvider, IDictionary<string, MapDescriptor>>();
 
-            static internal IDictionary<string, MapDescriptor> GetDescriptors(IEntityDescriptor entityDescriptor)
+            static internal IDictionary<string, MapDescriptor> GetDescriptors(IDescriptorProvider provider)
             {
-                if (entityDescriptor == null) throw new ArgumentNullException(nameof(entityDescriptor));
-                return memberMappers.GetOrAdd(entityDescriptor, CreateMapDescriptors);
+                if (provider == null) throw new ArgumentNullException(nameof(provider));
+                return memberMappers.GetOrAdd(provider, CreateMapDescriptors);
             }
 
             /// <summary>
@@ -108,11 +108,11 @@ namespace Lotech.Data.Queries
                     , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();
             }
 
-            static IDictionary<string, MapDescriptor> CreateMapDescriptors(IEntityDescriptor entityDescriptor)
+            static IDictionary<string, MapDescriptor> CreateMapDescriptors(IDescriptorProvider provider)
             {
                 var memberDescriptors = new Dictionary<string, MapDescriptor>(StringComparer.CurrentCultureIgnoreCase);
 
-                foreach (var member in entityDescriptor.Members)
+                foreach (var member in provider.GetEntityDescriptor<TEntity>(Operation.None).Members)
                 {
                     MapDescriptor descriptor = new MapDescriptor();
                     descriptor.MemberName = member.Name;
@@ -123,7 +123,7 @@ namespace Lotech.Data.Queries
 
                     memberDescriptors[member.Name] = descriptor;
                 }
-
+                
                 return memberDescriptors;
             }
 
@@ -149,8 +149,7 @@ namespace Lotech.Data.Queries
             this.source = source;
             var mappers = new List<KeyValuePair<int, MapDescriptor>>();
             converts = new ValueConverter.ConvertDelegate[source.ColumnCount];
-            var descriptor = Database.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None);
-            var members = MapperContainer.GetDescriptors(descriptor);
+            var members = MapperContainer.GetDescriptors(Database.DescriptorProvider);
             // 分析需要映射列集合（实体中、Reader中共有的列）
             for (int i = source.ColumnCount - 1; i >= 0; i--)
             {

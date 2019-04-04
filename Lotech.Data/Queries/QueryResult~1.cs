@@ -33,7 +33,7 @@ namespace Lotech.Data.Queries
             /// <param name="source"></param>
             /// <param name="mapper"></param>
             /// <param name="disposing">释放回调</param>
-            public QueryResultEnumerator(IResultSource source, IResultMapper<TEntity> mapper, Action<int> disposing)
+            public QueryResultEnumerator(IResultSource source, IResultMapper<TEntity> mapper, Action<int> disposing = null)
             {
                 mapper.TearUp(source);
                 _disposing = disposing;
@@ -56,9 +56,7 @@ namespace Lotech.Data.Queries
 
             bool IEnumerator.MoveNext()
             {
-                if (!_mapper.MapNext(out _current)) return false;
-                _count++;
-                return true;
+                return _mapper.MapNext(out _current) && ++_count > 0;
             }
 
             void IEnumerator.Reset()
@@ -98,13 +96,30 @@ namespace Lotech.Data.Queries
 
         IEnumerator<TEntity> Execute()
         {
-            var sw = Stopwatch.StartNew();
-            var reader = _database.ExecuteReader(_command);
+            if (_database.Log == null)
             {
-                IResultSource source = new DataReaderResultSource(reader);
+                var reader = _database.ExecuteReader(_command);
+                {
+                    IResultSource source = new DataReaderResultSource(reader);
+                    try
+                    {
+                        return new QueryResultEnumerator(new DataReaderResultSource(reader), _mapper);
+                    }
+                    catch
+                    {
+                        _mapper.TearDown();
+                        reader.Dispose();
+                        throw;
+                    }
+                }
+            }
+            else
+            {
+                var sw = Stopwatch.StartNew();
+                var reader = _database.ExecuteReader(_command);
                 try
                 {
-                    return new QueryResultEnumerator(source, _mapper, (count) =>
+                    return new QueryResultEnumerator(new DataReaderResultSource(reader), _mapper, (count) =>
                     {
                         sw.Stop();
                         _database.Log?.Invoke($"  Complete read {count} {typeof(TEntity).Name} records. Elpased times: {sw.Elapsed}.");
@@ -113,7 +128,7 @@ namespace Lotech.Data.Queries
                 catch
                 {
                     _mapper.TearDown();
-                    source.Dispose();
+                    reader.Dispose();
                     sw.Stop();
                     throw;
                 }

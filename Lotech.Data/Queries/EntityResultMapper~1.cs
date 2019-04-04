@@ -256,6 +256,7 @@ namespace Lotech.Data.Queries
             }
             catch (Exception e)
             {
+                enumerator.Dispose();
                 throw new MapFailedException(enumerator.Current, source.GetColumnValue(enumerator.Current.ColumnIndex), e);
             }
         }

@@ -100,7 +100,6 @@ namespace Lotech.Data.Queries
             {
                 var reader = _database.ExecuteReader(_command);
                 {
-                    IResultSource source = new DataReaderResultSource(reader);
                     try
                     {
                         return new QueryResultEnumerator(new DataReaderResultSource(reader), _mapper);

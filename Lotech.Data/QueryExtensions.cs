@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lotech.Data.Queries;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -133,11 +134,18 @@ namespace Lotech.Data
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="query"></param>
         /// <returns></returns>
-        static public IEntityReader<TEntity> ExecuteEntityReader<TEntity>(this IQuery query)
+        static public IEnumerable<TEntity> ExecuteEntityReader<TEntity>(this IQuery query)
         {
-            using(var command = query.CreateCommand())
+            var command = query.CreateCommand();
+            try
             {
-                return query.Database.ExecuteEntityReader<TEntity>(command);
+                return new QueryResult<TEntity>(query.Database, command
+                            , DbProviderDatabase.ResultMapper<TEntity>.Create(query.Database));
+            }
+            catch
+            {
+                command.Dispose();
+                throw;
             }
         }
         #endregion

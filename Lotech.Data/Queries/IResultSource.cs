@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Lotech.Data.Queries
 {
@@ -9,22 +8,23 @@ namespace Lotech.Data.Queries
     public interface IResultSource : IDisposable
     {
         /// <summary>
-        /// 获取所有列
+        /// 获取所有列数量
         /// </summary>
-        IList<string> Columns { get; }
+        int ColumnCount { get; }
 
         /// <summary>
-        /// 获取指定位置的当前数据
+        /// 获取指定列名称
         /// </summary>
-        /// <param name="columnIndex"></param>
+        /// <param name="index"></param>
         /// <returns></returns>
-        object this[int columnIndex] { get; }
+        string GetColumnName(int index);
 
         /// <summary>
-        /// 获取当前行所有对象
+        /// 
         /// </summary>
+        /// <param name="index"></param>
         /// <returns></returns>
-        object[] GetRow();
+        object GetColumnValue(int index);
 
         /// <summary>
         /// 读取下一行
@@ -35,8 +35,8 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 取指定列的类型
         /// </summary>
-        /// <param name="columnIndexi"></param>
+        /// <param name="columnIndex"></param>
         /// <returns></returns>
-        Type GetColumnType(int columnIndexi);
+        Type GetColumnType(int columnIndex);
     }
 }

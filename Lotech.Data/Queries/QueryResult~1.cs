@@ -56,10 +56,9 @@ namespace Lotech.Data.Queries
 
             bool IEnumerator.MoveNext()
             {
-                var success = _mapper.MapNext(out _current);
-                if (success)
-                    _count++;
-                return success;
+                if (!_mapper.MapNext(out _current)) return false;
+                _count++;
+                return true;
             }
 
             void IEnumerator.Reset()

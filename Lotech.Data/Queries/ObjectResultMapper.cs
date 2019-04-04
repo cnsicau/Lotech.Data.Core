@@ -30,10 +30,10 @@ namespace Lotech.Data.Queries
             result = new ObjectValue(values);
 
             // 将所有结果放入动态扩展对象中
-            for (int i = source.Columns.Count - 1; i >= 0; i--)
+            for (int i = source.ColumnCount - 1; i >= 0; i--)
             {
-                var columnValue = source[i];
-                values[source.Columns[i]] = columnValue == DBNull.Value ? null : columnValue;
+                var columnValue = source.GetColumnValue(i);
+                values[source.GetColumnName(i)] = columnValue == DBNull.Value ? null : columnValue;
             }
             return true;
         }

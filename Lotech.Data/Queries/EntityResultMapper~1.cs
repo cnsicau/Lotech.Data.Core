@@ -73,7 +73,7 @@ namespace Lotech.Data.Queries
             /// <returns></returns>
             static object ReadValue(IResultSource source, int column, ValueConverter.ConvertDelegate convert)
             {
-                return convert(source[column]);
+                return convert(source.GetColumnValue(column));
             }
 
             /// <summary>
@@ -130,7 +130,6 @@ namespace Lotech.Data.Queries
         }
 
         #region Fields & Constructor
-        private bool initialized = false;
         private KeyValuePair<int, MapDescriptor>[] mappers;
         private ValueConverter.ConvertDelegate[] converts;
 
@@ -148,18 +147,14 @@ namespace Lotech.Data.Queries
         public void TearUp(IResultSource source)
         {
             this.source = source;
-        }
-
-        void Initialize()
-        {
             var mappers = new List<KeyValuePair<int, MapDescriptor>>();
-            converts = new ValueConverter.ConvertDelegate[source.Columns.Count];
+            converts = new ValueConverter.ConvertDelegate[source.ColumnCount];
             var descriptor = Database.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None);
             var members = MapperContainer.GetDescriptors(descriptor);
             // 分析需要映射列集合（实体中、Reader中共有的列）
-            for (int i = source.Columns.Count - 1; i >= 0; i--)
+            for (int i = source.ColumnCount - 1; i >= 0; i--)
             {
-                var column = source.Columns[i];
+                var column = source.GetColumnName(i);
                 MapDescriptor mapper;
                 if (members.TryGetValue(column, out mapper))
                 {
@@ -168,7 +163,6 @@ namespace Lotech.Data.Queries
                 }
             }
             this.mappers = mappers.ToArray();
-            initialized = true;
         }
 
         /// <summary>
@@ -186,10 +180,6 @@ namespace Lotech.Data.Queries
             {
                 result = default(TEntity);
                 return false;
-            }
-            else if (!initialized)
-            {
-                Initialize();
             }
 
             result = New();
@@ -212,7 +202,7 @@ namespace Lotech.Data.Queries
                         try { description.Map(result, source, columnIndex, typedConverter); continue; }
                         catch { }
                     }
-                    throw new MapFailedException(description, source[columnIndex], e);
+                    throw new MapFailedException(description, source.GetColumnValue(columnIndex), e);
                 }
             }
             return true;

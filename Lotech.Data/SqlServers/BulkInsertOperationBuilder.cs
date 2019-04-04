@@ -59,10 +59,10 @@ namespace Lotech.Data.SqlServers
                         {
                             db.AddInParameter(command, "@count", System.Data.DbType.Int64, entityList.Count);
 
-                            using (var reader = db.ExecuteEntityReader<TEntity>(command))// 执行并回写输出字段
+                            using (var reader = db.ExecuteEntityReader<TEntity>(command).GetEnumerator())// 执行并回写输出字段
                             {
-                                for (var index = 0; reader.Read(); index++)
-                                    outputAssign(entityList[index], reader.GetValue());
+                                for (var index = 0; reader.MoveNext(); index++)
+                                    outputAssign(entityList[index], reader.Current);
                             }
                         }
                         transaction.Commit();

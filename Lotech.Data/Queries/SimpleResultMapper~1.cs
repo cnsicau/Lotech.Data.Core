@@ -41,7 +41,7 @@ namespace Lotech.Data.Queries
         {
             if (source.Next())
             {
-                var value = source[0];
+                var value = source.GetColumnValue(0);
                 var convert = this.convert.Value;
                 try
                 {
@@ -60,7 +60,7 @@ namespace Lotech.Data.Queries
                         }
                         catch { }
                     }
-                    throw new InvalidCastException($"列{source.Columns[0]}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
+                    throw new InvalidCastException($"列{source.GetColumnName(0)}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
                 }
 
                 return true;

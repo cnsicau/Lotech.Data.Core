@@ -56,12 +56,12 @@ namespace Lotech.Data.SqlServers
                     var source = (entities as IList<TEntity>) ?? entities.ToArray();
                     bulkCopy.WriteTo(temporaryTableName, source);
 
-                    using (var entityReader = db.ExecuteEntityReader<TEntity>(updateSql))
+                    using (var entityReader = db.ExecuteEntityReader<TEntity>(updateSql).GetEnumerator())
                     {
                         var dictionary = new Dictionary<IStructuralEquatable, TEntity>(source.Count + 8);
-                        while (entityReader.Read())
+                        while (entityReader.MoveNext())
                         {
-                            var value = entityReader.GetValue();
+                            var value = entityReader.Current;
                             dictionary.Add(hash(value), value);
                         }
 

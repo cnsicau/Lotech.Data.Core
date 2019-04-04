@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 
 namespace Lotech.Data.Queries
@@ -10,7 +9,6 @@ namespace Lotech.Data.Queries
     public class DataReaderResultSource : IResultSource
     {
         private readonly IDataReader reader;
-        private readonly Lazy<IList<string>> columns;
 
         /// <summary>
         /// 
@@ -25,38 +23,21 @@ namespace Lotech.Data.Queries
                 throw new InvalidOperationException("reader is closed");
 
             this.reader = reader;
-            columns = new Lazy<IList<string>>(ParseColumns, false);
         }
 
-        object IResultSource.this[int columnIndex]
-        {
-            get
-            {
-                var value =  reader[columnIndex];
-                if (value == DBNull.Value)
-                    return null;
-                return value;
-            }
-        }
+        int IResultSource.ColumnCount { get { return reader.FieldCount; } }
 
-        IList<string> IResultSource.Columns
+        string IResultSource.GetColumnName(int index) { return reader.GetName(index); }
+
+        object IResultSource.GetColumnValue(int index)
         {
-            get
-            {
-                return columns.Value;
-            }
+            if (reader.IsDBNull(index)) return null;
+            return reader.GetValue(index);
         }
 
         Type IResultSource.GetColumnType(int columnIndex)
         {
             return reader.GetFieldType(columnIndex);
-        }
-
-        object[] IResultSource.GetRow()
-        {
-            var row = new object[columns.Value.Count];
-            reader.GetValues(row);
-            return row;
         }
 
         bool IResultSource.Next()
@@ -65,15 +46,5 @@ namespace Lotech.Data.Queries
         }
 
         void IDisposable.Dispose() { reader.Dispose(); }
-
-        IList<string> ParseColumns()
-        {
-            var columns = new string[reader.FieldCount];
-            for (int i = columns.Length - 1; i >= 0; i--)
-            {
-                columns[i] = reader.GetName(i);
-            }
-            return columns;
-        }
     }
 }

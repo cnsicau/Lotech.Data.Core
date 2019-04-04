@@ -94,7 +94,7 @@ namespace Lotech.Data.Utils
             }
             else
             {
-                var defaultVal = Activator.CreateInstance(targetType);
+                var defaultVal = targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
                 return val => val == null ? defaultVal : Convert.ChangeType(val, targetRealType);
             }
 

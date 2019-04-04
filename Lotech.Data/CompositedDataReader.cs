@@ -1,308 +1,310 @@
 ﻿using System;
-using System.Collections;
-using System.Data.Common;
+using System.Data;
 
 namespace Lotech.Data
 {
     /// <summary>
     /// 组合数据读取，用于绑定其他需要释放的对象对象，利于在DataReader关闭时同步释放组合对象
     /// </summary>
-    public class CompositedDataReader : DbDataReader, IEnumerable
+    public class CompositedDataReader : IDataReader
     {
-        #region Fields & Constructors
-
-        private IDisposable[] compositedDisposingObjects;
-        private DbDataReader reader;
-
-        internal CompositedDataReader(DbDataReader reader, params IDisposable[] compositedDisposingObjects)
-        {
-            if (reader == null) throw new ArgumentNullException("reader");
-
-            this.reader = reader;
-            this.compositedDisposingObjects = compositedDisposingObjects;
-        }
-        #endregion
-
-        #region Properties
-        /// <summary>
-        /// 内部读取器
-        /// </summary>
-        public DbDataReader Reader { get { return reader; } }
-        #endregion
-
-        #region DbDataReader Members
+        private readonly IDataReader dataReader;
+        private readonly IDisposable[] compositedDisposables;
 
         /// <summary>
         /// 
         /// </summary>
-        public override void Close()
+        /// <param name="dataReader"></param>
+        /// <param name="compositedDisposables"></param>
+        public CompositedDataReader(IDataReader dataReader, params IDisposable[] compositedDisposables)
         {
-            reader.Close();
-            if (compositedDisposingObjects != null && compositedDisposingObjects.Length > 0)
+            this.dataReader = dataReader;
+            this.compositedDisposables = compositedDisposables;
+        }
+
+        void DisposeComposited()
+        {
+            for (int i = compositedDisposables.Length - 1; i >= 0; i--)
             {
-                Array.ForEach(compositedDisposingObjects, o => { if (o != null) o.Dispose(); });
+                compositedDisposables[i].Dispose();
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public override int Depth
-        {
-            get { return reader.Depth; }
-        }
-
+        public IDataReader Reader { get { return dataReader; } }
         /// <summary>
         /// 
         /// </summary>
-        public override int FieldCount
-        {
-            get { return reader.FieldCount; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool GetBoolean(int ordinal)
-        {
-            return reader.GetBoolean(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override byte GetByte(int ordinal)
-        {
-            return reader.GetByte(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
-        {
-            return reader.GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override char GetChar(int ordinal)
-        {
-            return reader.GetChar(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
-        {
-            return reader.GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override string GetDataTypeName(int ordinal)
-        {
-            return reader.GetDataTypeName(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override DateTime GetDateTime(int ordinal)
-        {
-            return reader.GetDateTime(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override decimal GetDecimal(int ordinal)
-        {
-            return reader.GetDecimal(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override double GetDouble(int ordinal)
-        {
-            return reader.GetDouble(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override IEnumerator GetEnumerator()
-        {
-            return ((IEnumerable)reader).GetEnumerator();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override Type GetFieldType(int ordinal)
-        {
-            return reader.GetFieldType(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override float GetFloat(int ordinal)
-        {
-            return reader.GetFloat(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override Guid GetGuid(int ordinal)
-        {
-            return reader.GetGuid(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override short GetInt16(int ordinal)
-        {
-            return reader.GetInt16(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override int GetInt32(int ordinal)
-        {
-            return reader.GetInt32(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override long GetInt64(int ordinal)
-        {
-            return reader.GetInt64(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override string GetName(int ordinal)
-        {
-            return reader.GetName(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override int GetOrdinal(string name)
-        {
-            return reader.GetOrdinal(name);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override System.Data.DataTable GetSchemaTable()
-        {
-            return reader.GetSchemaTable();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override string GetString(int ordinal)
-        {
-            return reader.GetString(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override object GetValue(int ordinal)
-        {
-            return reader.GetValue(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override int GetValues(object[] values)
-        {
-            return reader.GetValues(values);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool HasRows
-        {
-            get { return reader.HasRows; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool IsClosed
-        {
-            get { return reader.IsClosed; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool IsDBNull(int ordinal)
-        {
-            return reader.IsDBNull(ordinal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool NextResult()
-        {
-            return reader.NextResult();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override bool Read()
-        {
-            return reader.Read();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public override int RecordsAffected
-        {
-            get { return reader.RecordsAffected; }
-        }
-
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public object this[int i] => dataReader[i];
         /// <summary>
         /// 
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public override object this[string name]
-        {
-            get { return reader[name]; }
-        }
-
+        public object this[string name] => dataReader[name];
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="ordinal"></param>
-        /// <returns></returns>
-        public override object this[int ordinal]
+        public int Depth => dataReader.Depth;
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsClosed => dataReader.IsClosed;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int RecordsAffected => dataReader.RecordsAffected;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int FieldCount => dataReader.FieldCount;
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Close()
         {
-            get { return reader[ordinal]; }
+            dataReader.Close();
         }
-        #endregion
+        /// <summary>
+        /// 
+        /// </summary>
+        public void Dispose()
+        {
+            dataReader.Dispose();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public bool GetBoolean(int i)
+        {
+            return dataReader.GetBoolean(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public byte GetByte(int i)
+        {
+            return dataReader.GetByte(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="fieldOffset"></param>
+        /// <param name="buffer"></param>
+        /// <param name="bufferoffset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+        {
+            return dataReader.GetBytes(i, fieldOffset, buffer, bufferoffset, length);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public char GetChar(int i)
+        {
+            return dataReader.GetChar(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <param name="fieldoffset"></param>
+        /// <param name="buffer"></param>
+        /// <param name="bufferoffset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+        {
+            return dataReader.GetChars(i, fieldoffset, buffer, bufferoffset, length);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public IDataReader GetData(int i)
+        {
+            return dataReader.GetData(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public string GetDataTypeName(int i)
+        {
+            return dataReader.GetDataTypeName(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public DateTime GetDateTime(int i)
+        {
+            return dataReader.GetDateTime(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public decimal GetDecimal(int i)
+        {
+            return dataReader.GetDecimal(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public double GetDouble(int i)
+        {
+            return dataReader.GetDouble(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public Type GetFieldType(int i)
+        {
+            return dataReader.GetFieldType(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public float GetFloat(int i)
+        {
+            return dataReader.GetFloat(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public Guid GetGuid(int i)
+        {
+            return dataReader.GetGuid(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public short GetInt16(int i)
+        {
+            return dataReader.GetInt16(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public int GetInt32(int i)
+        {
+            return dataReader.GetInt32(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public long GetInt64(int i)
+        {
+            return dataReader.GetInt64(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public string GetName(int i)
+        {
+            return dataReader.GetName(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public int GetOrdinal(string name)
+        {
+            return dataReader.GetOrdinal(name);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public DataTable GetSchemaTable()
+        {
+            return dataReader.GetSchemaTable();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public string GetString(int i)
+        {
+            return dataReader.GetString(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public object GetValue(int i)
+        {
+            return dataReader.GetValue(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public int GetValues(object[] values)
+        {
+            return dataReader.GetValues(values);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public bool IsDBNull(int i)
+        {
+            return dataReader.IsDBNull(i);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool NextResult()
+        {
+            return dataReader.NextResult();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public bool Read()
+        {
+            return dataReader.Read();
+        }
     }
 }

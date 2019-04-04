@@ -1,11 +1,8 @@
 ﻿using Lotech.Data.Descriptors;
-using Lotech.Data.Utils;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Lotech.Data.Queries
 {
@@ -18,62 +15,38 @@ namespace Lotech.Data.Queries
         static readonly Func<TEntity> New = Expression.Lambda<Func<TEntity>>(Expression.New(typeof(TEntity))).Compile();
 
         /// <summary>
-        /// 映射值
-        /// </summary>
-        /// <param name="entity">目标实体</param>
-        /// <param name="source">数据源</param>
-        /// <param name="column">列序号</param>
-        /// <param name="convert">转换方法</param>
-        delegate void MapReaderValueDelegate(TEntity entity, IResultSource source, int column, ValueConverter.ConvertDelegate convert);
-
-        /// <summary>
         /// 映射描述子
         /// </summary>
-        class MapDescriptor
+        class Mapping
         {
+            /// <summary>
+            /// 数据列索引
+            /// </summary>
+            public int ColumnIndex { get; set; }
             /// <summary>
             /// 成员名称
             /// </summary>
             public string MemberName { get; set; }
+
             /// <summary>
             /// 成员值类型名称，如 decimal?
             /// </summary>
             public string MemberValueType { get; set; }
-            /// <summary>
-            /// 成员类型 Property 、 Field
-            /// </summary>
-            public MemberTypes MemberType { get; set; }
+
             /// <summary>
             /// 映射处理
             /// </summary>
-            public MapReaderValueDelegate Map { get; set; }
-            /// <summary>
-            /// 值类型
-            /// </summary>
-            public Type ValueType { get; set; }
+            public Action<TEntity, object> Execute { get; set; }
         }
 
-        static class MapperContainer
+        static class MappingFactory
         {
-            static readonly ConcurrentDictionary<IDescriptorProvider, IDictionary<string, MapDescriptor>>
-                memberMappers = new ConcurrentDictionary<IDescriptorProvider, IDictionary<string, MapDescriptor>>();
+            static readonly ConcurrentDictionary<ResultSourceKey, Mapping[]>
+                mappingContainer = new ConcurrentDictionary<ResultSourceKey, Mapping[]>();
 
-            static internal IDictionary<string, MapDescriptor> GetDescriptors(IDescriptorProvider provider)
+            internal static Mapping[] Create(ResultSourceKey sourceKey)
             {
-                if (provider == null) throw new ArgumentNullException(nameof(provider));
-                return memberMappers.GetOrAdd(provider, CreateMapDescriptors);
-            }
-
-            /// <summary>
-            /// 读取DataReader指定列的值
-            /// </summary>
-            /// <param name="source">源</param>
-            /// <param name="column">列序号</param>
-            /// <param name="convert">值转换器</param>
-            /// <returns></returns>
-            static object ReadValue(IResultSource source, int column, ValueConverter.ConvertDelegate convert)
-            {
-                return convert(source.GetColumnValue(column));
+                return mappingContainer.GetOrAdd(sourceKey, CreateEntityMapContainer);
             }
 
             /// <summary>
@@ -81,57 +54,162 @@ namespace Lotech.Data.Queries
             /// </summary>
             /// <param name="member"></param>
             /// <returns></returns>
-            static MapReaderValueDelegate CreateMapDelegate(MemberInfo member)
+            static Action<TEntity, object> CreateMemberMap(IMemberDescriptor member)
             {
-                var entityParameter = Expression.Parameter(typeof(TEntity), "entity");
-                var sourceParameter = Expression.Parameter(typeof(IResultSource), "source");
-                var columnParameter = Expression.Parameter(typeof(int), "column");
-                var convertParameter = Expression.Parameter(typeof(ValueConverter.ConvertDelegate), "convert");
-                Func<IResultSource, int, ValueConverter.ConvertDelegate, object> readValue = ReadValue;
+                var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+                var typeName = Type.GetTypeCode(valueType).ToString();
 
-                var memberValueType = member.MemberType == MemberTypes.Property
-                                        ? ((PropertyInfo)member).PropertyType
-                                        : ((FieldInfo)member).FieldType;
+                var convert = typeof(Convert).GetMethod("To" + typeName, new Type[] { typeof(object) });
 
-                // entity.MEMBER = (MemberValueType)ReadValue(memberType, realType, source, columnIndex);
-                return Expression.Lambda<MapReaderValueDelegate>(
-                        Expression.Assign(
-                            Expression.MakeMemberAccess(entityParameter, member),
-                            Expression.Convert(
-                                    Expression.Call(readValue.Method,
-                                        sourceParameter,
-                                        columnParameter,
-                                        convertParameter
-                                    )
-                                , memberValueType)
-                        )
-                    , entityParameter, sourceParameter, columnParameter, convertParameter).Compile();
+                var entity = Expression.Parameter(typeof(TEntity));
+                var val = Expression.Parameter(typeof(object));
+                return Expression.Lambda<Action<TEntity, object>>(
+                        Expression.IfThen(Expression.ReferenceNotEqual(Expression.Constant(null), val),
+                            Expression.Assign(
+                                    Expression.MakeMemberAccess(
+                                            entity, member.Member
+                                        ),
+                                    convert == null ? Expression.Convert(val, member.Type)
+                                        : valueType == member.Type ? Expression.Call(convert, val)
+                                        : (Expression)Expression.Convert(Expression.Call(convert, val), member.Type)
+                                )
+                            )
+                        , entity, val
+                    ).Compile();
             }
 
-            static IDictionary<string, MapDescriptor> CreateMapDescriptors(IDescriptorProvider provider)
+            static Mapping[] CreateEntityMapContainer(ResultSourceKey sourceKey)
             {
-                var memberDescriptors = new Dictionary<string, MapDescriptor>(StringComparer.CurrentCultureIgnoreCase);
+                sourceKey.Strip();
 
-                foreach (var member in provider.GetEntityDescriptor<TEntity>(Operation.None).Members)
+                var members = sourceKey.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None).Members;
+                var mappings = new List<Mapping>();
+                var source = sourceKey.Source;
+                // 分析需要映射列集合（实体中、Reader中共有的列）
+                for (int columnIndex = 0; columnIndex < sourceKey.Source.ColumnCount; columnIndex++)
                 {
-                    MapDescriptor descriptor = new MapDescriptor();
-                    descriptor.MemberName = member.Name;
-                    descriptor.MemberType = member.Member.MemberType;
-                    descriptor.MemberValueType = member.Type.ToString();
-                    descriptor.ValueType = member.Type;
-                    descriptor.Map = CreateMapDelegate(member.Member);
-
-                    memberDescriptors[member.Name] = descriptor;
+                    var column = source.GetColumnName(columnIndex);
+                    foreach (var member in members)
+                    {
+                        if (member.Name.Equals(column, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            mappings.Add(new Mapping
+                            {
+                                MemberName = member.Name,
+                                MemberValueType = member.Type.ToString(),
+                                Execute = CreateMemberMap(member),
+                                ColumnIndex = columnIndex
+                            });
+                            break;
+                        }
+                    }
                 }
-                
-                return memberDescriptors;
+                return mappings.ToArray();
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        class ResultSourceKey
+        {
+            private readonly IDescriptorProvider descriptorProvider;
+            private IResultSource source;
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public IDescriptorProvider DescriptorProvider { get { return descriptorProvider; } }
+            /// <summary>
+            /// 
+            /// </summary>
+            public IResultSource Source { get { return source; } }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="descriptorProvider"></param>
+            /// <param name="source"></param>
+            public ResultSourceKey(IDescriptorProvider descriptorProvider, IResultSource source)
+            {
+                if (source.ColumnCount == 0) throw new NotSupportedException("columns is empty");
+                this.descriptorProvider = descriptorProvider;
+                this.source = source;
             }
 
-        }
+            private ResultSourceKey() { }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <returns></returns>
+            public override bool Equals(object obj)
+            {
+                var key = obj as ResultSourceKey;
+                if (key != null && descriptorProvider == key.descriptorProvider
+                        && source.ColumnCount == key.source.ColumnCount
+                        && source.GetColumnName(0) == key.source.GetColumnName(0))
+                {
+                    for (int i = source.ColumnCount - 1; i > 0; i--)
+                    {
+                        if (source.GetColumnName(i) != key.source.GetColumnName(i)) return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override int GetHashCode()
+            {
+                return descriptorProvider.GetHashCode() ^ source.ColumnCount
+                    ^ source.GetColumnName(0).GetHashCode();
+            }
+
+            /// <summary>
+            /// 脱离底层源(如关联的DbReader)，以便作为缓存key
+            /// </summary>
+            public void Strip()
+            {
+                source = new StripResultSource(source);
+            }
+
+            private class StripResultSource : IResultSource
+            {
+                private int columnCount;
+                private string[] columns;
+                private Type[] columnTypes;
+
+                internal StripResultSource(IResultSource source)
+                {
+                    columnCount = source.ColumnCount;
+                    columns = new string[columnCount];
+                    columnTypes = new Type[columnCount];
+                    for (int i = 0; i < columnCount; i++)
+                    {
+                        columns[i] = source.GetColumnName(i);
+                        columnTypes[i] = source.GetColumnType(i);
+                    }
+                }
+
+                public int ColumnCount => columnCount;
+
+                public void Dispose() { }
+
+                public string GetColumnName(int index) => columns[index];
+
+                public Type GetColumnType(int columnIndex) => columnTypes[columnIndex];
+
+                public object GetColumnValue(int index) { throw new NotSupportedException(); }
+
+                public bool Next() { return false; }
+            }
+        }
         #region Fields & Constructor
-        private KeyValuePair<int, MapDescriptor>[] mappers;
-        private ValueConverter.ConvertDelegate[] converts;
+        private IEnumerable<Mapping> mappings;
 
         private IResultSource source;
 
@@ -147,21 +225,8 @@ namespace Lotech.Data.Queries
         public void TearUp(IResultSource source)
         {
             this.source = source;
-            var mappers = new List<KeyValuePair<int, MapDescriptor>>();
-            converts = new ValueConverter.ConvertDelegate[source.ColumnCount];
-            var members = MapperContainer.GetDescriptors(Database.DescriptorProvider);
-            // 分析需要映射列集合（实体中、Reader中共有的列）
-            for (int i = source.ColumnCount - 1; i >= 0; i--)
-            {
-                var column = source.GetColumnName(i);
-                MapDescriptor mapper;
-                if (members.TryGetValue(column, out mapper))
-                {
-                    mappers.Add(new KeyValuePair<int, MapDescriptor>(i, mapper));
-                    converts[i] = ValueConverter.GetConvert(source.GetColumnType(i), mapper.ValueType);
-                }
-            }
-            this.mappers = mappers.ToArray();
+            var sourceKey = new ResultSourceKey(Database.DescriptorProvider, source);
+            mappings = MappingFactory.Create(sourceKey);
         }
 
         /// <summary>
@@ -182,35 +247,23 @@ namespace Lotech.Data.Queries
             }
 
             result = New();
-
-            foreach (var descriptor in mappers)
+            var enumerator = mappings.GetEnumerator();
+            try
             {
-                var columnIndex = descriptor.Key;
-                var description = descriptor.Value;
-                var converter = converts[columnIndex];
-                try
-                {
-                    description.Map(result, source, columnIndex, converter);
-                }
-                catch (Exception e)
-                {
-                    var typedConverter = ValueConverter.GetTypedConvert(description.ValueType);
-                    if (typedConverter != converter) // 使用强转
-                    {
-                        converts[columnIndex] = typedConverter;
-                        try { description.Map(result, source, columnIndex, typedConverter); continue; }
-                        catch { }
-                    }
-                    throw new MapFailedException(description, source.GetColumnValue(columnIndex), e);
-                }
+                while (enumerator.MoveNext())
+                    enumerator.Current.Execute(result, source.GetColumnValue(enumerator.Current.ColumnIndex));
+                return true;
             }
-            return true;
+            catch (Exception e)
+            {
+                throw new MapFailedException(enumerator.Current, source.GetColumnValue(enumerator.Current.ColumnIndex), e);
+            }
         }
         #endregion
 
         class MapFailedException : InvalidCastException
         {
-            public MapFailedException(MapDescriptor description, object value, Exception exception)
+            public MapFailedException(Mapping description, object value, Exception exception)
                 : base($"{description.MemberName} 列映射失败，值“{value}”({value?.GetType() })对于类型 {description.MemberValueType} 无效", exception)
             {
                 this.Value = value;

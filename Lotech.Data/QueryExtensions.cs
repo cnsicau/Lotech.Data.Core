@@ -139,7 +139,7 @@ namespace Lotech.Data
             var command = query.CreateCommand();
             try
             {
-                return new QueryResult<TEntity>(query.Database, command
+                return new QueryResult<TEntity>(command
                             , DbProviderDatabase.ResultMapper<TEntity>.Create(query.Database));
             }
             catch

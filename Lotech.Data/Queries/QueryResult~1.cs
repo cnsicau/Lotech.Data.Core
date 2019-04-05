@@ -12,7 +12,6 @@ namespace Lotech.Data.Queries
     /// <typeparam name="TEntity"></typeparam>
     public class QueryResult<TEntity> : IEnumerable<TEntity>, IEnumerator<TEntity>
     {
-        private readonly IDatabase _database;
         private readonly IResultMapper<TEntity> _mapper;
         private readonly DbCommand _command;
         private IResultSource _source;
@@ -30,18 +29,26 @@ namespace Lotech.Data.Queries
         /// <param name="database">DB</param>
         /// <param name="command"></param>
         /// <param name="mapper">结果映射器</param>
-        public QueryResult(IDatabase database, DbCommand command, IResultMapper<TEntity> mapper)
+        public QueryResult(DbCommand command, IResultMapper<TEntity> mapper)
         {
             if (mapper == null)
                 throw new ArgumentNullException(nameof(mapper));
-            if (database == null)
-                throw new ArgumentNullException(nameof(database));
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
 
-            _database = database;
             _mapper = mapper;
             _command = command;
+
+            if (_source == null)
+            {
+                var reader = _mapper.Database.ExecuteReader(_command);
+                _source = new DataReaderResultSource(reader);
+                _mapper.TearUp(_source);
+                if (_mapper.Database.Log != null)
+                {
+                    _stopwatch = Stopwatch.StartNew();
+                }
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator() { return this; }
@@ -50,16 +57,6 @@ namespace Lotech.Data.Queries
 
         bool IEnumerator.MoveNext()
         {
-            if (_source == null)
-            {
-                var reader = _database.ExecuteReader(_command);
-                _source = new DataReaderResultSource(reader);
-                _mapper.TearUp(_source);
-                if (_database.Log != null)
-                {
-                    _stopwatch = Stopwatch.StartNew();
-                }
-            }
             return _mapper.MapNext(out _current) && ++_count > 0;
         }
 
@@ -70,9 +67,9 @@ namespace Lotech.Data.Queries
 
         void IDisposable.Dispose()
         {
-            if (_database.Log != null)
+            if (_mapper.Database.Log != null)
             {
-                _database.Log?.Invoke($"  Complete read {_count} {typeof(TEntity).Name} records. Elpased times: {_stopwatch.Elapsed}.");
+                _mapper.Database.Log($"  Complete read {_count} {typeof(TEntity).Name} records. Elpased times: {_stopwatch.Elapsed}.");
                 _stopwatch.Stop();
             }
             if (_source != null)

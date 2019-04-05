@@ -20,7 +20,7 @@ namespace Lotech.Data
         /// <returns></returns>
         static public IEnumerable<TEntity> ExecuteEntityReader<TEntity>(this IDatabase database, DbCommand command)
         {
-            return new QueryResult<TEntity>(database, command, DbProviderDatabase.ResultMapper<TEntity>.Create(database));
+            return new QueryResult<TEntity>(command, DbProviderDatabase.ResultMapper<TEntity>.Create(database));
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Lotech.Data
         static public IEnumerable<TEntity> ExecuteEntityReader<TEntity>(this IDatabase database, CommandType commandType, string text)
         {
             var command = database.GetCommand(commandType, text);
-            try { return new QueryResult<TEntity>(database, command, DbProviderDatabase.ResultMapper<TEntity>.Create(database)); }
+            try { return new QueryResult<TEntity>(command, DbProviderDatabase.ResultMapper<TEntity>.Create(database)); }
             catch
             {
                 command.Dispose();

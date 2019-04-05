@@ -475,7 +475,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual TScalar ExecuteScalar<TScalar>(DbCommand command)
         {
-            return new QueryResult<TScalar>(this, command
+            return new QueryResult<TScalar>(command
                     , ResultMapper<TScalar>.Create(this)).FirstOrDefault();
         }
         /// <summary>
@@ -637,7 +637,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic ExecuteEntity(DbCommand command)
         {
-            return new QueryResult<object>(this, command, new ObjectResultMapper()).FirstOrDefault();
+            return new QueryResult<object>(command, new ObjectResultMapper()).FirstOrDefault();
         }
         /// <summary>
         /// 
@@ -646,7 +646,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic[] ExecuteEntities(DbCommand command)
         {
-            return new QueryResult<object>(this, command, new ObjectResultMapper()).ToArray();
+            return new QueryResult<object>(command, new ObjectResultMapper()).ToArray();
         }
         /// <summary>
         /// 
@@ -733,7 +733,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType ExecuteEntity<EntityType>(DbCommand command)
         {
-            return new QueryResult<EntityType>(this, command
+            return new QueryResult<EntityType>(command
                     , ResultMapper<EntityType>.Create(this)).FirstOrDefault();
         }
         /// <summary>
@@ -744,7 +744,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command)
         {
-            return new QueryResult<EntityType>(this, command
+            return new QueryResult<EntityType>(command
                     , ResultMapper<EntityType>.Create(this)).ToArray();
         }
         /// <summary>

@@ -423,7 +423,7 @@ namespace Lotech.Data
             var command = GetCommand(commandType, commandText);
             try
             {
-                return ExecuteReader(command);
+                return new CompositedDataReader(ExecuteReader(command), command);
             }
             catch
             {
@@ -793,11 +793,8 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType[] ExecuteEntities<EntityType>(CommandType commandType, string commandText)
         {
-            using (var command = dbProviderFactory.CreateCommand())
+            using (var command = GetCommand(commandType, commandText))
             {
-                command.CommandText = commandText;
-                command.CommandType = commandType;
-
                 return ExecuteEntities<EntityType>(command);
             }
         }

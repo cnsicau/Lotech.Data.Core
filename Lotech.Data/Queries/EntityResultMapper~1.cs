@@ -136,8 +136,6 @@ namespace Lotech.Data.Queries
                 this.source = source;
             }
 
-            private ResultSourceKey() { }
-
             /// <summary>
             /// 
             /// </summary>

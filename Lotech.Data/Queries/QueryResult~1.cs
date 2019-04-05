@@ -10,69 +10,19 @@ namespace Lotech.Data.Queries
     /// 查询结果封装
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public class QueryResult<TEntity> : IEnumerable<TEntity>
+    public class QueryResult<TEntity> : IEnumerable<TEntity>, IEnumerator<TEntity>
     {
         private readonly IDatabase _database;
         private readonly IResultMapper<TEntity> _mapper;
         private readonly DbCommand _command;
+        private IResultSource _source;
+        private int _count;
+        private TEntity _current;
+        private Stopwatch _stopwatch;
 
-        /// <summary>
-        /// 结果枚举器
-        /// </summary>
-        private class QueryResultEnumerator : IEnumerator<TEntity>
-        {
-            private readonly IResultMapper<TEntity> _mapper;
-            private IResultSource _source;
-            private readonly Action<int> _disposing;
-            private TEntity _current;
-            private int _count;
+        TEntity IEnumerator<TEntity>.Current => _current;
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="source"></param>
-            /// <param name="mapper"></param>
-            /// <param name="disposing">释放回调</param>
-            public QueryResultEnumerator(IResultSource source, IResultMapper<TEntity> mapper, Action<int> disposing = null)
-            {
-                mapper.TearUp(source);
-                _disposing = disposing;
-                _source = source;
-                _mapper = mapper;
-            }
-
-            object IEnumerator.Current { get { return _current; } }
-
-            TEntity IEnumerator<TEntity>.Current { get { return _current; } }
-
-            void IDisposable.Dispose()
-            {
-                _current = default(TEntity);
-                _mapper.TearDown();
-                _disposing?.Invoke(_count);
-                _source.Dispose();
-                _source = null;
-            }
-
-            bool IEnumerator.MoveNext()
-            {
-                return _mapper.MapNext(out _current) && ++_count > 0;
-            }
-
-            void IEnumerator.Reset()
-            {
-                _current = default(TEntity);
-            }
-
-            ~QueryResultEnumerator()
-            {
-                if (_source != null)
-                {
-                    _source.Dispose();
-                    _disposing?.Invoke(_count);
-                }
-            }
-        }
+        object IEnumerator.Current => _current;
 
         /// <summary>
         /// 构造查询结果
@@ -94,48 +44,43 @@ namespace Lotech.Data.Queries
             _command = command;
         }
 
-        IEnumerator<TEntity> Execute()
+        IEnumerator IEnumerable.GetEnumerator() { return this; }
+
+        IEnumerator<TEntity> IEnumerable<TEntity>.GetEnumerator() { return this; }
+
+        bool IEnumerator.MoveNext()
         {
-            if (_database.Log == null)
+            if (_source == null)
             {
                 var reader = _database.ExecuteReader(_command);
+                _source = new DataReaderResultSource(reader);
+                _mapper.TearUp(_source);
+                if (_database.Log != null)
                 {
-                    try
-                    {
-                        return new QueryResultEnumerator(new DataReaderResultSource(reader), _mapper);
-                    }
-                    catch
-                    {
-                        _mapper.TearDown();
-                        reader.Dispose();
-                        throw;
-                    }
+                    _stopwatch = Stopwatch.StartNew();
                 }
             }
-            else
-            {
-                var sw = Stopwatch.StartNew();
-                var reader = _database.ExecuteReader(_command);
-                try
-                {
-                    return new QueryResultEnumerator(new DataReaderResultSource(reader), _mapper, (count) =>
-                    {
-                        sw.Stop();
-                        _database.Log?.Invoke($"  Complete read {count} {typeof(TEntity).Name} records. Elpased times: {sw.Elapsed}.");
-                    });
-                }
-                catch
-                {
-                    _mapper.TearDown();
-                    reader.Dispose();
-                    sw.Stop();
-                    throw;
-                }
-            }
+            return _mapper.MapNext(out _current) && ++_count > 0;
         }
 
-        IEnumerator IEnumerable.GetEnumerator() { return Execute(); }
+        void IEnumerator.Reset()
+        {
+            throw new NotSupportedException();
+        }
 
-        IEnumerator<TEntity> IEnumerable<TEntity>.GetEnumerator() { return Execute(); }
+        void IDisposable.Dispose()
+        {
+            if (_database.Log != null)
+            {
+                _database.Log?.Invoke($"  Complete read {_count} {typeof(TEntity).Name} records. Elpased times: {_stopwatch.Elapsed}.");
+                _stopwatch.Stop();
+            }
+            if (_source != null)
+            {
+                _mapper.TearDown();
+                _source.Dispose();
+                _source = null;
+            }
+        }
     }
 }

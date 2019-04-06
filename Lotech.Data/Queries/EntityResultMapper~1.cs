@@ -67,7 +67,8 @@ namespace Lotech.Data.Queries
                     }
                     var mappings = CreateEntityMapContainer(container);
                     container.Strip(mappings);
-                    conainers[bound++] = container;
+                    conainers[bound] = container;
+                    bound++;
                     return mappings;
                 }
             }
@@ -204,8 +205,8 @@ namespace Lotech.Data.Queries
             private class StripResultSource : IResultSource
             {
                 private int columnCount;
-                private string[] columns;
-                private Type[] columnTypes;
+                private readonly string[] columns;
+                private readonly Type[] columnTypes;
 
                 internal StripResultSource(IResultSource source)
                 {
@@ -281,20 +282,22 @@ namespace Lotech.Data.Queries
             catch (Exception e)
             {
                 enumerator.Dispose();
-                throw new MapFailedException(enumerator.Current, source.GetColumnValue(enumerator.Current.ColumnIndex), e);
+                throw new MapException(enumerator.Current, result, source.GetColumnValue(enumerator.Current.ColumnIndex), e);
             }
         }
         #endregion
 
-        class MapFailedException : InvalidCastException
+        class MapException : InvalidCastException
         {
-            public MapFailedException(Mapping description, object value, Exception exception)
-                : base($"{description.MemberName} 列映射失败，值“{value}”({value?.GetType() })对于类型 {description.MemberValueType} 无效", exception)
+            public MapException(Mapping description, TEntity entity, object value, Exception exception)
+                : base($"列 {description.MemberName} 映射失败，值“{value}”({value?.GetType() })无法转换为 {description.MemberValueType}", exception)
             {
-                this.Value = value;
+                Value = value;
+                Entity = entity;
             }
 
             public object Value { get; private set; }
+            public TEntity Entity { get; private set; }
         }
     }
 }

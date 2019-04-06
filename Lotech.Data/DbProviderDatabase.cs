@@ -667,7 +667,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic ExecuteEntity(DbCommand command)
         {
-            return new QueryResult<object>(command, new ObjectResultMapper()).FirstOrDefault();
+            return new QueryResult<object>(command, ResultMapper<object>.Create(this)).FirstOrDefault();
         }
         /// <summary>
         /// 
@@ -676,7 +676,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic[] ExecuteEntities(DbCommand command)
         {
-            return new QueryResult<object>(command, new ObjectResultMapper()).ToArray();
+            return new QueryResult<object>(command, ResultMapper<object>.Create(this)).ToArray();
         }
         /// <summary>
         /// 

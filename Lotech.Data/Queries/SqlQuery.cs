@@ -61,26 +61,54 @@ namespace Lotech.Data.Queries
             if (snippet == null) throw new ArgumentNullException(nameof(snippet));
             if (args == null) throw new ArgumentNullException(nameof(args));
 
-            _snippets.Append(_placeholder.Replace(snippet, match =>
+            int enterIndex = -1, placeIndex = -1, index = 0;
+            bool exit = false;
+            for (int i = 0; i < snippet.Length; i++)
             {
-                var groups = match.Groups;
-                var placeIndex = Convert.ToInt16(groups[2].Value);
-
-                if (placeIndex < 0 || placeIndex >= args.Count)
-                    throw new InvalidOperationException($"未找到对应的参数值：{match.Value} ");
-
-                var parameterName = NextParameterName();
-                var value = args[placeIndex];
-                if (value is SqlQueryParameter)
+                var c = snippet[i];
+                if (enterIndex >= 0)
                 {
-                    _parameters.Add(new SqlQueryParameter(parameterName, ((SqlQueryParameter)value).Type, ((SqlQueryParameter)value).Value));
+                    if (c == '}')
+                    {
+                        if (placeIndex >= 0)
+                        {
+                            var parameterName = NextParameterName();
+                            _snippets.Append(snippet, index, enterIndex - index).Append(parameterName);
+
+                            var value = args[placeIndex];
+                            if (value is SqlQueryParameter)
+                            {
+                                _parameters.Add(new SqlQueryParameter(parameterName, ((SqlQueryParameter)value).Type, ((SqlQueryParameter)value).Value));
+                            }
+                            else
+                            {
+                                _parameters.Add(new SqlQueryParameter(parameterName, value));
+                            }
+                            index = i + 1;
+                        }
+                        enterIndex = -1;
+                    }
+                    else if (c == ' ') { if (placeIndex >= 0) exit = true; }
+                    else if (c >= '0' && c <= '9' && !exit)
+                    {
+                        placeIndex = placeIndex == -1 ? (c - '0') : (placeIndex * 10) + (c - '0');
+                    }
+                    else if (c == '{')
+                    {
+                        enterIndex = i;
+                        placeIndex = -1;
+                        exit = false;
+                    }
+                    else { enterIndex = -1; }
                 }
-                else
+                else if (c == '{')
                 {
-                    _parameters.Add(new SqlQueryParameter(parameterName, value));
+                    enterIndex = i;
+                    placeIndex = -1;
+                    exit = false;
                 }
-                return groups[1].Value + parameterName + groups[3].Value;
-            }));
+            }
+            _snippets.Append(snippet, index, snippet.Length - index);
             return this;
         }
 

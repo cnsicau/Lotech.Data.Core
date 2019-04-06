@@ -56,13 +56,10 @@ namespace Lotech.Data.Utils
         /// <returns></returns>
         static public DbType Parse(Type type)
         {
-            if (type.IsEnum)
-                return DbType.Int32;
-            if (type.IsGenericType && type.GetGenericArguments()[0].IsEnum)
-                return DbType.Int32;
-
             DbType dbType;
-            return mapping.TryGetValue(type, out dbType) ? dbType : DbType.Object;
+            return mapping.TryGetValue(type, out dbType) ? dbType
+                : (type.IsEnum || Nullable.GetUnderlyingType(type)?.IsEnum == true)
+                ? DbType.Int32 : DbType.Object;
         }
     }
 }

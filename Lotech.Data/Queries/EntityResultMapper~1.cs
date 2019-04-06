@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 
 namespace Lotech.Data.Queries
 {
@@ -41,12 +42,34 @@ namespace Lotech.Data.Queries
 
         static class MappingFactory
         {
-            static readonly ConcurrentDictionary<ResultSourceKey, Mapping[]>
-                mappingContainer = new ConcurrentDictionary<ResultSourceKey, Mapping[]>();
+            static MappingContainer[] conainers = new MappingContainer[2];
+            static volatile int bound = 0;
 
-            internal static Mapping[] Create(ResultSourceKey sourceKey)
+            internal static Mapping[] Create(MappingContainer container)
             {
-                return mappingContainer.GetOrAdd(sourceKey, CreateEntityMapContainer);
+                for (int i = 0; i < bound; i++)
+                {
+                    var key = conainers[i];
+                    if (key.Equals(container)) return key.Mappings;
+                }
+                lock (conainers)
+                {
+                    for (int i = 0; i < bound; i++)
+                    {
+                        var key = conainers[i];
+                        if (key.Equals(container)) return key.Mappings;
+                    }
+                    if (bound == conainers.Length)
+                    {
+                        var newContainer = new MappingContainer[bound + 2];
+                        Array.Copy(conainers, newContainer, bound);
+                        conainers = newContainer;
+                    }
+                    var mappings = CreateEntityMapContainer(container);
+                    container.Strip(mappings);
+                    conainers[bound++] = container;
+                    return mappings;
+                }
             }
 
             /// <summary>
@@ -78,10 +101,8 @@ namespace Lotech.Data.Queries
                     ).Compile();
             }
 
-            static Mapping[] CreateEntityMapContainer(ResultSourceKey sourceKey)
+            static Mapping[] CreateEntityMapContainer(MappingContainer sourceKey)
             {
-                sourceKey.Strip();
-
                 var members = sourceKey.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None).Members;
                 var mappings = new List<Mapping>();
                 var source = sourceKey.Source;
@@ -107,13 +128,15 @@ namespace Lotech.Data.Queries
                 return mappings.ToArray();
             }
         }
+
         /// <summary>
         /// 
         /// </summary>
-        class ResultSourceKey
+        private class MappingContainer
         {
             private readonly IDescriptorProvider descriptorProvider;
             private IResultSource source;
+            private Mapping[] mappings;
 
             /// <summary>
             /// 
@@ -124,12 +147,14 @@ namespace Lotech.Data.Queries
             /// </summary>
             public IResultSource Source { get { return source; } }
 
+            public Mapping[] Mappings { get { return mappings; } }
+
             /// <summary>
             /// 
             /// </summary>
             /// <param name="descriptorProvider"></param>
             /// <param name="source"></param>
-            public ResultSourceKey(IDescriptorProvider descriptorProvider, IResultSource source)
+            public MappingContainer(IDescriptorProvider descriptorProvider, IResultSource source)
             {
                 if (source.ColumnCount == 0) throw new NotSupportedException("columns is empty");
                 this.descriptorProvider = descriptorProvider;
@@ -143,7 +168,7 @@ namespace Lotech.Data.Queries
             /// <returns></returns>
             public override bool Equals(object obj)
             {
-                var key = obj as ResultSourceKey;
+                var key = obj as MappingContainer;
                 if (key != null && descriptorProvider == key.descriptorProvider
                         && source.ColumnCount == key.source.ColumnCount
                         && source.GetColumnName(0) == key.source.GetColumnName(0))
@@ -170,8 +195,9 @@ namespace Lotech.Data.Queries
             /// <summary>
             /// 脱离底层源(如关联的DbReader)，以便作为缓存key
             /// </summary>
-            public void Strip()
+            public void Strip(Mapping[] mappings)
             {
+                this.mappings = mappings;
                 source = new StripResultSource(source);
             }
 
@@ -206,15 +232,20 @@ namespace Lotech.Data.Queries
                 public bool Next() { return false; }
             }
         }
+
         #region Fields & Constructor
         private IEnumerable<Mapping> mappings;
-
+        private IDatabase database;
         private IResultSource source;
 
         /// <summary>
         /// 获取关联库
         /// </summary>
-        public IDatabase Database { get; set; }
+        public IDatabase Database
+        {
+            get { return database; }
+            set { database = value; }
+        }
 
         /// <summary>
         /// 初始化
@@ -223,7 +254,7 @@ namespace Lotech.Data.Queries
         public void TearUp(IResultSource source)
         {
             this.source = source;
-            var sourceKey = new ResultSourceKey(Database.DescriptorProvider, source);
+            var sourceKey = new MappingContainer(database.DescriptorProvider, source);
             mappings = MappingFactory.Create(sourceKey);
         }
 

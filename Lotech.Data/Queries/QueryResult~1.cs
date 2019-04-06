@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 
@@ -12,8 +13,7 @@ namespace Lotech.Data.Queries
     /// <typeparam name="TEntity"></typeparam>
     public class QueryResult<TEntity> : IEnumerable<TEntity>, IEnumerator<TEntity>
     {
-        private readonly IResultMapper<TEntity> _mapper;
-        private readonly DbCommand _command;
+        private IResultMapper<TEntity> _mapper;
         private IResultSource _source;
         private int _count;
         private TEntity _current;
@@ -24,9 +24,23 @@ namespace Lotech.Data.Queries
         object IEnumerator.Current => _current;
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="mapper"></param>
+        public QueryResult(IDataReader reader, IResultMapper<TEntity> mapper)
+        {
+            if (mapper == null)
+                throw new ArgumentNullException(nameof(mapper));
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+
+            Construct(reader, mapper);
+        }
+
+        /// <summary>
         /// 构造查询结果
         /// </summary>
-        /// <param name="database">DB</param>
         /// <param name="command"></param>
         /// <param name="mapper">结果映射器</param>
         public QueryResult(DbCommand command, IResultMapper<TEntity> mapper)
@@ -36,19 +50,16 @@ namespace Lotech.Data.Queries
             if (command == null)
                 throw new ArgumentNullException(nameof(command));
 
-            _mapper = mapper;
-            _command = command;
+            Construct(mapper.Database.ExecuteReader(command), mapper);
+        }
 
-            if (_source == null)
-            {
-                var reader = _mapper.Database.ExecuteReader(_command);
-                _source = new DataReaderResultSource(reader);
-                _mapper.TearUp(_source);
-                if (_mapper.Database.Log != null)
-                {
-                    _stopwatch = Stopwatch.StartNew();
-                }
-            }
+        void Construct(IDataReader reader, IResultMapper<TEntity> mapper)
+        {
+            _mapper = mapper;
+            _source = new DataReaderResultSource(reader);
+            _mapper.TearUp(_source);
+            if (_mapper.Database.Log != null)
+                _stopwatch = Stopwatch.StartNew();
         }
 
         IEnumerator IEnumerable.GetEnumerator() { return this; }
@@ -74,7 +85,6 @@ namespace Lotech.Data.Queries
             }
             if (_source != null)
             {
-                _mapper.TearDown();
                 _source.Dispose();
                 _source = null;
             }

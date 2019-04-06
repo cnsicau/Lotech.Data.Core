@@ -129,6 +129,13 @@ namespace Lotech.Data
         /// 执行Reader输出
         /// </summary>
         /// <param name="command">命令对象</param>
+        /// <param name="behavior">行为</param>
+        /// <returns>返回IDataReader对象</returns>
+        IDataReader ExecuteReader(DbCommand command, CommandBehavior behavior);
+        /// <summary>
+        /// 执行Reader输出
+        /// </summary>
+        /// <param name="command">命令对象</param>
         /// <returns>返回IDataReader对象</returns>
         IDataReader ExecuteReader(DbCommand command);
 

@@ -69,10 +69,5 @@ namespace Lotech.Data.Queries
             result = default(T);
             return false;
         }
-
-        /// <summary>
-        /// 完成
-        /// </summary>
-        public void TearDown() { }
     }
 }

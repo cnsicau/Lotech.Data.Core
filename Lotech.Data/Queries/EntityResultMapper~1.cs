@@ -228,11 +228,6 @@ namespace Lotech.Data.Queries
         }
 
         /// <summary>
-        /// 完成
-        /// </summary>
-        public void TearDown() { }
-
-        /// <summary>
         /// 映射下一结果
         /// </summary>
         /// <returns></returns>

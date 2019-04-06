@@ -38,8 +38,6 @@ namespace Lotech.Data.Queries
             return true;
         }
 
-        void IResultMapper<object>.TearDown() { }
-
         #region DataExpando
         class ObjectValue : DynamicObject, IDictionary<string, object>
         {

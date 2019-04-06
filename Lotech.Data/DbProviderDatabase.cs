@@ -393,7 +393,6 @@ namespace Lotech.Data
                 throw;
             }
         }
-
         /// <summary>
         /// 
         /// </summary>
@@ -401,7 +400,38 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual IDataReader ExecuteReader(DbCommand command)
         {
-            return ExecuteCommand(nameof(ExecuteReader), command, _ => _.ExecuteReader(), (substitute, reader) => new CompositedDataReader(reader, substitute));
+            return ExecuteReader(command, CommandBehavior.Default);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="behavior"></param>
+        /// <returns></returns>
+        public virtual IDataReader ExecuteReader(DbCommand command, CommandBehavior behavior)
+        {
+            var substitute = GetConnection(command);
+            try
+            {
+                BindOpenedConnection(command, substitute);
+                IDataReader reader;
+                if (Log == null)
+                    reader = command.ExecuteReader(behavior);
+                else
+                {
+                    LogCommand("ExecuteReader", command);
+                    var sw = Stopwatch.StartNew();
+                    reader = command.ExecuteReader();
+                    Log("  -- elapsed times: " + sw.Elapsed);
+                }
+                return reader;
+            }
+            catch
+            {
+                substitute.Dispose();
+                throw;
+            }
         }
         /// <summary>
         /// 
@@ -733,7 +763,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType ExecuteEntity<EntityType>(DbCommand command)
         {
-            return new QueryResult<EntityType>(command
+            return new QueryResult<EntityType>(ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess)
                     , ResultMapper<EntityType>.Create(this)).FirstOrDefault();
         }
         /// <summary>
@@ -744,7 +774,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command)
         {
-            return new QueryResult<EntityType>(command
+            return new QueryResult<EntityType>(ExecuteReader(command, CommandBehavior.SequentialAccess)
                     , ResultMapper<EntityType>.Create(this)).ToArray();
         }
         /// <summary>

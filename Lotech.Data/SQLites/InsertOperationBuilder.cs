@@ -61,24 +61,6 @@ namespace Lotech.Data.SQLites
         #region Methods
         static string BuildParameterName(int index) { return BuildParameter("p_sql_" + index); }
 
-        Action<IDatabase, DbCommand, TEntity> CreateParameterBinder()
-        {
-            var members = _members.Select((_, i) => new MemberTuple<TEntity>
-            (
-                _.Name,
-                _.DbType,
-                BuildParameterName(i),
-                MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            )).ToArray();
-            return (db, command, entity) =>
-            {
-                foreach (var member in members)
-                {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
-                }
-            };
-        }
-
         internal Action<IDatabase, DbCommand, TEntity> BuildCommandExecutor()
         {
             // 不带返回
@@ -87,63 +69,17 @@ namespace Lotech.Data.SQLites
             if (_identity != null && _outputs.Length == 0) // 仅返回自增长主键
             {
                 var setter = MemberAccessor<TEntity, object>.GetSetter(_identity.Member);
-                return (db, command, entity) =>
-                {
-                    using (var transactionManager = new TransactionManager())
-                    {
-                        db.ExecuteNonQuery(command);
-                        setter(entity, db.ExecuteScalar("SELECT LAST_INSERT_ROWID()"));
-
-                        transactionManager.Commit();
-                    }
-                };
+                return (db, command, entity) => setter(entity, db.ExecuteScalar(command));
             }
-
-            var sql = string.Concat("SELECT "
-                        , _identity == null ? "" : (Quote(_identity.Name) + ", ")
-                        , string.Join(", ", _outputs.Select(_ => Quote(_.Name)))
-                        , " FROM "
-                        , string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.')
-                        , Quote(_descriptor.Name)
-                        , " WHERE "
-                        , string.Join(", ", _descriptor.Keys.Select((_, i) => _.Name + " = "
-                                + (_ == _identity ? "LAST_INSERT_ROWID()" : BuildParameter("p_sql_" + i)))));
-
-            var bindParameters = _descriptor.Keys.Select((key, i) =>
-            {
-                if (key == _identity)
-                    return default(Action<IDatabase, DbCommand, TEntity>);
-
-                var parameterName = BuildParameter("p_sql_" + i);
-                var getter = MemberAccessor<TEntity, object>.GetGetter(key.Member);
-                return (db, command, entity) =>
-                {
-                    db.AddInParameter(command, parameterName, key.DbType, getter(entity));
-                };
-            }).Where(_ => _ != null).ToArray();
 
             var reverseAssigns = _outputs.Concat(_identity == null ? new IMemberDescriptor[0] : new[] { _identity })
                     .Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
 
-
-
             return (db, command, entity) =>
             {
-                using (var transactionManager = new TransactionManager())
-                {
-                    db.ExecuteNonQuery(command);
-
-                    using (var reverseCommand = db.GetSqlStringCommand(sql))
-                    {
-                        foreach (var bind in bindParameters)
-                            bind(db, reverseCommand, entity);
-                        var reverse = db.ExecuteEntity<TEntity>(reverseCommand);
-                        foreach (var assign in reverseAssigns)
-                            assign(reverse, entity);
-                    }
-
-                    transactionManager.Commit();
-                }
+                var reverse = db.ExecuteEntity<TEntity>(command);
+                foreach (var assign in reverseAssigns)
+                    assign(reverse, entity);
             };
         }
         #endregion
@@ -164,6 +100,23 @@ namespace Lotech.Data.SQLites
                 .AppendJoin(", ", _members.Select((_, i) => BuildParameterName(i)))
                 .Append(")")
                 .ToString();
+
+            if (_identity != null && _outputs.Length == 0) // 仅返回自增长主键
+            {
+                sql += ";\n SELECT LAST_INSERT_ROWID()";
+            }
+            else if (_outputs.Length > 0)
+            {
+                sql += string.Concat(";\n SELECT "
+                        , _identity == null ? "" : (Quote(_identity.Name) + ", ")
+                        , string.Join(", ", _outputs.Select(_ => Quote(_.Name)))
+                        , " FROM "
+                        , string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.')
+                        , Quote(_descriptor.Name)
+                        , " WHERE "
+                        , string.Join(", ", _descriptor.Keys.Select((_, i) => _.Name + " = "
+                                + (_ == _identity ? "LAST_INSERT_ROWID()" : BuildParameterName(i + _members.Length)))));
+            }
             return db => db.GetSqlStringCommand(sql);
         }
 
@@ -171,12 +124,31 @@ namespace Lotech.Data.SQLites
         {
             Initialize(descriptor);
 
-            var memberBinder = CreateParameterBinder();
+            var members = _members.Select((_, i) => new MemberTuple<TEntity>
+            (
+                _.Name,
+                _.DbType,
+                BuildParameterName(i),
+                MemberAccessor<TEntity, object>.GetGetter(_.Member)
+            )).
+            Concat(_keys.Select((_, i) => new MemberTuple<TEntity>
+                (
+                    _.Name,
+                    _.DbType,
+                    BuildParameterName(i),
+                    MemberAccessor<TEntity, object>.GetGetter(_.Member)
+                )).Where(_ => _.Name != _identity?.Name)
+            ).
+            ToArray();
+
             var executer = BuildCommandExecutor();
 
             return (db, command, entity) =>
             {
-                memberBinder(db, command, entity);
+                foreach (var member in members)
+                {
+                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
+                }
                 executer(db, command, entity);
             };
         }

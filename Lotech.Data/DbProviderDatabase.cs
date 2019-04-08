@@ -422,7 +422,7 @@ namespace Lotech.Data
                 {
                     LogCommand("ExecuteReader", command);
                     var sw = Stopwatch.StartNew();
-                    reader = command.ExecuteReader(behavior);
+                    reader = command.ExecuteReader();
                     Log("  -- elapsed times: " + sw.Elapsed);
                 }
                 return reader;

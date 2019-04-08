@@ -137,7 +137,9 @@ namespace Lotech.Data.SQLites
                     _.DbType,
                     BuildParameterName(i),
                     MemberAccessor<TEntity, object>.GetGetter(_.Member)
-                )).Where(_ => _.Name != _identity?.Name)
+                ))
+                .Where(_ => _outputs.Length > 0)
+                .Where(_ => _.Name != _identity?.Name)
             ).
             ToArray();
 

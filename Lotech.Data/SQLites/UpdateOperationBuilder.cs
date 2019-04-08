@@ -95,26 +95,15 @@ namespace Lotech.Data.SQLites
         {
             // 不带返回
             if (_outputs.Length == 0) return (db, command, entity) => db.ExecuteNonQuery(command);
-            Action<IDatabase, DbCommand, TEntity> reverseBind = (db, command, entity) => { };
 
-            if (_outputs.Length > 0)
-            {
-                var assigns = _outputs.Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
-                reverseBind = (db, command, entity) =>
-                {
-                    var reverseEntity = db.LoadEntity(entity);
-                    foreach (var assign in assigns)
-                        assign(reverseEntity, entity);
-                };
-            }
 
+            var assigns = _outputs.Select(_ => MemberAccessor.GetAssign<TEntity>(_.Member)).ToArray();
             return (db, command, entity) =>
             {
-                using (var transactionManager = new TransactionManager())
-                {
-                    db.ExecuteNonQuery(command);
-                    reverseBind(db, command, entity);
-                }
+                db.ExecuteNonQuery(command);
+                var reverseEntity = db.LoadEntity(entity);
+                foreach (var assign in assigns)
+                    assign(reverseEntity, entity);
             };
         }
         #endregion
@@ -141,13 +130,26 @@ namespace Lotech.Data.SQLites
         {
             Initialize(descriptor);
 
-            var memberBinder = CreateParameterBinder(_members, BuildSetParameter);
-            var conditionBinder = CreateParameterBinder(_keys, BuildConditionParameter);
+            var parameters
+                = _members.Select((_, i) => new MemberTuple<TEntity>(
+                    _.Name,
+                    _.DbType,
+                    BuildSetParameter(i),
+                    MemberAccessor<TEntity, object>.GetGetter(_.Member)
+                ))
+                .Concat(
+                    _keys.Select((_, i) => new MemberTuple<TEntity>(
+                        _.Name,
+                        _.DbType,
+                        BuildConditionParameter(i),
+                        MemberAccessor<TEntity, object>.GetGetter(_.Member)
+                ))).ToArray();
 
             return (db, command, entity) =>
             {
-                memberBinder(db, command, entity);
-                conditionBinder(db, command, entity);
+                foreach (var p in parameters)
+                    db.AddInParameter(command, p.ParameterName, p.DbType, p.Getter(entity));
+
                 db.ExecuteNonQuery(command);
             };
         }

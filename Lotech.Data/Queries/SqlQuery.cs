@@ -124,5 +124,14 @@ namespace Lotech.Data.Queries
         string ISqlQuery.GetSnippets() { return _snippets.ToString(); }
 
         IEnumerable<SqlQueryParameter> ISqlQuery.GetParameters() { return _parameters; }
+
+        object ISqlQuery.ExecuteScalar()
+        {
+            ISqlQuery me = this;
+            using (var command = me.CreateCommand())
+            {
+                return me.Database.ExecuteScalar(command);
+            }
+        }
     }
 }

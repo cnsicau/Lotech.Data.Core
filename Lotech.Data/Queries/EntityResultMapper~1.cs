@@ -1,9 +1,7 @@
 ﻿using Lotech.Data.Descriptors;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace Lotech.Data.Queries
 {
@@ -11,7 +9,7 @@ namespace Lotech.Data.Queries
     /// 实体结果映射
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public class EntityResultMapper<TEntity> : IResultMapper<TEntity> where TEntity : class
+    public class EntityResultMapper<TEntity> : ResultMapper<TEntity> where TEntity : class
     {
         static readonly Func<TEntity> New = Expression.Lambda<Func<TEntity>>(Expression.New(typeof(TEntity))).Compile();
 
@@ -236,26 +234,15 @@ namespace Lotech.Data.Queries
 
         #region Fields & Constructor
         private IEnumerable<Mapping> mappings;
-        private IDatabase database;
-        private IResultSource source;
-
-        /// <summary>
-        /// 获取关联库
-        /// </summary>
-        public IDatabase Database
-        {
-            get { return database; }
-            set { database = value; }
-        }
 
         /// <summary>
         /// 初始化
         /// </summary>
         /// <param name="source"></param>
-        public void TearUp(IResultSource source)
+        public override void TearUp(IResultSource source)
         {
-            this.source = source;
-            var sourceKey = new MappingContainer(database.DescriptorProvider, source);
+            base.TearUp(source);
+            var sourceKey = new MappingContainer(Database.DescriptorProvider, source);
             mappings = MappingFactory.Create(sourceKey);
         }
 
@@ -263,9 +250,9 @@ namespace Lotech.Data.Queries
         /// 映射下一结果
         /// </summary>
         /// <returns></returns>
-        public bool MapNext(out TEntity result)
+        public override bool MapNext(out TEntity result)
         {
-            if (!source.Next())
+            if (!Source.Next())
             {
                 result = default(TEntity);
                 return false;
@@ -276,13 +263,13 @@ namespace Lotech.Data.Queries
             try
             {
                 while (enumerator.MoveNext())
-                    enumerator.Current.Execute(result, source.GetColumnValue(enumerator.Current.ColumnIndex));
+                    enumerator.Current.Execute(result, Source.GetColumnValue(enumerator.Current.ColumnIndex));
                 return true;
             }
             catch (Exception e)
             {
                 enumerator.Dispose();
-                throw new MapException(enumerator.Current, result, source.GetColumnValue(enumerator.Current.ColumnIndex), e);
+                throw new MapException(enumerator.Current, result, Source.GetColumnValue(enumerator.Current.ColumnIndex), e);
             }
         }
         #endregion

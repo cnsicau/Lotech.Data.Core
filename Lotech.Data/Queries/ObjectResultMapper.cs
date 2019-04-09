@@ -8,20 +8,16 @@ namespace Lotech.Data.Queries
     /// <summary>
     /// 动态对象结果映射
     /// </summary>
-    public class ObjectResultMapper : IResultMapper<object>
+    public class ObjectResultMapper : ResultMapper<object>
     {
-        private IResultSource source;
-
-        IDatabase IResultMapper<object>.Database { get; set; }
-
-        void IResultMapper<object>.TearUp(IResultSource source)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public override bool MapNext(out dynamic result)
         {
-            this.source = source;
-        }
-
-        bool IResultMapper<object>.MapNext(out dynamic result)
-        {
-            if (!source.Next())
+            if (!Source.Next())
             {
                 result = null;
                 return false;
@@ -29,6 +25,7 @@ namespace Lotech.Data.Queries
             var values = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
             result = new ObjectValue(values);
 
+            var source = Source;
             // 将所有结果放入动态扩展对象中
             for (int i = source.ColumnCount - 1; i >= 0; i--)
             {

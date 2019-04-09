@@ -8,10 +8,9 @@ namespace Lotech.Data.Queries
     /// 简单类型映射int\short\bool等
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class SimpleResultMapper<T> : IResultMapper<T>
+    class SimpleResultMapper<T> : ResultMapper<T>
     {
         static readonly Assembly SimpleTypeAssembly = typeof(bool).Assembly;
-        private IResultSource source;
         private Type underlyingType;
         private ConvertDelegate convert;
 
@@ -19,17 +18,16 @@ namespace Lotech.Data.Queries
         {
             return typeof(T) != typeof(object) && typeof(T).Assembly == SimpleTypeAssembly;
         }
-        IDatabase IResultMapper<T>.Database { get; set; }
 
-        public void TearUp(IResultSource source)
+        public override void TearUp(IResultSource source)
         {
             if (!IsSimpleType())
                 throw new InvalidProgramException("仅支持简单类型映射，如 int, short, long, decimal等");
             underlyingType = Nullable.GetUnderlyingType(typeof(T));
 
-            this.source = source;
+            base.TearUp(source);
 
-            convert = new ConvertDelegate(() => Utils.ValueConverter.GetConvert(this.source.GetColumnType(0), typeof(T)));
+            convert = new ConvertDelegate(() => Utils.ValueConverter.GetConvert(Source.GetColumnType(0), typeof(T)));
         }
 
         /// <summary>
@@ -37,11 +35,11 @@ namespace Lotech.Data.Queries
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        public bool MapNext(out T result)
+        public override bool MapNext(out T result)
         {
-            if (source.Next())
+            if (Source.Next())
             {
-                var value = source.GetColumnValue(0);
+                var value = Source.GetColumnValue(0);
                 var convert = this.convert.Value;
                 try
                 {
@@ -60,7 +58,7 @@ namespace Lotech.Data.Queries
                         }
                         catch { }
                     }
-                    throw new InvalidCastException($"列{source.GetColumnName(0)}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
+                    throw new InvalidCastException($"列{Source.GetColumnName(0)}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
                 }
 
                 return true;

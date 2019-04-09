@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 
 namespace Lotech.Data
 {
@@ -48,5 +49,11 @@ namespace Lotech.Data
         /// </summary>
         /// <returns></returns>
         IEnumerable<SqlQueryParameter> GetParameters();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        object ExecuteScalar();
     }
 }

@@ -140,7 +140,7 @@ namespace Lotech.Data
             try
             {
                 return new QueryResult<TEntity>(command
-                            , DbProviderDatabase.ResultMapper<TEntity>.Create(query.Database));
+                            , ResultMapper<TEntity>.Create(query.Database));
             }
             catch
             {

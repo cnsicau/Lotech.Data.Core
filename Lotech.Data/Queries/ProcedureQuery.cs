@@ -3,19 +3,14 @@ using System.Data.Common;
 
 namespace Lotech.Data.Queries
 {
-    class ProcedureQuery : IProcedureQuery
+    class ProcedureQuery : Query, IProcedureQuery
     {
         readonly IList<KeyValuePair<string, object>> _parameters = new List<KeyValuePair<string, object>>();
-        private readonly IDatabase _database;
 
-        internal ProcedureQuery(IDatabase database)
-        {
-            _database = database;
-        }
+        internal ProcedureQuery(IDatabase database) : base(database) { }
 
-        internal ProcedureQuery(IDatabase database, string name)
+        internal ProcedureQuery(IDatabase database, string name) : base(database)
         {
-            _database = database;
             Name = name;
         }
 
@@ -27,17 +22,15 @@ namespace Lotech.Data.Queries
             return this;
         }
 
-        DbCommand IQuery.CreateCommand()
+        public override DbCommand CreateCommand()
         {
-            var command = _database.GetStoredProcedureCommand(Name);
+            var command = database.GetStoredProcedureCommand(Name);
             foreach (var p in _parameters)
             {
                 var type = p.Value?.GetType() ?? typeof(string);
-                _database.AddInParameter(command, _database.BuildParameterName(p.Key), _database.ParseDbType(type), p.Value);
+                database.AddInParameter(command, database.BuildParameterName(p.Key), database.ParseDbType(type), p.Value);
             }
             return command;
         }
-
-        IDatabase IQuery.Database { get { return _database; } }
     }
 }

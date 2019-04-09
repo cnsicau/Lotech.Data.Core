@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -7,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace Lotech.Data.Queries
 {
     [System.Diagnostics.DebuggerDisplay("{_snippets}")]
-    class SqlQuery : ISqlQuery
+    class SqlQuery : Query, ISqlQuery
     {
         #region Fields & Constructor
         /// <summary>
@@ -21,31 +22,24 @@ namespace Lotech.Data.Queries
         private readonly StringBuilder _snippets = new StringBuilder();
         private readonly List<SqlQueryParameter> _parameters = new List<SqlQueryParameter>();
         private int _index;
-        private IDatabase _database;
 
         /// <summary>
         /// 构造
         /// </summary>
-        internal SqlQuery(IDatabase database)
+        internal SqlQuery(IDatabase database) : base(database)
         {
-            _database = database;
             _id++;  // 随着SQLQuery对象增加
         }
         #endregion
 
-        string NextParameterName() { return _database.BuildParameterName("p_" + _id + '_' + _index++); }
+        string NextParameterName() { return database.BuildParameterName("p_" + _id + '_' + _index++); }
 
-        IDatabase IQuery.Database
+        public override DbCommand CreateCommand()
         {
-            get { return _database; }
-        }
-
-        DbCommand IQuery.CreateCommand()
-        {
-            var command = _database.GetSqlStringCommand(_snippets.ToString());
+            var command = database.GetSqlStringCommand(_snippets.ToString());
             foreach (var p in _parameters)
             {
-                _database.AddInParameter(command, p.Name, _database.ParseDbType(p.Type), p.Value);
+                database.AddInParameter(command, p.Name, database.ParseDbType(p.Type), p.Value);
             }
             return command;
         }
@@ -124,14 +118,5 @@ namespace Lotech.Data.Queries
         string ISqlQuery.GetSnippets() { return _snippets.ToString(); }
 
         IEnumerable<SqlQueryParameter> ISqlQuery.GetParameters() { return _parameters; }
-
-        object ISqlQuery.ExecuteScalar()
-        {
-            ISqlQuery me = this;
-            using (var command = me.CreateCommand())
-            {
-                return me.Database.ExecuteScalar(command);
-            }
-        }
     }
 }

@@ -623,9 +623,9 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
-        static public IEnumerable<TEntity> ExecuteSqlEntityReader<TEntity>(this IDatabase database, string sql, params object[] args)
+        static public IEnumerable<TEntity> ExecuteSqlEnumerable<TEntity>(this IDatabase database, string sql, params object[] args)
         {
-            return database.SqlQuery(sql, args).ExecuteEntityReader<TEntity>();
+            return database.SqlQuery(sql, args).ExecuteEnumerable<TEntity>();
         }
         #endregion
 

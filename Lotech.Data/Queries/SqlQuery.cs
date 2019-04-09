@@ -62,11 +62,13 @@ namespace Lotech.Data.Queries
             if (args == null) throw new ArgumentNullException(nameof(args));
 
             int enterIndex = -1, placeIndex = -1, index = 0;
-            bool exit = false;
+            bool exit = false, quota = false;
             for (int i = 0; i < snippet.Length; i++)
             {
                 var c = snippet[i];
-                if (enterIndex >= 0)
+                if (c == '\'') quota = !quota;
+
+                if (!quota && enterIndex >= 0)
                 {
                     if (c == '}')
                     {

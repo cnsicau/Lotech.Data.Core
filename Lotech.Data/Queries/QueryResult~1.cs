@@ -14,7 +14,6 @@ namespace Lotech.Data.Queries
     public class QueryResult<TEntity> : IEnumerable<TEntity>, IEnumerator<TEntity>
     {
         private IResultMapper<TEntity> _mapper;
-        private IResultSource _source;
         private int _count;
         private TEntity _current;
         private Stopwatch _stopwatch;
@@ -56,8 +55,7 @@ namespace Lotech.Data.Queries
         void Construct(IDataReader reader, IResultMapper<TEntity> mapper)
         {
             _mapper = mapper;
-            _source = new DataReaderResultSource(reader);
-            _mapper.TearUp(_source);
+            _mapper.TearUp(reader);
             if (_mapper.Database.Log != null)
                 _stopwatch = Stopwatch.StartNew();
         }
@@ -83,11 +81,7 @@ namespace Lotech.Data.Queries
                 _mapper.Database.Log($"  Complete read {_count} {typeof(TEntity).Name} records. Elpased times: {_stopwatch.Elapsed}.");
                 _stopwatch.Stop();
             }
-            if (_source != null)
-            {
-                _source.Dispose();
-                _source = null;
-            }
+            _mapper.TearDown();
         }
     }
 }

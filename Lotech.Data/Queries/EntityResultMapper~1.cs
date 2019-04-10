@@ -1,6 +1,8 @@
 ﻿using Lotech.Data.Descriptors;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq.Expressions;
 
 namespace Lotech.Data.Queries
@@ -100,15 +102,15 @@ namespace Lotech.Data.Queries
                     ).Compile();
             }
 
-            static Mapping[] CreateEntityMapContainer(MappingContainer sourceKey)
+            static Mapping[] CreateEntityMapContainer(MappingContainer container)
             {
-                var members = sourceKey.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None).Members;
+                var members = container.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None).Members;
                 var mappings = new List<Mapping>();
-                var source = sourceKey.Source;
+                var reader = container.Reader;
                 // 分析需要映射列集合（实体中、Reader中共有的列）
-                for (int columnIndex = 0; columnIndex < sourceKey.Source.ColumnCount; columnIndex++)
+                for (int columnIndex = 0; columnIndex < container.Reader.FieldCount; columnIndex++)
                 {
-                    var column = source.GetColumnName(columnIndex);
+                    var column = reader.GetName(columnIndex);
                     foreach (var member in members)
                     {
                         if (member.Name.Equals(column, StringComparison.InvariantCultureIgnoreCase))
@@ -134,7 +136,7 @@ namespace Lotech.Data.Queries
         private class MappingContainer
         {
             private readonly IDescriptorProvider descriptorProvider;
-            private IResultSource source;
+            private IDataReader reader;
             private Mapping[] mappings;
 
             /// <summary>
@@ -144,7 +146,7 @@ namespace Lotech.Data.Queries
             /// <summary>
             /// 
             /// </summary>
-            public IResultSource Source { get { return source; } }
+            public IDataReader Reader { get { return reader; } }
 
             public Mapping[] Mappings { get { return mappings; } }
 
@@ -152,12 +154,12 @@ namespace Lotech.Data.Queries
             /// 
             /// </summary>
             /// <param name="descriptorProvider"></param>
-            /// <param name="source"></param>
-            public MappingContainer(IDescriptorProvider descriptorProvider, IResultSource source)
+            /// <param name="reader"></param>
+            public MappingContainer(IDescriptorProvider descriptorProvider, IDataReader reader)
             {
-                if (source.ColumnCount == 0) throw new NotSupportedException("columns is empty");
+                if (reader.FieldCount == 0) throw new NotSupportedException("columns is empty");
                 this.descriptorProvider = descriptorProvider;
-                this.source = source;
+                this.reader = reader;
             }
 
             /// <summary>
@@ -169,12 +171,12 @@ namespace Lotech.Data.Queries
             {
                 var key = obj as MappingContainer;
                 if (key != null && descriptorProvider == key.descriptorProvider
-                        && source.ColumnCount == key.source.ColumnCount
-                        && source.GetColumnName(0) == key.source.GetColumnName(0))
+                        && reader.FieldCount == key.reader.FieldCount
+                        && reader.GetName(0) == key.reader.GetName(0))
                 {
-                    for (int i = source.ColumnCount - 1; i > 0; i--)
+                    for (int i = reader.FieldCount - 1; i > 0; i--)
                     {
-                        if (source.GetColumnName(i) != key.source.GetColumnName(i)) return false;
+                        if (reader.GetName(i) != key.reader.GetName(i)) return false;
                     }
                     return true;
                 }
@@ -187,8 +189,8 @@ namespace Lotech.Data.Queries
             /// <returns></returns>
             public override int GetHashCode()
             {
-                return descriptorProvider.GetHashCode() ^ source.ColumnCount
-                    ^ source.GetColumnName(0).GetHashCode();
+                return descriptorProvider.GetHashCode() ^ reader.FieldCount
+                    ^ reader.GetName(0).GetHashCode();
             }
 
             /// <summary>
@@ -197,53 +199,108 @@ namespace Lotech.Data.Queries
             public void Strip(Mapping[] mappings)
             {
                 this.mappings = mappings;
-                source = new StripResultSource(source);
+                reader = new SchemaReader(reader);
             }
 
-            private class StripResultSource : IResultSource
+            private class SchemaReader : IDataReader
             {
-                private int columnCount;
                 private readonly string[] columns;
-                private readonly Type[] columnTypes;
 
-                internal StripResultSource(IResultSource source)
+                int IDataReader.Depth => throw new NotImplementedException();
+
+                bool IDataReader.IsClosed => throw new NotImplementedException();
+
+                int IDataReader.RecordsAffected => throw new NotImplementedException();
+
+                int IDataRecord.FieldCount => columns.Length;
+
+                object IDataRecord.this[string name] => throw new NotImplementedException();
+
+                object IDataRecord.this[int i] => throw new NotImplementedException();
+
+                internal SchemaReader(IDataReader reader)
                 {
-                    columnCount = source.ColumnCount;
-                    columns = new string[columnCount];
-                    columnTypes = new Type[columnCount];
-                    for (int i = 0; i < columnCount; i++)
+                    columns = new string[reader.FieldCount];
+                    for (int i = 0; i < reader.FieldCount; i++)
                     {
-                        columns[i] = source.GetColumnName(i);
-                        columnTypes[i] = source.GetColumnType(i);
+                        columns[i] = reader.GetName(i);
                     }
                 }
 
-                public int ColumnCount => columnCount;
+                void IDataReader.Close() => throw new NotImplementedException();
 
-                public void Dispose() { }
+                DataTable IDataReader.GetSchemaTable() => throw new NotImplementedException();
 
-                public string GetColumnName(int index) => columns[index];
+                bool IDataReader.NextResult() => throw new NotImplementedException();
 
-                public Type GetColumnType(int columnIndex) => columnTypes[columnIndex];
+                bool IDataReader.Read() => throw new NotImplementedException();
 
-                public object GetColumnValue(int index) { throw new NotSupportedException(); }
+                bool IDataRecord.GetBoolean(int i) => throw new NotImplementedException();
 
-                public bool Next() { return false; }
+                byte IDataRecord.GetByte(int i) => throw new NotImplementedException();
+
+                long IDataRecord.GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
+                {
+                    throw new NotImplementedException();
+                }
+
+                char IDataRecord.GetChar(int i) => throw new NotImplementedException();
+
+                long IDataRecord.GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
+                {
+                    throw new NotImplementedException();
+                }
+
+                IDataReader IDataRecord.GetData(int i) => throw new NotImplementedException();
+
+                string IDataRecord.GetDataTypeName(int i) => throw new NotImplementedException();
+
+                DateTime IDataRecord.GetDateTime(int i) => throw new NotImplementedException();
+
+                decimal IDataRecord.GetDecimal(int i) => throw new NotImplementedException();
+
+                double IDataRecord.GetDouble(int i) => throw new NotImplementedException();
+
+                Type IDataRecord.GetFieldType(int i) => throw new NotImplementedException();
+
+                float IDataRecord.GetFloat(int i) => throw new NotImplementedException();
+
+                Guid IDataRecord.GetGuid(int i) => throw new NotImplementedException();
+
+                short IDataRecord.GetInt16(int i) => throw new NotImplementedException();
+
+                int IDataRecord.GetInt32(int i) => throw new NotImplementedException();
+
+                long IDataRecord.GetInt64(int i) => throw new NotImplementedException();
+
+                string IDataRecord.GetName(int i) => columns[i];
+
+                int IDataRecord.GetOrdinal(string name) => throw new NotImplementedException();
+
+                string IDataRecord.GetString(int i) => throw new NotImplementedException();
+
+                object IDataRecord.GetValue(int i) => throw new NotImplementedException();
+
+                int IDataRecord.GetValues(object[] values) => throw new NotImplementedException();
+
+                bool IDataRecord.IsDBNull(int i) => throw new NotImplementedException();
+
+                void IDisposable.Dispose() => throw new NotImplementedException();
             }
         }
 
         #region Fields & Constructor
-        private IEnumerable<Mapping> mappings;
+        private Mapping[] mappings;
 
         /// <summary>
         /// 初始化
         /// </summary>
-        /// <param name="source"></param>
-        public override void TearUp(IResultSource source)
+        /// <param name="reader"></param>
+        public override void TearUp(IDataReader reader)
         {
-            base.TearUp(source);
-            var sourceKey = new MappingContainer(Database.DescriptorProvider, source);
-            mappings = MappingFactory.Create(sourceKey);
+            base.TearUp(reader);
+            var container = new MappingContainer(Database.DescriptorProvider, reader);
+            mappings = MappingFactory.Create(container);
         }
 
         /// <summary>
@@ -252,24 +309,23 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public override bool MapNext(out TEntity result)
         {
-            if (!Source.Next())
+            if (!Reader.Read())
             {
                 result = default(TEntity);
                 return false;
             }
 
             result = New();
-            var enumerator = mappings.GetEnumerator();
+            var index = mappings.Length;
             try
             {
-                while (enumerator.MoveNext())
-                    enumerator.Current.Execute(result, Source.GetColumnValue(enumerator.Current.ColumnIndex));
+                while(--index >=0)
+                    mappings[index].Execute(result, Reader.GetValue(mappings[index].ColumnIndex));
                 return true;
             }
             catch (Exception e)
             {
-                enumerator.Dispose();
-                throw new MapException(enumerator.Current, result, Source.GetColumnValue(enumerator.Current.ColumnIndex), e);
+                throw new MapException(mappings[index], result, Reader.GetName(mappings[index].ColumnIndex), e);
             }
         }
         #endregion

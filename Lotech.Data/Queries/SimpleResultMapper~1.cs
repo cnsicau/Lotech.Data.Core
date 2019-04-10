@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Reflection;
 
 namespace Lotech.Data.Queries
@@ -19,15 +20,15 @@ namespace Lotech.Data.Queries
             return typeof(T) != typeof(object) && typeof(T).Assembly == SimpleTypeAssembly;
         }
 
-        public override void TearUp(IResultSource source)
+        public override void TearUp(IDataReader reader)
         {
             if (!IsSimpleType())
                 throw new InvalidProgramException("仅支持简单类型映射，如 int, short, long, decimal等");
             underlyingType = Nullable.GetUnderlyingType(typeof(T));
 
-            base.TearUp(source);
+            base.TearUp(reader);
 
-            convert = new ConvertDelegate(() => Utils.ValueConverter.GetConvert(Source.GetColumnType(0), typeof(T)));
+            convert = new ConvertDelegate(() => Utils.ValueConverter.GetTypedConvert(typeof(T)));
         }
 
         /// <summary>
@@ -37,9 +38,9 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public override bool MapNext(out T result)
         {
-            if (Source.Next())
+            if (Reader.Read())
             {
-                var value = Source.GetColumnValue(0);
+                var value = Reader.GetValue(0);
                 var convert = this.convert.Value;
                 try
                 {
@@ -58,7 +59,7 @@ namespace Lotech.Data.Queries
                         }
                         catch { }
                     }
-                    throw new InvalidCastException($"列{Source.GetColumnName(0)}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
+                    throw new InvalidCastException($"列{Reader.GetName(0)}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
                 }
 
                 return true;

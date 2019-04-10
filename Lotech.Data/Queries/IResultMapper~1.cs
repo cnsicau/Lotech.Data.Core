@@ -1,4 +1,6 @@
-﻿namespace Lotech.Data.Queries
+﻿using System.Data;
+
+namespace Lotech.Data.Queries
 {
     /// <summary>
     /// DataReader结果映射器
@@ -14,8 +16,8 @@
         /// <summary>
         /// 准备
         /// </summary>
-        /// <param name="source"></param>
-        void TearUp(IResultSource source);
+        /// <param name="reader"></param>
+        void TearUp(IDataReader reader);
 
         /// <summary>
         /// 卸载

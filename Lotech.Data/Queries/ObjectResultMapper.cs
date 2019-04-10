@@ -17,7 +17,7 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public override bool MapNext(out dynamic result)
         {
-            if (!Source.Next())
+            if (!Reader.Read())
             {
                 result = null;
                 return false;
@@ -25,12 +25,12 @@ namespace Lotech.Data.Queries
             var values = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
             result = new ObjectValue(values);
 
-            var source = Source;
+            var source = Reader;
             // 将所有结果放入动态扩展对象中
-            for (int i = source.ColumnCount - 1; i >= 0; i--)
+            for (int i = source.FieldCount - 1; i >= 0; i--)
             {
-                var columnValue = source.GetColumnValue(i);
-                values[source.GetColumnName(i)] = columnValue == DBNull.Value ? null : columnValue;
+                var columnValue = source.GetValue(i);
+                values[source.GetName(i)] = columnValue == DBNull.Value ? null : columnValue;
             }
             return true;
         }

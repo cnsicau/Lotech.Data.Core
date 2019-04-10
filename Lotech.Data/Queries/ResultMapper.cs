@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Linq.Expressions;
 
 namespace Lotech.Data.Queries
@@ -17,7 +18,7 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 
         /// </summary>
-        protected virtual IResultSource Source { get; set; }
+        protected virtual IDataReader Reader { get; set; }
 
         /// <summary>
         /// 
@@ -29,13 +30,13 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="source"></param>
-        public virtual void TearUp(IResultSource source) { Source = source; }
+        /// <param name="reader"></param>
+        public virtual void TearUp(IDataReader reader) { Reader = reader; }
 
         /// <summary>
         /// 
         /// </summary>
-        public virtual void TearDown() { }
+        public virtual void TearDown() { Reader.Close(); }
 
         #region Static Members
         readonly static Func<IResultMapper<TValue>> build;

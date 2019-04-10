@@ -319,13 +319,15 @@ namespace Lotech.Data.Queries
             var index = mappings.Length;
             try
             {
-                while(--index >=0)
-                    mappings[index].Execute(result, Reader.GetValue(mappings[index].ColumnIndex));
+                while (--index >= 0)
+                {
+                    mappings[index].Execute(result, reader.GetValue(mappings[index].ColumnIndex));
+                }
                 return true;
             }
             catch (Exception e)
             {
-                throw new MapException(mappings[index], result, Reader.GetName(mappings[index].ColumnIndex), e);
+                throw new MapException(mappings[index], result, reader.GetName(mappings[index].ColumnIndex), e);
             }
         }
         #endregion

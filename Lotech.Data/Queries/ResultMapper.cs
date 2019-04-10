@@ -13,12 +13,21 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 
         /// </summary>
+        protected IDataReader reader;
+
+        /// <summary>
+        /// 
+        /// </summary>
         public virtual IDatabase Database { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        protected virtual IDataReader Reader { get; set; }
+        public virtual IDataReader Reader
+        {
+            get { return reader; }
+            set { reader = value; }
+        }
 
         /// <summary>
         /// 

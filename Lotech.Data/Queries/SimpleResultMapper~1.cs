@@ -1,34 +1,34 @@
 ﻿using System;
-using System.Data;
-using System.Reflection;
+using System.Linq.Expressions;
 
 namespace Lotech.Data.Queries
 {
-    using ConvertDelegate = Lazy<Utils.ValueConverter.ConvertDelegate>;
     /// <summary>
     /// 简单类型映射int\short\bool等
     /// </summary>
     /// <typeparam name="T"></typeparam>
     class SimpleResultMapper<T> : ResultMapper<T>
     {
-        static readonly Assembly SimpleTypeAssembly = typeof(bool).Assembly;
-        private Type underlyingType;
-        private ConvertDelegate convert;
+        static readonly Func<object, T> cast;
 
-        static internal bool IsSimpleType()
+        static SimpleResultMapper()
         {
-            return typeof(T) != typeof(object) && typeof(T).Assembly == SimpleTypeAssembly;
-        }
+            var valueType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+            var typeName = Type.GetTypeCode(valueType).ToString();
 
-        public override void TearUp(IDataReader reader)
-        {
-            if (!IsSimpleType())
-                throw new InvalidProgramException("仅支持简单类型映射，如 int, short, long, decimal等");
-            underlyingType = Nullable.GetUnderlyingType(typeof(T));
+            var convert = typeof(Convert).GetMethod("To" + typeName, new Type[] { typeof(object) });
 
-            base.TearUp(reader);
+            var val = Expression.Parameter(typeof(object));
 
-            convert = new ConvertDelegate(() => Utils.ValueConverter.GetTypedConvert(typeof(T)));
+            cast = Expression.Lambda<Func<object, T>>(
+                    Expression.Condition(Expression.ReferenceNotEqual(Expression.Constant(null), val),
+                        convert == null ? Expression.Convert(val, typeof(T))
+                            : valueType == typeof(T) ? Expression.Call(convert, val)
+                            : (Expression)Expression.Convert(Expression.Call(convert, val), typeof(T)),
+                        Expression.New(typeof(T))
+                        )
+                    , val
+                ).Compile();
         }
 
         /// <summary>
@@ -38,31 +38,15 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public override bool MapNext(out T result)
         {
-            if (Reader.Read())
+            if (reader.Read())
             {
-                var value = Reader.GetValue(0);
-                var convert = this.convert.Value;
+                var value = reader.GetValue(0);
                 try
                 {
-                    result = (T)convert(value);
+                    result = cast(value);
+                    return true;
                 }
-                catch (Exception e)
-                {
-                    var typedConvert = Utils.ValueConverter.GetTypedConvert(typeof(T));
-                    if (convert != typedConvert)
-                    {
-                        try
-                        {
-                            result = (T)typedConvert(value);
-                            convert = typedConvert;
-                            return true;
-                        }
-                        catch { }
-                    }
-                    throw new InvalidCastException($"列{Reader.GetName(0)}的值“{value}”{value?.GetType()}无法转换为{typeof(T)}.", e);
-                }
-
-                return true;
+                catch (Exception e) { throw new InvalidCastException($"列{reader.GetName(0)}的值“{value}”({value?.GetType()})无法转换为{typeof(T)}.", e); }
             }
 
             result = default(T);

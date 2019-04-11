@@ -23,10 +23,9 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 
         /// </summary>
-        public virtual IDataReader Reader
+        public IDataReader Reader
         {
             get { return reader; }
-            set { reader = value; }
         }
 
         /// <summary>
@@ -40,7 +39,7 @@ namespace Lotech.Data.Queries
         /// 
         /// </summary>
         /// <param name="reader"></param>
-        public virtual void TearUp(IDataReader reader) { Reader = reader; }
+        public virtual void TearUp(IDataReader reader) { this.reader = reader; }
 
         /// <summary>
         /// 

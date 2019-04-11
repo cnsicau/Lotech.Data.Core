@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Dynamic;
+using System.Linq.Expressions;
 
 namespace Lotech.Data.Queries
 {
@@ -10,6 +13,63 @@ namespace Lotech.Data.Queries
     /// </summary>
     public class ObjectResultMapper : ResultMapper<object>
     {
+        static readonly ConcurrentDictionary<ReaderKey, string[]> columnsMeta = new ConcurrentDictionary<ReaderKey, string[]>();
+
+        string[] columns;
+
+        class ReaderKey
+        {
+            private IDataReader reader;
+
+            public ReaderKey(IDataReader reader) { this.reader = reader; }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <returns></returns>
+            public override bool Equals(object obj)
+            {
+                var key = obj as ReaderKey;
+                if (key != null && reader.FieldCount == key.reader.FieldCount
+                        && reader.GetName(0) == key.reader.GetName(0))
+                {
+                    for (int i = reader.FieldCount - 1; i > 0; i--)
+                    {
+                        if (reader.GetName(i) != key.reader.GetName(i)) return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override int GetHashCode()
+            {
+                return reader.FieldCount
+                    ^ reader.GetName(0).GetHashCode();
+            }
+
+            public string[] Strip()
+            {
+                reader = new MetaDataReader(reader);
+                return ((MetaDataReader)reader).Columns;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="reader"></param>
+        public override void TearUp(IDataReader reader)
+        {
+            base.TearUp(reader);
+            columns = columnsMeta.GetOrAdd(new ReaderKey(reader), key => key.Strip());
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -17,115 +77,150 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public override bool MapNext(out dynamic result)
         {
-            if (!Reader.Read())
+            if (!reader.Read())
             {
                 result = null;
                 return false;
             }
-            var values = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
-            result = new ObjectValue(values);
-
-            var source = Reader;
-            // 将所有结果放入动态扩展对象中
-            for (int i = source.FieldCount - 1; i >= 0; i--)
-            {
-                var columnValue = source.GetValue(i);
-                values[source.GetName(i)] = columnValue == DBNull.Value ? null : columnValue;
-            }
+            var values = new object[columns.Length];
+            reader.GetValues(values);
+            result = new DataExpando(columns, values);
             return true;
         }
 
         #region DataExpando
-        class ObjectValue : DynamicObject, IDictionary<string, object>
+        /// <summary>
+        /// 
+        /// </summary>
+        public class DataExpando : IDictionary<string, object>, IDynamicMetaObjectProvider
         {
-            private IDictionary<string, object> values;
+            private readonly string[] keys;
+            private readonly object[] values;
 
-            internal ObjectValue(IDictionary<string, object> values) { this.values = values; }
-
-            public override bool TryGetMember(GetMemberBinder binder, out object result)
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="keys"></param>
+            /// <param name="values"></param>
+            public DataExpando(string[] keys, object[] values)
             {
-                return values.TryGetValue(binder.Name, out result);
+                this.keys = keys;
+                this.values = values;
             }
 
-            public override bool TrySetMember(SetMemberBinder binder, object value)
+            #region IDictionary<string, object>
+            object IDictionary<string, object>.this[string key]
             {
-                values[binder.Name] = value;
-                return true;
+                get
+                {
+                    for (int i = 0; i < keys.Length; i++)
+                    {
+                        if (keys[i].Equals(key, StringComparison.InvariantCultureIgnoreCase)) return values[i];
+                    }
+                    throw new KeyNotFoundException();
+                }
+                set => throw new NotImplementedException();
             }
 
-            public override IEnumerable<string> GetDynamicMemberNames()
+            ICollection<string> IDictionary<string, object>.Keys => keys;
+
+            ICollection<object> IDictionary<string, object>.Values => values;
+
+            int ICollection<KeyValuePair<string, object>>.Count => keys.Length;
+
+            bool ICollection<KeyValuePair<string, object>>.IsReadOnly => true;
+
+            void IDictionary<string, object>.Add(string key, object value) => throw new ReadOnlyException();
+
+            void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item) => throw new ReadOnlyException();
+
+            void ICollection<KeyValuePair<string, object>>.Clear() => throw new ReadOnlyException();
+
+            bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
             {
-                return values.Keys;
+                throw new NotImplementedException();
             }
 
-            public object this[string key]
+            bool IDictionary<string, object>.ContainsKey(string key)
             {
-                get { return values[key]; }
-                set { values[key] = value; }
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    if (keys[i].Equals(key, StringComparison.InvariantCultureIgnoreCase)) return true;
+                }
+                return false;
             }
 
-            public ICollection<string> Keys => values.Keys;
-
-            public ICollection<object> Values => values.Values;
-
-            public int Count => values.Count;
-
-            public bool IsReadOnly => values.IsReadOnly;
-
-            public void Add(string key, object value)
+            void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
             {
-                values.Add(key, value);
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    array[arrayIndex + i] = new KeyValuePair<string, object>(keys[i], values[i]);
+                }
             }
 
-            public void Add(KeyValuePair<string, object> item)
+            IEnumerable<KeyValuePair<string, object>> GetKeyValuePairs()
             {
-                values.Add(item);
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    yield return new KeyValuePair<string, object>(keys[i], values[i]);
+                }
             }
 
-            public void Clear()
+            IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
             {
-                values.Clear();
-            }
-
-            public bool Contains(KeyValuePair<string, object> item)
-            {
-                return values.Contains(item);
-            }
-
-            public bool ContainsKey(string key)
-            {
-                return values.ContainsKey(key);
-            }
-
-            public void CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
-            {
-                values.CopyTo(array, arrayIndex);
-            }
-
-            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
-            {
-                return values.GetEnumerator();
-            }
-
-            public bool Remove(string key)
-            {
-                return values.Remove(key);
-            }
-
-            public bool Remove(KeyValuePair<string, object> item)
-            {
-                return values.Remove(item);
-            }
-
-            public bool TryGetValue(string key, out object value)
-            {
-                return values.TryGetValue(key, out value);
+                return GetKeyValuePairs().GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return values.GetEnumerator();
+                return GetKeyValuePairs().GetEnumerator();
             }
+
+            bool IDictionary<string, object>.Remove(string key) => throw new ReadOnlyException();
+
+            bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item) => throw new ReadOnlyException();
+
+            bool IDictionary<string, object>.TryGetValue(string key, out object value)
+            {
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    if (keys[i].Equals(key, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        value = values[i];
+                        return true;
+                    }
+                }
+                value = null;
+                return false;
+            }
+            #endregion
+
+            #region IDynamicMetaObjectProvider
+
+            DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter)
+            {
+                return new DataExpandoMetaObject(parameter, this);
+            }
+
+            class DataExpandoMetaObject : DynamicMetaObject
+            {
+                public DataExpandoMetaObject(Expression expression, DataExpando value) : base(expression, BindingRestrictions.Empty, value)
+                {
+                }
+
+                public override IEnumerable<string> GetDynamicMemberNames()
+                {
+                    return ((DataExpando)Value).keys;
+                }
+
+                public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
+                {
+                    var value = ((IDictionary<string, object>)Value)[binder.Name];
+                    var expression = Expression.Constant(value, binder.ReturnType);
+                    return new DynamicMetaObject(expression, BindingRestrictions.GetInstanceRestriction(expression, value));
+                }
+            }
+            #endregion
         }
         #endregion
     }

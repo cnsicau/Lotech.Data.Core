@@ -42,7 +42,7 @@ namespace Lotech.Data
             if (database == null)
                 throw new NullReferenceException(nameof(database));
 
-            return database.SqlQuery().Append(sql);
+            return new SqlQuery(database, sql);
         }
 
 
@@ -71,7 +71,7 @@ namespace Lotech.Data
             if (database == null)
                 throw new NullReferenceException(nameof(database));
 
-            return database.SqlQuery().Append(sql, args);
+            return new SqlQuery(database, sql.Length + args.Length * 8).Append(sql, args);
         }
 
         /// <summary>构建指定初始SQL、参数实例并在末尾追加换行</summary>

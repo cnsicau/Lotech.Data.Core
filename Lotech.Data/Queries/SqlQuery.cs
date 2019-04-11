@@ -17,22 +17,33 @@ namespace Lotech.Data.Queries
         [ThreadStatic]
         private static ushort _id = 0;
 
-        private static readonly Regex _placeholder = new Regex(@"([^\{]?)\{\s*(\d+)s*\}([^\}]?)", RegexOptions.Multiline | RegexOptions.Compiled);
-
-        private readonly StringBuilder _snippets = new StringBuilder();
-        private readonly List<SqlQueryParameter> _parameters = new List<SqlQueryParameter>();
+        private readonly StringBuilder _snippets;
+        private readonly List<SqlQueryParameter> _parameters = new List<SqlQueryParameter>(4);
         private int _index;
 
         /// <summary>
         /// 构造
         /// </summary>
-        internal SqlQuery(IDatabase database) : base(database)
+        internal SqlQuery(IDatabase database) : this(database, 128) { }
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        internal SqlQuery(IDatabase database, int capacity) : base(database)
         {
+            _snippets = new StringBuilder(capacity);
+            _id++;  // 随着SQLQuery对象增加
+        }
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        internal SqlQuery(IDatabase database, string sql) : base(database)
+        {
+            _snippets = new StringBuilder(sql);
             _id++;  // 随着SQLQuery对象增加
         }
         #endregion
-
-        string NextParameterName() { return database.BuildParameterName("p_" + _id + '_' + _index++); }
 
         public override DbCommand CreateCommand()
         {
@@ -68,7 +79,7 @@ namespace Lotech.Data.Queries
                     {
                         if (placeIndex >= 0)
                         {
-                            var parameterName = NextParameterName();
+                            var parameterName = database.BuildParameterName("p_" + _id + '_' + _index++);
                             _snippets.Append(snippet, index, enterIndex - index).Append(parameterName);
 
                             var value = args[placeIndex];

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Lotech.Data.Queries
 {
@@ -37,7 +38,7 @@ namespace Lotech.Data.Queries
             /// <summary>
             /// 映射处理
             /// </summary>
-            public Action<TEntity, object> Execute { get; set; }
+            public Action<TEntity, IDataReader> Execute { get; set; }
         }
 
         static class MappingFactory
@@ -77,28 +78,22 @@ namespace Lotech.Data.Queries
             /// 生成动态属性映射代理方法
             /// </summary>
             /// <param name="member"></param>
+            /// <param name="columnIndex"></param>
             /// <returns></returns>
-            static Action<TEntity, object> CreateMemberMap(IMemberDescriptor member)
+            static Action<TEntity, IDataRecord> CreateMemberMap(IMemberDescriptor member, int columnIndex)
             {
-                var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
-                var typeName = Type.GetTypeCode(valueType).ToString();
-
-                var convert = typeof(Convert).GetMethod("To" + typeName, new Type[] { typeof(object) });
+                var read = typeof(ResultMapper<>).MakeGenericType(member.Type)
+                        .GetMethod(nameof(ResultMapper<TEntity>.ReadRecordValue), BindingFlags.NonPublic | BindingFlags.Static);
 
                 var entity = Expression.Parameter(typeof(TEntity));
-                var val = Expression.Parameter(typeof(object));
-                return Expression.Lambda<Action<TEntity, object>>(
-                        Expression.IfThen(Expression.ReferenceNotEqual(Expression.Constant(null), val),
+                var record = Expression.Parameter(typeof(IDataRecord));
+
+                return Expression.Lambda<Action<TEntity, IDataRecord>>(
                             Expression.Assign(
-                                    Expression.MakeMemberAccess(
-                                            entity, member.Member
-                                        ),
-                                    convert == null ? Expression.Convert(val, member.Type)
-                                        : valueType == member.Type ? Expression.Call(convert, val)
-                                        : (Expression)Expression.Convert(Expression.Call(convert, val), member.Type)
+                                    Expression.MakeMemberAccess(entity, member.Member),
+                                    Expression.Call(read, record, Expression.Constant(columnIndex))
                                 )
-                            )
-                        , entity, val
+                        , entity, record
                     ).Compile();
             }
 
@@ -119,7 +114,7 @@ namespace Lotech.Data.Queries
                             {
                                 MemberName = member.Name,
                                 MemberValueType = member.Type.ToString(),
-                                Execute = CreateMemberMap(member),
+                                Execute = CreateMemberMap(member, columnIndex),
                                 ColumnIndex = columnIndex
                             });
                             break;
@@ -235,7 +230,7 @@ namespace Lotech.Data.Queries
             {
                 while (--index >= 0)
                 {
-                    mappings[index].Execute(result, reader.GetValue(mappings[index].ColumnIndex));
+                    mappings[index].Execute(result, reader);
                 }
                 return true;
             }

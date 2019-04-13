@@ -119,7 +119,7 @@ namespace Lotech.Data.Queries
                     }
                     throw new KeyNotFoundException();
                 }
-                set => throw new NotImplementedException();
+                set { throw new NotImplementedException(); }
             }
 
             ICollection<string> IDictionary<string, object>.Keys => keys;
@@ -130,11 +130,11 @@ namespace Lotech.Data.Queries
 
             bool ICollection<KeyValuePair<string, object>>.IsReadOnly => true;
 
-            void IDictionary<string, object>.Add(string key, object value) => throw new ReadOnlyException();
+            void IDictionary<string, object>.Add(string key, object value) { throw new ReadOnlyException(); }
 
-            void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item) => throw new ReadOnlyException();
+            void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item) { throw new ReadOnlyException(); }
 
-            void ICollection<KeyValuePair<string, object>>.Clear() => throw new ReadOnlyException();
+            void ICollection<KeyValuePair<string, object>>.Clear() { throw new ReadOnlyException(); }
 
             bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
             {
@@ -176,9 +176,9 @@ namespace Lotech.Data.Queries
                 return GetKeyValuePairs().GetEnumerator();
             }
 
-            bool IDictionary<string, object>.Remove(string key) => throw new ReadOnlyException();
+            bool IDictionary<string, object>.Remove(string key) { throw new ReadOnlyException(); }
 
-            bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item) => throw new ReadOnlyException();
+            bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item) { throw new ReadOnlyException(); }
 
             bool IDictionary<string, object>.TryGetValue(string key, out object value)
             {

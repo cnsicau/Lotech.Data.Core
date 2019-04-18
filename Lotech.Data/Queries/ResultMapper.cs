@@ -111,6 +111,17 @@ namespace Lotech.Data.Queries
                                     Expression.Call(reader, get, index), typeof(TValue))
                     , reader, index
                 ).Compile();
+
+                if (valueType != typeof(TValue)) // nullable
+                {
+                    return (record, i) =>
+                    {
+                        if (record.IsDBNull(i)) { return default(TValue); }
+                        try { return read(record, i); }
+                        catch { return convert(record.GetValue(i)); }
+                    };
+                }
+
                 return (record, i) =>
                 {
                     try { return read(record, i); }

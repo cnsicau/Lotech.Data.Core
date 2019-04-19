@@ -625,9 +625,9 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic ExecuteEntity(DbCommand command)
         {
-            using (var reader = ExecuteReader(command, CommandBehavior.SingleRow))
+            using (var reader = ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
             {
-                using (IEnumerator<object> enumerator = new QueryResult<object>(reader, new ObjectResultMapper { Database = this }))
+                using (IEnumerator<dynamic> enumerator = new QueryResult<dynamic>(reader, new ObjectResultMapper { Database = this }))
                 {
                     if (enumerator.MoveNext()) return enumerator.Current;
                 }
@@ -641,7 +641,15 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic[] ExecuteEntities(DbCommand command)
         {
-            return new QueryResult<object>(command, new ObjectResultMapper { Database = this }).ToArray();
+            var entities = new List<object>();
+            using (var reader = ExecuteReader(command, CommandBehavior.SequentialAccess))
+            {
+                using (IEnumerator<object> enumerator = new QueryResult<dynamic>(reader, new ObjectResultMapper { Database = this }))
+                {
+                    if (enumerator.MoveNext()) entities.Add(enumerator.Current);
+                }
+            }
+            return entities.ToArray();
         }
         /// <summary>
         /// 
@@ -656,6 +664,7 @@ namespace Lotech.Data
                 return ExecuteEntity(command);
             }
         }
+
         /// <summary>
         /// 
         /// </summary>

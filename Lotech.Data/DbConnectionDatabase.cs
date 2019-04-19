@@ -111,8 +111,6 @@ namespace Lotech.Data
                 if (command.Connection.State != ConnectionState.Open)
                     command.Connection.Open();
                 return command.ExecuteScalar();
-                //return ExecuteCommand<object>(nameof(ExecuteReader), command, CommandBehavior.Default
-                //    , (c, b) => c.ExecuteScalar());
             }
             finally
             {
@@ -129,6 +127,40 @@ namespace Lotech.Data
         {
             return ExecuteCommand<int>(nameof(ExecuteReader), command, CommandBehavior.Default
                 , (c, b) => c.ExecuteNonQuery());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public override DataSet ExecuteDataSet(DbCommand command)
+        {
+            return ExecuteCommand(nameof(ExecuteDataSet), command, CommandBehavior.SequentialAccess,
+                (dbCommand, behavior) =>
+                {
+                    using (var reader = dbCommand.ExecuteReader(behavior))
+                    {
+                        var dataSet = new DataSet(dbCommand.CommandText);
+                        var index = 0;
+                        do
+                        {
+                            var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                            }
+                            var rows = new object[reader.FieldCount];
+                            while (reader.Read())
+                            {
+                                reader.GetValues(rows);
+                                table.Rows.Add(rows);
+                            }
+                        } while (reader.NextResult());
+
+                        return dataSet;
+                    }
+                });
         }
     }
 }

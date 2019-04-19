@@ -737,8 +737,10 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType ExecuteEntity<EntityType>(DbCommand command)
         {
-            return new QueryResult<EntityType>(ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess)
-                    , ResultMapper<EntityType>.Create(this)).FirstOrDefault();
+            using (var reader = ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
+            {
+                return new QueryResult<EntityType>(reader, ResultMapper<EntityType>.Create(this)).FirstOrDefault();
+            }
         }
         /// <summary>
         /// 
@@ -748,8 +750,10 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual EntityType[] ExecuteEntities<EntityType>(DbCommand command)
         {
-            return new QueryResult<EntityType>(ExecuteReader(command, CommandBehavior.SequentialAccess)
-                    , ResultMapper<EntityType>.Create(this)).ToArray();
+            using (var reader = ExecuteReader(command, CommandBehavior.SequentialAccess))
+            {
+                return new QueryResult<EntityType>(reader, ResultMapper<EntityType>.Create(this)).ToArray();
+            }
         }
         /// <summary>
         /// 

@@ -103,7 +103,7 @@ namespace Lotech.Data.Queries
                 var mappings = new List<Mapping>();
                 var reader = container.Reader;
                 // 分析需要映射列集合（实体中、Reader中共有的列）
-                for (int columnIndex = 0; columnIndex < container.Reader.FieldCount; columnIndex++)
+                for (int columnIndex = container.Reader.FieldCount - 1; columnIndex >= 0; columnIndex--)
                 {
                     var column = reader.GetName(columnIndex);
                     foreach (var member in members)
@@ -218,7 +218,7 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public override bool MapNext(out TEntity result)
         {
-            if (!Reader.Read())
+            if (!reader.Read())
             {
                 result = default(TEntity);
                 return false;
@@ -228,7 +228,7 @@ namespace Lotech.Data.Queries
             var index = mappings.Length;
             try
             {
-                while (--index >= 0)
+                while (index-- > 0)
                 {
                     mappings[index].Execute(result, reader);
                 }
@@ -236,7 +236,7 @@ namespace Lotech.Data.Queries
             }
             catch (Exception e)
             {
-                throw new MapException(mappings[index], result, reader.GetName(mappings[index].ColumnIndex), e);
+                throw new MapException(mappings[index], result, reader.GetValue(mappings[index].ColumnIndex), e);
             }
         }
         #endregion

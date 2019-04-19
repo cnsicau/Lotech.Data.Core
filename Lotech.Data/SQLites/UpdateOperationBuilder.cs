@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Lotech.Data.SQLites
 {
-    using static SQLiteDatabase;
+    using static SQLiteEntityServices;
 
     /// <summary>
     /// 

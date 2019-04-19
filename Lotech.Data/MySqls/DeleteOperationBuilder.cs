@@ -5,7 +5,7 @@ using System.Data.Common;
 
 namespace Lotech.Data.MySqls
 {
-    using static MySqlDatabase;
+    using static MySqlEntityServices;
     class DeleteOperationBuilder<TEntity> : CommonDeleteOperationBuilder<TEntity>, IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>
         where TEntity : class
     {

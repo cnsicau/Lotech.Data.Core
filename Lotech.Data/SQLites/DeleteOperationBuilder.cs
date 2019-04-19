@@ -5,7 +5,7 @@ using System.Data.Common;
 
 namespace Lotech.Data.SQLites
 {
-    using static SQLiteDatabase;
+    using static SQLiteEntityServices;
     class DeleteOperationBuilder<TEntity> : CommonDeleteOperationBuilder<TEntity>, IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>
         where TEntity : class
     {

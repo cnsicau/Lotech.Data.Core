@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Lotech.Data.MySqls
 {
-    using static MySqlDatabase;
+    using static MySqlEntityServices;
     /// <summary>
     /// 
     /// </summary>

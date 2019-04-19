@@ -10,6 +10,6 @@ namespace Lotech.Data.MySqls
     class MySqlCountEntitiesExpression<TEntity> : Operations.Common.CommonCountEntitiesExpression<TEntity>, IOperationProvider<Func<IDatabase, Expression<Func<TEntity, bool>>, int>>
         where TEntity : class
     {
-        public MySqlCountEntitiesExpression() : base(_ => new MySqlExpressionVisitor<TEntity>(_, Descriptors.Operation.Select), MySqlDatabase.Quote) { }
+        public MySqlCountEntitiesExpression() : base(_ => new MySqlExpressionVisitor<TEntity>(_, Descriptors.Operation.Select), MySqlEntityServices.Quote) { }
     }
 }

@@ -25,22 +25,18 @@ namespace Lotech.Data
         {
         }
 
-        internal static string Quote(string name) => string.Concat('[', name, ']');
-
-        internal static string BuildParameter(string name) => string.Concat('@', name);
-
         /// <summary>
         /// 构建 :p_sql_0 格式的参数名
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public override string BuildParameterName(string name) => BuildParameter(name);
+        public override string BuildParameterName(string name) => SQLiteEntityServices.BuildParameter(name);
 
         /// <summary>
         /// 构建 "NAME" 格式引用名
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public override string QuoteName(string name) => Quote(name);
+        public override string QuoteName(string name) => SQLiteEntityServices.Quote(name);
     }
 }

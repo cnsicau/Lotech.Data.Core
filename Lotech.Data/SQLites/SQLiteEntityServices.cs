@@ -7,6 +7,11 @@ namespace Lotech.Data.SQLites
 {
     class SQLiteEntityServices : IEntityServices
     {
+        internal static string Quote(string name) => string.Concat('[', name, ']');
+
+        internal static string BuildParameter(string name) => string.Concat('@', name);
+
+
         public IDatabase Database { get; set; }
 
         public Func<IDatabase, Expression<Func<EntityType, bool>>, int> CountByPredicate<EntityType>() where EntityType : class

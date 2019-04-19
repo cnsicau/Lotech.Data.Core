@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Lotech.Data.SQLites
 {
-    using static SQLiteDatabase;
+    using static SQLiteEntityServices;
     /// <summary>
     /// 
     /// </summary>

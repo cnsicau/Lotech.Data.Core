@@ -3,6 +3,7 @@ using Lotech.Data.MySqls;
 
 namespace Lotech.Data
 {
+    using static MySqlEntityServices;
     /// <summary>
     /// 基于 MySql 的库
     /// </summary>
@@ -24,10 +25,6 @@ namespace Lotech.Data
         public MySqlDatabase(DbProviderFactory dbProviderFactory, IEntityServices services) : base(dbProviderFactory, services)
         {
         }
-
-        internal static string Quote(string name) => string.Concat('`', name, '`');
-
-        internal static string BuildParameter(string name) => string.Concat('?', name);
 
         /// <summary>
         /// 构建 :p_sql_0 格式的参数名

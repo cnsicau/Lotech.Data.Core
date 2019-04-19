@@ -1,18 +1,18 @@
 ﻿using System.Data.Common;
-using Lotech.Data.SQLites;
+using Lotech.Data.MySqls;
 
 namespace Lotech.Data
 {
     /// <summary>
-    /// 基于 SQLite 的库
+    /// 基于 MySql 的库
     /// </summary>
-    public class SQLiteConnectionDatabase : DbConnectionDatabase, IDatabase
+    public class MySqlConnectionDatabase : DbConnectionDatabase, IDatabase
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="connection"></param>
-        public SQLiteConnectionDatabase(DbConnection connection) : base(connection, new SQLiteEntityServices())
+        public MySqlConnectionDatabase(DbConnection connection) : base(connection, new MySqlEntityServices())
         {
         }
 
@@ -21,7 +21,7 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="services"></param>
-        public SQLiteConnectionDatabase(DbConnection connection, IEntityServices services) : base(connection, services)
+        public MySqlConnectionDatabase(DbConnection connection, IEntityServices services) : base(connection, services)
         {
         }
 
@@ -30,13 +30,13 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public override string BuildParameterName(string name) => SQLiteEntityServices.BuildParameter(name);
+        public override string BuildParameterName(string name) => MySqlEntityServices.BuildParameter(name);
 
         /// <summary>
         /// 构建 "NAME" 格式引用名
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public override string QuoteName(string name) => SQLiteEntityServices.Quote(name);
+        public override string QuoteName(string name) => MySqlEntityServices.Quote(name);
     }
 }

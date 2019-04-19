@@ -10,6 +10,6 @@ namespace Lotech.Data.MySqls
     class MySqlCountEntities<TEntity> : CommonCountEntities<TEntity>, IOperationProvider<Func<IDatabase, int>>
        where TEntity : class
     {
-        public MySqlCountEntities() : base(MySqlDatabase.Quote) { }
+        public MySqlCountEntities() : base(MySqlEntityServices.Quote) { }
     }
 }

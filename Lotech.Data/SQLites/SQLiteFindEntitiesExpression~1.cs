@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Lotech.Data.SQLites
 {
-    using static SQLiteDatabase;
+    using static SQLiteEntityServices;
     /// <summary>
     /// 
     /// </summary>

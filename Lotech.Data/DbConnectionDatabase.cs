@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Lotech.Data.Queries;
+using System;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Lotech.Data
 {
@@ -31,7 +34,6 @@ namespace Lotech.Data
             this.connection = connection;
         }
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -44,10 +46,15 @@ namespace Lotech.Data
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="commandType"></param>
+        /// <param name="commandText"></param>
         /// <returns></returns>
-        protected override DbCommand CreateCommand()
+        public override DbCommand GetCommand(CommandType commandType, string commandText)
         {
-            return connection.CreateCommand();
+            var command = connection.CreateCommand();
+            command.CommandText = commandText;
+            command.CommandType = commandType;
+            return command;
         }
 
         TResult ExecuteCommand<TResult>(string action, DbCommand command, CommandBehavior behavior, Func<DbCommand, CommandBehavior, TResult> execute)
@@ -81,7 +88,7 @@ namespace Lotech.Data
             }
             catch
             {
-                if (closed && connection.State != ConnectionState.Closed) connection.Close();
+                if (closed) connection.Close();
                 throw;
             }
         }

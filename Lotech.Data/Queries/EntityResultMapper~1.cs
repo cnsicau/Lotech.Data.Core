@@ -1,10 +1,8 @@
 ﻿using Lotech.Data.Descriptors;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Lotech.Data.Queries
 {
@@ -14,244 +12,177 @@ namespace Lotech.Data.Queries
     /// <typeparam name="TEntity"></typeparam>
     public class EntityResultMapper<TEntity> : ResultMapper<TEntity> where TEntity : class
     {
-        static readonly Func<TEntity> New = Expression.Lambda<Func<TEntity>>(Expression.New(typeof(TEntity))).Compile();
-
-        /// <summary>
-        /// 映射描述子
-        /// </summary>
-        class Mapping
+        class MapContext
         {
-            /// <summary>
-            /// 数据列索引
-            /// </summary>
-            public int ColumnIndex { get; set; }
-            /// <summary>
-            /// 成员名称
-            /// </summary>
-            public string MemberName { get; set; }
+            public MapContext(int fieldIndex, string memberName, Type memberType)
+            {
+                FieldIndex = fieldIndex;
+                MemberName = memberName;
+                MemberType = memberType;
+            }
 
-            /// <summary>
-            /// 成员值类型名称，如 decimal?
-            /// </summary>
-            public string MemberValueType { get; set; }
+            public int FieldIndex { get; }
 
-            /// <summary>
-            /// 映射处理
-            /// </summary>
-            public Action<TEntity, IDataReader> Execute { get; set; }
+            public string MemberName { get; }
+
+            public Type MemberType { get; }
         }
 
-        static class MappingFactory
-        {
-            static MappingContainer[] conainers = new MappingContainer[2];
-            static volatile int bound = 0;
+        delegate TEntity MapDelegate(IDataRecord record, out MapContext context);
 
-            internal static Mapping[] Create(MappingContainer container)
+        static Tuple<string[], IDescriptorProvider, MapDelegate>[] maps = new Tuple<string[], IDescriptorProvider, MapDelegate>[2];
+        static volatile int bound;
+
+        static bool Equals(IDataReader reader, IDescriptorProvider provider, Tuple<string[], IDescriptorProvider, MapDelegate> map)
+        {
+            if (provider == map.Item2
+                && reader.FieldCount == map.Item1.Length
+                && reader.GetName(0) == map.Item1[0])
+            {
+                for (int i = reader.FieldCount - 1; i > 0; i--)
+                {
+                    if (reader.GetName(i) != map.Item1[i]) return false;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        static MapDelegate GetOrCreateMapDelegate(IDataReader reader, IDescriptorProvider provider)
+        {
+            for (int i = 0; i < bound; i++)
+            {
+                if (Equals(reader, provider, maps[i])) return maps[i].Item3;
+            }
+            lock (maps)
             {
                 for (int i = 0; i < bound; i++)
                 {
-                    var key = conainers[i];
-                    if (key.Equals(container)) return key.Mappings;
+                    if (Equals(reader, provider, maps[i])) return maps[i].Item3;
                 }
-                lock (conainers)
+                if (bound == maps.Length)
                 {
-                    for (int i = 0; i < bound; i++)
-                    {
-                        var key = conainers[i];
-                        if (key.Equals(container)) return key.Mappings;
-                    }
-                    if (bound == conainers.Length)
-                    {
-                        var newContainer = new MappingContainer[bound + 2];
-                        Array.Copy(conainers, newContainer, bound);
-                        conainers = newContainer;
-                    }
-                    var mappings = CreateEntityMapContainer(container);
-                    container.Strip(mappings);
-                    conainers[bound] = container;
+                    var newContainer = new Tuple<string[], IDescriptorProvider, MapDelegate>[bound + 2];
+                    Array.Copy(maps, newContainer, bound);
+                    maps = newContainer;
+                }
+
+                try
+                {
+                    return (maps[bound] = CreateMapDelegate(reader, provider)).Item3;
+                }
+                finally
+                {
                     bound++;
-                    return mappings;
                 }
-            }
-
-            /// <summary>
-            /// 生成动态属性映射代理方法
-            /// </summary>
-            /// <param name="member"></param>
-            /// <param name="columnIndex"></param>
-            /// <returns></returns>
-            static Action<TEntity, IDataRecord> CreateMemberMap(IMemberDescriptor member, int columnIndex)
-            {
-                var read = typeof(ResultMapper<>).MakeGenericType(member.Type)
-                        .GetMethod(nameof(ResultMapper<TEntity>.ReadRecordValue), BindingFlags.NonPublic | BindingFlags.Static);
-
-                var entity = Expression.Parameter(typeof(TEntity));
-                var record = Expression.Parameter(typeof(IDataRecord));
-
-                return Expression.Lambda<Action<TEntity, IDataRecord>>(
-                            Expression.Assign(
-                                    Expression.MakeMemberAccess(entity, member.Member),
-                                    Expression.Call(read, record, Expression.Constant(columnIndex))
-                                )
-                        , entity, record
-                    ).Compile();
-            }
-
-            static Mapping[] CreateEntityMapContainer(MappingContainer container)
-            {
-                var members = container.DescriptorProvider.GetEntityDescriptor<TEntity>(Operation.None).Members;
-                var mappings = new List<Mapping>();
-                var reader = container.Reader;
-                // 分析需要映射列集合（实体中、Reader中共有的列）
-                for (int columnIndex = container.Reader.FieldCount - 1; columnIndex >= 0; columnIndex--)
-                {
-                    var column = reader.GetName(columnIndex);
-                    foreach (var member in members)
-                    {
-                        if (member.Name.Equals(column, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            mappings.Add(new Mapping
-                            {
-                                MemberName = member.Name,
-                                MemberValueType = member.Type.ToString(),
-                                Execute = CreateMemberMap(member, columnIndex),
-                                ColumnIndex = columnIndex
-                            });
-                            break;
-                        }
-                    }
-                }
-                return mappings.ToArray();
             }
         }
 
+        private static Tuple<string[], IDescriptorProvider, MapDelegate> CreateMapDelegate(IDataReader reader, IDescriptorProvider provider)
+        {
+            var fields = new string[reader.FieldCount];
+            var members = provider.GetEntityDescriptor<TEntity>(Operation.None).Members;
+
+            var record = Expression.Parameter(typeof(IDataRecord), "record");
+            var context = Expression.Parameter(typeof(MapContext).MakeByRefType(), "context");
+
+            var blocks = new List<Expression>();
+            var ret = Expression.Variable(typeof(TEntity), "ret");
+            blocks.Add(Expression.Assign(ret, Expression.New(typeof(TEntity))));
+
+            for (int i = 0; i < fields.Length; i++)
+            {
+                fields[i] = reader.GetName(i);
+                foreach (var member in members)
+                {
+                    if (member.Name.Equals(fields[i], StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var mapContext = new MapContext(i, member.Name, member.Type);
+
+                        blocks.Add(Expression.Assign(context, Expression.Constant(mapContext)));
+                        blocks.Add(Expression.Assign(
+                                Expression.MakeMemberAccess(ret, member.Member),
+                                CreateReadFieldExpression(record, member, i)));
+                        break;
+                    }
+                }
+            }
+            var label = Expression.Label(typeof(TEntity));
+
+            blocks.Add(Expression.Return(label, ret));
+            blocks.Add(Expression.Label(label, ret));
+
+            var map = Expression.Lambda<MapDelegate>(Expression.Block(typeof(TEntity), new[] { ret }, blocks), record, context).Compile();
+            return Tuple.Create(fields, provider, map);
+        }
+
+        static Expression CreateReadFieldExpression(Expression record, IMemberDescriptor member, int fieldIndex)
+        {
+            var fieldExpression = Expression.Constant(fieldIndex);
+            var isDBNullExpression = Expression.Call(
+                record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.IsDBNull)), fieldExpression);
+
+            var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+
+            if (member.Type == typeof(string))
+            {
+                return Expression.Condition(isDBNullExpression
+                        , Expression.Constant(null, typeof(string))
+                        , Expression.Call(record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetString)), fieldExpression));
+            }
+
+
+            var readMethod = typeof(IDataRecord).GetMethod("Get" + valueType.Name);
+            var readExpression = readMethod != null ? Expression.Call(record, readMethod, fieldExpression)
+                // Convert.ChangeType(record.GetValue(fieldIndex), memberType)
+                : valueType.IsValueType ? (Expression)Expression.Call(
+                        typeof(Convert).GetMethod(nameof(Convert.ChangeType), new[] { typeof(object), typeof(Type) }),
+                        Expression.Call(record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue)), fieldExpression),
+                        Expression.Constant(valueType)
+                    )
+                : Expression.Convert(Expression.Call(record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue)), fieldExpression), member.Type);
+
+            return valueType != member.Type /*nullable*/
+                ? Expression.Condition(isDBNullExpression, Expression.Constant(null, member.Type)
+                    , Expression.Convert(readExpression, member.Type))
+                : (Expression)readExpression;
+        }
+
+        MapDelegate map;
         /// <summary>
         /// 
-        /// </summary>
-        private class MappingContainer
-        {
-            private readonly IDescriptorProvider descriptorProvider;
-            private IDataReader reader;
-            private Mapping[] mappings;
-
-            /// <summary>
-            /// 
-            /// </summary>
-            public IDescriptorProvider DescriptorProvider { get { return descriptorProvider; } }
-            /// <summary>
-            /// 
-            /// </summary>
-            public IDataReader Reader { get { return reader; } }
-
-            public Mapping[] Mappings { get { return mappings; } }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="descriptorProvider"></param>
-            /// <param name="reader"></param>
-            public MappingContainer(IDescriptorProvider descriptorProvider, IDataReader reader)
-            {
-                if (reader.FieldCount == 0) throw new NotSupportedException("columns is empty");
-                this.descriptorProvider = descriptorProvider;
-                this.reader = reader;
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="obj"></param>
-            /// <returns></returns>
-            public override bool Equals(object obj)
-            {
-                var key = obj as MappingContainer;
-                if (key != null && descriptorProvider == key.descriptorProvider
-                        && reader.FieldCount == key.reader.FieldCount
-                        && reader.GetName(0) == key.reader.GetName(0))
-                {
-                    for (int i = reader.FieldCount - 1; i > 0; i--)
-                    {
-                        if (reader.GetName(i) != key.reader.GetName(i)) return false;
-                    }
-                    return true;
-                }
-                return false;
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <returns></returns>
-            public override int GetHashCode()
-            {
-                return descriptorProvider.GetHashCode() ^ reader.FieldCount
-                    ^ reader.GetName(0).GetHashCode();
-            }
-
-            /// <summary>
-            /// 脱离底层源(如关联的DbReader)，以便作为缓存key
-            /// </summary>
-            public void Strip(Mapping[] mappings)
-            {
-                this.mappings = mappings;
-                reader = new MetaDataReader(reader);
-            }
-        }
-
-        #region Fields & Constructor
-        private Mapping[] mappings;
-
-        /// <summary>
-        /// 初始化
         /// </summary>
         /// <param name="reader"></param>
         public override void TearUp(IDataReader reader)
         {
             base.TearUp(reader);
-            var container = new MappingContainer(Database.DescriptorProvider, reader);
-            mappings = MappingFactory.Create(container);
+            map = GetOrCreateMapDelegate(reader, Database.DescriptorProvider);
         }
 
         /// <summary>
-        /// 映射下一结果
+        /// 
         /// </summary>
+        /// <param name="result"></param>
         /// <returns></returns>
         public override bool MapNext(out TEntity result)
         {
             if (!reader.Read())
             {
-                result = default(TEntity);
+                result = null;
                 return false;
             }
 
-            result = New();
-            var index = mappings.Length;
+            MapContext context = null;
             try
             {
-                while (index-- > 0)
-                {
-                    mappings[index].Execute(result, reader);
-                }
+                result = map(reader, out context);
                 return true;
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                throw new MapException(mappings[index], result, reader.GetValue(mappings[index].ColumnIndex), e);
+                var value = reader.GetValue(context.FieldIndex);
+                throw new InvalidCastException($"列 {context.MemberName} 映射失败，值“{value}”({value?.GetType() })无法转换为 {context.MemberType}", exception);
             }
-        }
-        #endregion
-
-        class MapException : InvalidCastException
-        {
-            public MapException(Mapping description, TEntity entity, object value, Exception exception)
-                : base($"列 {description.MemberName} 映射失败，值“{value}”({value?.GetType() })无法转换为 {description.MemberValueType}", exception)
-            {
-                Value = value;
-                Entity = entity;
-            }
-
-            public object Value { get; private set; }
-            public TEntity Entity { get; private set; }
         }
     }
 }

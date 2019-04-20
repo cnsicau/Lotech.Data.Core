@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data;
 using System.Data.Common;
+using System.Diagnostics;
 
 namespace Lotech.Data
 {
@@ -29,6 +31,186 @@ namespace Lotech.Data
             this.dbProviderFactory = dbProviderFactory;
         }
 
+        void BindOpenedConnection(DbCommand command, ConnectionSubstitute connection)
+        {
+            command.Connection = connection.Connection;
+
+            if (connection.Connection.State == ConnectionState.Open)
+                return;
+            if (Log == null)
+            {
+                connection.Connection.Open();
+            }
+            else
+            {
+                var sw = Stopwatch.StartNew();
+                connection.Connection.Open();
+                Log($"open connection at {DateTime.Now}. Elpased times: {sw.Elapsed}.");
+                sw.Restart();
+                connection.Disposed += (s, e) => Log($"close connection at {DateTime.Now}. Used times: {sw.Elapsed}");
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        internal virtual ConnectionSubstitute GetConnection(DbCommand command)
+        {
+            if (command?.Connection?.Site is ConnectionSubstitute)
+            {
+                return ((ConnectionSubstitute)command.Connection.Site).Ref();
+            }
+
+            var connection = TransactionScopeConnections.GetConnection(this);
+            if (connection != null)
+                return connection;
+
+            var transactionManager = TransactionManager.Current;
+            DbTransaction transaction;
+            if (transactionManager != null
+                && TransactionManager.TryGetTransaction(ConnectionString, out transaction))
+            {
+                // 绑定事务
+                command.Transaction = transaction;
+                command.Connection = transaction.Connection;
+                return new ConnectionSubstitute(transaction.Connection).Ref();
+            }
+
+            connection = new ConnectionSubstitute(CreateConnection());
+
+            if (transactionManager != null) // 新连接若已经存在当前事务管理器，则自动开启事务
+            {
+                try
+                { BindOpenedConnection(command, connection); }
+                catch
+                {
+                    connection.Dispose();
+                    throw;
+                }
+                transactionManager.Completed += (s, e) => connection.Dispose();
+                command.Transaction = transactionManager.EnlistTransaction(connection.Connection, ConnectionString);  // 绑定事务到 DbCommand中
+                connection.Ref();   // 以便上面完成时关闭连接，避免过早关闭
+            }
+            return connection;
+        }
+
+        TResult ExecuteCommand<TValue, TResult>(string action, DbCommand command, Func<DbCommand, TValue> value, Func<ConnectionSubstitute, TValue, TResult> result)
+        {
+            var substitute = GetConnection(command);
+            try
+            {
+                BindOpenedConnection(command, substitute);
+                TValue val;
+                if (Log == null)
+                    val = value(command);
+                else
+                {
+                    LogCommand(action, command);
+                    var sw = Stopwatch.StartNew();
+                    val = value(command);
+                    Log("  -- elapsed times: " + sw.Elapsed);
+                }
+                return result(substitute, val);
+            }
+            catch
+            {
+                substitute.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="behavior"></param>
+        /// <returns></returns>
+        public override IDataReader ExecuteReader(DbCommand command, CommandBehavior behavior)
+        {
+            var substitute = GetConnection(command);
+            try
+            {
+                BindOpenedConnection(command, substitute);
+                IDataReader reader;
+                if (Log == null)
+                    reader = command.ExecuteReader(behavior);
+                else
+                {
+                    LogCommand("ExecuteReader", command);
+                    var sw = Stopwatch.StartNew();
+                    reader = command.ExecuteReader(behavior);
+                    Log("  -- elapsed times: " + sw.Elapsed);
+                }
+                return reader;
+            }
+            catch
+            {
+                substitute.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public override int ExecuteNonQuery(DbCommand command)
+        {
+            return ExecuteCommand(nameof(ExecuteNonQuery), command, _ => _.ExecuteNonQuery(), (substitute, val) => { using (substitute) { return val; } });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public override DataSet ExecuteDataSet(DbCommand command)
+        {
+            return ExecuteCommand(nameof(ExecuteDataSet), command, _ => _.ExecuteReader(),
+                (connection, reader) =>
+                {
+                    using (connection)
+                    {
+                        using (reader)
+                        {
+                            var dataSet = new DataSet(command.CommandText);
+                            var index = 0;
+                            do
+                            {
+                                var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                                }
+                                var rows = new object[reader.FieldCount];
+                                while (reader.Read())
+                                {
+                                    reader.GetValues(rows);
+                                    table.Rows.Add(rows);
+                                }
+                            } while (reader.NextResult());
+
+                            return dataSet;
+                        }
+                    }
+                });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public override object ExecuteScalar(DbCommand command)
+        {
+            return ExecuteCommand(nameof(ExecuteScalar), command, _ => _.ExecuteScalar(), (substitute, val) =>
+            {
+                substitute.Dispose();
+                return val == DBNull.Value ? null : val;
+            });
+        }
 
         /// <summary>
         /// 
@@ -49,10 +231,15 @@ namespace Lotech.Data
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="commandType"></param>
+        /// <param name="commandText"></param>
         /// <returns></returns>
-        protected override DbCommand CreateCommand()
+        public override DbCommand GetCommand(CommandType commandType, string commandText)
         {
-            return dbProviderFactory.CreateCommand();
+            var command = dbProviderFactory.CreateCommand();
+            command.CommandText = commandText;
+            command.CommandType = commandType;
+            return command;
         }
     }
 }

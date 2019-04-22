@@ -3,7 +3,7 @@ using System.Data;
 
 namespace Lotech.Data.Queries
 {
-    class MetaDataReader : IDataReader
+    class MetaRecord : IDataRecord
     {
         private readonly string[] columns;
 
@@ -11,36 +11,23 @@ namespace Lotech.Data.Queries
 
         #region Constructor
 
-        internal MetaDataReader(IDataReader reader)
+        internal MetaRecord(IDataRecord record)
         {
-            columns = new string[reader.FieldCount];
-            for (int i = 0; i < reader.FieldCount; i++)
+            columns = new string[record.FieldCount];
+            for (int i = 0; i < record.FieldCount; i++)
             {
-                columns[i] = reader.GetName(i);
+                columns[i] = record.GetName(i);
             }
         }
         #endregion
 
-        #region IDataReader
-        int IDataReader.Depth { get { throw new NotImplementedException(); } }
-
-        bool IDataReader.IsClosed { get { throw new NotImplementedException(); } }
-
-        int IDataReader.RecordsAffected { get { throw new NotImplementedException(); } }
+        #region IDataRecord
 
         int IDataRecord.FieldCount => columns.Length;
 
         object IDataRecord.this[string name] { get { throw new NotImplementedException(); } }
 
         object IDataRecord.this[int i] { get { throw new NotImplementedException(); } }
-
-        void IDataReader.Close() { throw new NotImplementedException(); }
-
-        DataTable IDataReader.GetSchemaTable() { throw new NotImplementedException(); }
-
-        bool IDataReader.NextResult() { throw new NotImplementedException(); }
-
-        bool IDataReader.Read() { throw new NotImplementedException(); }
 
         bool IDataRecord.GetBoolean(int i) { throw new NotImplementedException(); }
 
@@ -88,8 +75,6 @@ namespace Lotech.Data.Queries
         int IDataRecord.GetValues(object[] values) { throw new NotImplementedException(); }
 
         bool IDataRecord.IsDBNull(int i) { throw new NotImplementedException(); }
-
-        void IDisposable.Dispose() { throw new NotImplementedException(); }
         #endregion
     }
 }

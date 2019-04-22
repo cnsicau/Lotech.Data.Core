@@ -13,15 +13,15 @@ namespace Lotech.Data.Queries
     /// </summary>
     public class ObjectResultMapper : ResultMapper<object>
     {
-        static readonly ConcurrentDictionary<ReaderKey, string[]> columnsMeta = new ConcurrentDictionary<ReaderKey, string[]>();
+        static readonly ConcurrentDictionary<RecordKey, string[]> columnsMeta = new ConcurrentDictionary<RecordKey, string[]>();
 
         string[] columns;
 
-        class ReaderKey
+        class RecordKey
         {
-            private IDataReader reader;
+            private IDataRecord record;
 
-            public ReaderKey(IDataReader reader) { this.reader = reader; }
+            public RecordKey(IDataRecord record) { this.record = record; }
 
             /// <summary>
             /// 
@@ -30,13 +30,12 @@ namespace Lotech.Data.Queries
             /// <returns></returns>
             public override bool Equals(object obj)
             {
-                var key = obj as ReaderKey;
-                if (key != null && reader.FieldCount == key.reader.FieldCount
-                        && reader.GetName(0) == key.reader.GetName(0))
+                if (record.FieldCount == ((RecordKey)obj).record.FieldCount
+                        && record.GetName(0) == ((RecordKey)obj).record.GetName(0))
                 {
-                    for (int i = reader.FieldCount - 1; i > 0; i--)
+                    for (int i = record.FieldCount - 1; i > 0; i--)
                     {
-                        if (reader.GetName(i) != key.reader.GetName(i)) return false;
+                        if (record.GetName(i) != ((RecordKey)obj).record.GetName(i)) return false;
                     }
                     return true;
                 }
@@ -49,14 +48,14 @@ namespace Lotech.Data.Queries
             /// <returns></returns>
             public override int GetHashCode()
             {
-                return reader.FieldCount
-                    ^ reader.GetName(0).GetHashCode();
+                return record.FieldCount
+                    ^ record.GetName(0).GetHashCode();
             }
 
             public string[] Strip()
             {
-                reader = new MetaDataReader(reader);
-                return ((MetaDataReader)reader).Columns;
+                record = new MetaRecord(record);
+                return ((MetaRecord)record).Columns;
             }
         }
 
@@ -67,7 +66,7 @@ namespace Lotech.Data.Queries
         public override void TearUp(IDataReader reader)
         {
             base.TearUp(reader);
-            columns = columnsMeta.GetOrAdd(new ReaderKey(reader), key => key.Strip());
+            columns = columnsMeta.GetOrAdd(new RecordKey(reader), key => key.Strip());
         }
 
         /// <summary>

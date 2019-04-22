@@ -13,13 +13,26 @@ namespace Lotech.Data
     /// </summary>
     public class TransactionManager : IDisposable
     {
+        #region Types
+        class TransactionManagerChain
+        {
+            internal readonly TransactionManager TransactionManager;
+            internal readonly TransactionManagerChain Next;
+
+            internal TransactionManagerChain(TransactionManager transactionManager, TransactionManagerChain next)
+            {
+                TransactionManager = transactionManager;
+                Next = next;
+            }
+        }
+        #endregion
         #region Fields
 
         [ThreadStatic]
-        static Stack<TransactionManager> transactionManagers;
+        static TransactionManagerChain currentTansactionManager;
 
-        private readonly Guid id = Guid.NewGuid();
-        private readonly Dictionary<string, DbTransaction> transactions = new Dictionary<string, DbTransaction>();
+        private readonly Guid id;
+        private readonly Dictionary<string, DbTransaction> transactions;
         private readonly TransactionManager parentManager;
         private readonly IsolationLevel? isolationLevel;
         #endregion
@@ -61,24 +74,27 @@ namespace Lotech.Data
         TransactionManager(bool requireNew, IsolationLevel? isolationLevel)
         {
             this.isolationLevel = isolationLevel;
-            if (transactionManagers == null || transactionManagers.Count == 0)
+            if (currentTansactionManager == null)
             {
-                transactionManagers = new Stack<TransactionManager>(new[] { this });
+                currentTansactionManager = new TransactionManagerChain(this, null);
             }
             else if (requireNew)
             {
-                transactionManagers.Push(this);
+                currentTansactionManager = new TransactionManagerChain(this, currentTansactionManager);
             }
             else // 存在父管理器时向上使用
             {
-                parentManager = transactionManagers.Peek();
+                parentManager = currentTansactionManager.TransactionManager;
                 // 继承上级
                 id = parentManager.id;
                 transactions = parentManager.transactions;
                 isolationLevel = parentManager.isolationLevel;
                 // 同步事务回调
                 parentManager.Completed += (s, e) => Completed?.Invoke(this, e);
+                return;
             }
+            id = Guid.NewGuid();
+            transactions = new Dictionary<string, DbTransaction>();
         }
 
         #endregion
@@ -145,13 +161,7 @@ namespace Lotech.Data
         /// <summary>
         /// 获取当前事务管理器
         /// </summary>
-        public static TransactionManager Current
-        {
-            get
-            {
-                return transactionManagers?.Count > 0 ? transactionManagers.Peek() : null;
-            }
-        }
+        public static TransactionManager Current { get { return currentTansactionManager?.TransactionManager; } }
 
         /// <summary>
         /// 获取当前连接
@@ -164,12 +174,11 @@ namespace Lotech.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (transactionManagers != null && transactionManagers.Count > 0)
+            TransactionManagerChain chain = currentTansactionManager;
+            while (chain != null)
             {
-                foreach (var tm in transactionManagers)
-                {
-                    if (tm.transactions.TryGetValue(connectionString, out transaction)) return true;
-                }
+                if (chain.TransactionManager.transactions.TryGetValue(connectionString, out transaction)) return true;
+                chain = chain.Next;
             }
 
             transaction = null;
@@ -182,25 +191,16 @@ namespace Lotech.Data
         {
             if (parentManager == null)
             {
-                try
+                foreach (var transaction in transactions.Values)
                 {
-                    var keys = transactions.Keys.ToArray();
-                    foreach (var key in keys)
+                    using (transaction)
                     {
-                        using (var transaction = transactions[key])
-                        {
-                            transactions.Remove(key);
-                            transaction.Rollback();
-                        }
+                        transaction.Rollback();
                     }
                 }
-                finally
-                {
-                    transactionManagers.Pop();
-                    if (transactionManagers.Count == 0)
-                        transactionManagers = null;
-                }
+                transactions.Clear();
 
+                currentTansactionManager = currentTansactionManager.Next;
                 Completed?.Invoke(this, EventArgs.Empty);
             }
         }

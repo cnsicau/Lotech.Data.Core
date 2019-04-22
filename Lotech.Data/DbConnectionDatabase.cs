@@ -1,10 +1,7 @@
-﻿using Lotech.Data.Queries;
-using System;
+﻿using System;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Lotech.Data
 {
@@ -57,6 +54,19 @@ namespace Lotech.Data
             return command;
         }
 
+        void EnlistTransaction(DbCommand command)
+        {
+            if (TransactionManager.Current != null)
+            {
+                DbTransaction transaction;
+                if (!TransactionManager.TryGetTransaction(connection.ConnectionString, out transaction))
+                {
+                    transaction = TransactionManager.Current.EnlistTransaction(connection, connection.ConnectionString);
+                }
+                command.Transaction = transaction;
+            }
+        }
+
         TResult ExecuteCommand<TResult>(string action, DbCommand command, CommandBehavior behavior, Func<DbCommand, CommandBehavior, TResult> execute)
         {
             var closed = connection.State == ConnectionState.Closed;
@@ -68,6 +78,8 @@ namespace Lotech.Data
                 if (Log == null)
                 {
                     if (closed) connection.Open();
+
+                    EnlistTransaction(command);
                     return execute(command, behavior);
                 }
                 else
@@ -77,10 +89,12 @@ namespace Lotech.Data
                     if (closed)
                     {
                         connection.Open();
+                        EnlistTransaction(command);
                         Log($"open connection at {DateTime.Now}. Elpased times: {sw.Elapsed}.");
                         sw.Restart();
                         connection.Disposed += (s, e) => Log($"close connection at {DateTime.Now}. Used times: {sw.Elapsed}");
                     }
+
                     var val = execute(command, behavior);
                     Log("  -- elapsed times: " + sw.Elapsed);
                     return val;
@@ -112,17 +126,8 @@ namespace Lotech.Data
         /// <returns></returns>
         public override object ExecuteScalar(DbCommand command)
         {
-            var closed = command.Connection.State != ConnectionState.Open;
-            try
-            {
-                if (command.Connection.State != ConnectionState.Open)
-                    command.Connection.Open();
-                return command.ExecuteScalar();
-            }
-            finally
-            {
-                if (closed) command.Connection.Close();
-            }
+            return ExecuteCommand(nameof(ExecuteScalar), command, CommandBehavior.Default
+                , (c, b) => c.ExecuteScalar());
         }
 
         /// <summary>
@@ -132,7 +137,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public override int ExecuteNonQuery(DbCommand command)
         {
-            return ExecuteCommand<int>(nameof(ExecuteReader), command, CommandBehavior.Default
+            return ExecuteCommand(nameof(ExecuteReader), command, CommandBehavior.Default
                 , (c, b) => c.ExecuteNonQuery());
         }
 

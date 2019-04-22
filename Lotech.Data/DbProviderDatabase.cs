@@ -57,29 +57,25 @@ namespace Lotech.Data
         /// <returns></returns>
         internal virtual ConnectionSubstitute GetConnection(DbCommand command)
         {
-            if (command?.Connection?.Site is ConnectionSubstitute)
+            if (TransactionManager.Current != null)
             {
-                return ((ConnectionSubstitute)command.Connection.Site).Ref();
+                DbTransaction transaction;
+                if (TransactionManager.TryGetTransaction(ConnectionString, out transaction))
+                {
+                    // 绑定事务
+                    command.Transaction = transaction;
+                    command.Connection = transaction.Connection;
+                    return new ConnectionSubstitute(transaction.Connection).Ref();
+                }
             }
 
             var connection = TransactionScopeConnections.GetConnection(this);
             if (connection != null)
-                return connection;
-
-            var transactionManager = TransactionManager.Current;
-            DbTransaction transaction;
-            if (transactionManager != null
-                && TransactionManager.TryGetTransaction(ConnectionString, out transaction))
-            {
-                // 绑定事务
-                command.Transaction = transaction;
-                command.Connection = transaction.Connection;
-                return new ConnectionSubstitute(transaction.Connection).Ref();
-            }
+                return connection.Ref();
 
             connection = new ConnectionSubstitute(CreateConnection());
 
-            if (transactionManager != null) // 新连接若已经存在当前事务管理器，则自动开启事务
+            if (TransactionManager.Current != null) // 新连接若已经存在当前事务管理器，则自动开启事务
             {
                 try
                 { BindOpenedConnection(command, connection); }
@@ -88,9 +84,9 @@ namespace Lotech.Data
                     connection.Dispose();
                     throw;
                 }
-                transactionManager.Completed += (s, e) => connection.Dispose();
-                command.Transaction = transactionManager.EnlistTransaction(connection.Connection, ConnectionString);  // 绑定事务到 DbCommand中
-                connection.Ref();   // 以便上面完成时关闭连接，避免过早关闭
+                TransactionManager.Current.Completed += (s, e) => connection.Dispose();
+                command.Transaction = TransactionManager.Current.EnlistTransaction(connection.Connection, ConnectionString);  // 绑定事务到 DbCommand中
+                return connection.Ref();   // 以便上面完成时关闭连接，避免过早关闭
             }
             return connection;
         }

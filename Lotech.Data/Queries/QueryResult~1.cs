@@ -34,26 +34,6 @@ namespace Lotech.Data.Queries
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            Construct(reader, mapper);
-        }
-
-        /// <summary>
-        /// 构造查询结果
-        /// </summary>
-        /// <param name="command"></param>
-        /// <param name="mapper">结果映射器</param>
-        public QueryResult(DbCommand command, IResultMapper<TEntity> mapper)
-        {
-            if (mapper == null)
-                throw new ArgumentNullException(nameof(mapper));
-            if (command == null)
-                throw new ArgumentNullException(nameof(command));
-
-            Construct(mapper.Database.ExecuteReader(command), mapper);
-        }
-
-        void Construct(IDataReader reader, IResultMapper<TEntity> mapper)
-        {
             _mapper = mapper;
             _mapper.TearUp(reader);
             if (_mapper.Database.Log != null)

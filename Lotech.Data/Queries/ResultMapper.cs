@@ -44,7 +44,7 @@ namespace Lotech.Data.Queries
         /// <summary>
         /// 
         /// </summary>
-        public virtual void TearDown() { Reader.Close(); }
+        public virtual void TearDown() { reader.Close(); }
 
         #region Static Members
         readonly static Func<IResultMapper<TValue>> build;

@@ -473,7 +473,7 @@ namespace Lotech.Data
             {
                 using (IEnumerator<object> enumerator = new QueryResult<dynamic>(reader, new ObjectResultMapper { Database = this }))
                 {
-                    if (enumerator.MoveNext()) entities.Add(enumerator.Current);
+                    while (enumerator.MoveNext()) entities.Add(enumerator.Current);
                 }
             }
             return entities.ToArray();

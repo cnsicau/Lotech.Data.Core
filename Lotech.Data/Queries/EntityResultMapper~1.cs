@@ -28,7 +28,7 @@ namespace Lotech.Data.Queries
             public Type MemberType { get; }
         }
 
-        delegate TEntity MapDelegate(IDataRecord record, out MapContext context);
+        delegate TEntity MapDelegate(IDataRecord record, out object val, out MapContext context);
 
         static Tuple<string[], IDescriptorProvider, MapDelegate>[] maps = new Tuple<string[], IDescriptorProvider, MapDelegate>[2];
         static volatile int bound;
@@ -84,6 +84,7 @@ namespace Lotech.Data.Queries
             var members = provider.GetEntityDescriptor<TEntity>(Operation.None).Members;
 
             var record = Expression.Parameter(typeof(IDataRecord), "record");
+            var value = Expression.Parameter(typeof(object).MakeByRefType(), "value");
             var context = Expression.Parameter(typeof(MapContext).MakeByRefType(), "context");
 
             var blocks = new List<Expression>();
@@ -97,12 +98,30 @@ namespace Lotech.Data.Queries
                 {
                     if (member.Name.Equals(fields[i], StringComparison.InvariantCultureIgnoreCase))
                     {
-                        var mapContext = new MapContext(i, member.Name, member.Type);
+                        var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
 
+                        var mapContext = new MapContext(i, member.Name, member.Type);
+                        var fieldExpression = Expression.Constant(i);
+                        blocks.Add(Expression.Assign(value, Expression.Call(record,
+                                typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue)), fieldExpression)
+                            ));
                         blocks.Add(Expression.Assign(context, Expression.Constant(mapContext)));
-                        blocks.Add(Expression.Assign(
+
+                        var to = typeof(Convert).GetMethod("To" + valueType.Name, new[] { typeof(object) });
+
+                        var isDBNullExpression = Expression.Call(
+                                    record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.IsDBNull)), fieldExpression);
+                        var valueExpression = to != null ? (Expression)Expression.Call(to, value)
+                            : Expression.ConvertChecked(Expression.Call(
+                                        typeof(Convert).GetMethod(nameof(Convert.ChangeType), new[] { typeof(object), typeof(Type) }),
+                                        value,
+                                        Expression.Constant(valueType)), valueType);
+                        blocks.Add(Expression.IfThen(Expression.Not(isDBNullExpression),
+                            Expression.Assign(
                                 Expression.MakeMemberAccess(ret, member.Member),
-                                CreateReadFieldExpression(record, member, i)));
+                                    valueType == member.Type ? valueExpression
+                                        : Expression.ConvertChecked(valueExpression, member.Type)
+                            )));
                         break;
                     }
                 }
@@ -112,40 +131,8 @@ namespace Lotech.Data.Queries
             blocks.Add(Expression.Return(label, ret));
             blocks.Add(Expression.Label(label, ret));
 
-            var map = Expression.Lambda<MapDelegate>(Expression.Block(typeof(TEntity), new[] { ret }, blocks), record, context).Compile();
+            var map = Expression.Lambda<MapDelegate>(Expression.Block(typeof(TEntity), new[] { ret }, blocks), record, value, context).Compile();
             return Tuple.Create(fields, provider, map);
-        }
-
-        static Expression CreateReadFieldExpression(Expression record, IMemberDescriptor member, int fieldIndex)
-        {
-            var fieldExpression = Expression.Constant(fieldIndex);
-            var isDBNullExpression = Expression.Call(
-                record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.IsDBNull)), fieldExpression);
-
-            var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
-
-            if (member.Type == typeof(string))
-            {
-                return Expression.Condition(isDBNullExpression
-                        , Expression.Constant(null, typeof(string))
-                        , Expression.Call(record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetString)), fieldExpression));
-            }
-
-
-            var readMethod = typeof(IDataRecord).GetMethod("Get" + valueType.Name);
-            var readExpression = readMethod != null ? Expression.Call(record, readMethod, fieldExpression)
-                // Convert.ChangeType(record.GetValue(fieldIndex), memberType)
-                : valueType.IsValueType ? (Expression)Expression.Call(
-                        typeof(Convert).GetMethod(nameof(Convert.ChangeType), new[] { typeof(object), typeof(Type) }),
-                        Expression.Call(record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue)), fieldExpression),
-                        Expression.Constant(valueType)
-                    )
-                : Expression.Convert(Expression.Call(record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue)), fieldExpression), member.Type);
-
-            return valueType != member.Type /*nullable*/
-                ? Expression.Condition(isDBNullExpression, Expression.Constant(null, member.Type)
-                    , Expression.Convert(readExpression, member.Type))
-                : (Expression)readExpression;
         }
 
         MapDelegate map;
@@ -173,14 +160,14 @@ namespace Lotech.Data.Queries
             }
 
             MapContext context = null;
+            object value = null;
             try
             {
-                result = map(reader, out context);
+                result = map(reader, out value, out context);
                 return true;
             }
             catch (Exception exception)
             {
-                var value = reader.GetValue(context.FieldIndex);
                 throw new InvalidCastException($"列 {context.MemberName} 映射失败，值“{value}”({value?.GetType() })无法转换为 {context.MemberType}", exception);
             }
         }

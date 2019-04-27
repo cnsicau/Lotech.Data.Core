@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <RootNamespace>Lotech.Data.Benchmark</RootNamespace>
+    <AssemblyName>Lotech.Data.Core.Benchmark</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNET" Version="0.11.5" />
+    <PackageReference Include="Dapper" Version="1.60.6" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="2.2.3" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="1.1.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lotech.Data.Core\Lotech.Data.Core.csproj" />
+  </ItemGroup>
+
+</Project>

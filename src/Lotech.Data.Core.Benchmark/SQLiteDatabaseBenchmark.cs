@@ -62,29 +62,20 @@ namespace Lotech.Data.Benchmark
         }
 
         string sql = "SELECT * FROM BenchmarkDataModel WHERE ID <= ";
-        //[Benchmark]
+        [Benchmark]
         public void Raw()
         {
-            var entities = new List<BenchmarkDataModel>(50);
+            var entities = new List<BenchmarkDataModel>();
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = sql;
                 using (var reader = command.ExecuteReader(System.Data.CommandBehavior.SequentialAccess))
                 {
+                    var mapper = Queries.ResultMapper<BenchmarkDataModel>.Create();
+                    mapper.Initialize(database, reader);
                     while (reader.Read())
                     {
-                        //var entity = new BenchmarkDataModel();
-                        //entity.Id = Utils.Convert<int>.From(reader.GetValue(0));
-                        //entity.Code = Utils.Convert<string>.From(reader.GetValue(1));
-                        //entity.Name = Utils.Convert<string>.From(reader.GetValue(2));          // Name nvarchar(128) not null,
-                        //entity.CreateTime = Utils.Convert<DateTime>.From(reader.GetValue(3));     // CreateTime datetime not null,
-                        //entity.ModifyTime = Utils.Convert<DateTime?>.From(reader.GetValue(4));              // ModifyTime TIMESTAMP default CURRENT_TIMESTAMP ,
-                        //entity.Deleted = Utils.Convert<bool>.From(reader.GetValue(5));              // Deleted bit not null,
-                        ////                                                                            //entity.LongId = reader.GetInt64(6);    // LongId bigint default 10,
-                        //entity.Content = Utils.Convert<byte[]>.From(reader.GetValue(7));   // Content blob null
-
-                        //entities.Add(entity);
-                        entities.Add(default(BenchmarkDataModel));
+                        entities.Add(mapper.Map(reader));
                     }
                 }
             }
@@ -109,6 +100,12 @@ namespace Lotech.Data.Benchmark
         }
 
         [Benchmark]
+        public void Complete()
+        {
+            var model = database.ExecuteEntities<BenchmarkDataModel>(sql);
+        }
+
+        [Benchmark]
         public void Dapper()
         {
             var model = connection.Query<BenchmarkDataModel>(sql).ToArray();
@@ -118,12 +115,6 @@ namespace Lotech.Data.Benchmark
         public void DapperDateTime()
         {
             connection.Query<DateTime?>("SELECT CreateTime FROM BenchmarkDataModel").ToArray();
-        }
-
-        [Benchmark]
-        public void Complete()
-        {
-            var model = database.ExecuteEntities<BenchmarkDataModel>(sql);
         }
 
         //[Benchmark]

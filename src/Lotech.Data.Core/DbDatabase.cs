@@ -578,11 +578,7 @@ namespace Lotech.Data
         {
             using (var reader = ExecuteReader(command, CommandBehavior.SequentialAccess))
             {
-                var entities = new List<EntityType>(50);
-                var mapper = ResultMapper<EntityType>.Create();
-                mapper.Initialize(this, reader);
-                while (reader.Read()) entities.Add(mapper.Map(reader));
-                return entities.ToArray();
+                return new ResultEnumerable<EntityType>(this, reader, ResultMapper<EntityType>.Create()).ToArray();
             }
         }
         /// <summary>

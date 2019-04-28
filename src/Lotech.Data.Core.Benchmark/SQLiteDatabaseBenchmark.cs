@@ -19,7 +19,7 @@ namespace Lotech.Data.Benchmark
         public IDatabase database;
         private DbConnection connection;
 
-        [Params(1, 10, 100, 1000)]
+        [Params(1, 10, 100)]
         public int Count { get; set; }
 
         [GlobalSetup]
@@ -62,7 +62,7 @@ namespace Lotech.Data.Benchmark
         }
 
         string sql = "SELECT * FROM BenchmarkDataModel WHERE ID <= ";
-        [Benchmark]
+        //[Benchmark]
         public void Raw()
         {
             var entities = new List<BenchmarkDataModel>();
@@ -100,15 +100,54 @@ namespace Lotech.Data.Benchmark
         }
 
         [Benchmark]
+        public void CompleteDynamic()
+        {
+            var model = database.ExecuteEntities(sql);
+        }
+
+        [Benchmark]
+        public void DapperDynamic()
+        {
+            var model = connection.Query(sql).ToArray();
+        }
+
+
+        //[Benchmark]
         public void Complete()
         {
             var model = database.ExecuteEntities<BenchmarkDataModel>(sql);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void Dapper()
         {
             var model = connection.Query<BenchmarkDataModel>(sql).ToArray();
+        }
+
+
+        //[Benchmark]
+        public void CompleteDynamicOne()
+        {
+            var model = database.ExecuteEntity(sql);
+        }
+
+        //[Benchmark]
+        public void DapperDynamicOne()
+        {
+            var model = connection.QueryFirstOrDefault(sql);
+        }
+
+
+        //[Benchmark]
+        public void CompleteOne()
+        {
+            var model = database.ExecuteEntity<BenchmarkDataModel>(sql);
+        }
+
+        //[Benchmark]
+        public void DapperOne()
+        {
+            var model = connection.QueryFirstOrDefault<BenchmarkDataModel>(sql);
         }
 
         //[Benchmark]

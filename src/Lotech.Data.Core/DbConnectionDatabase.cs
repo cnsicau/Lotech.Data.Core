@@ -117,7 +117,7 @@ namespace Lotech.Data
         /// <returns></returns>
         public override IDataReader ExecuteReader(DbCommand command, CommandBehavior behavior)
         {
-            return ExecuteCommand<IDataReader>(nameof(ExecuteReader), command, behavior, ExecuteReaderFunc);
+            return ExecuteCommand(nameof(ExecuteReader), command, behavior, ExecuteReaderFunc);
         }
 
         static readonly Func<DbCommand, CommandBehavior, IDataReader> ExecuteReaderFunc = (c, b) => c.ExecuteReader(b);

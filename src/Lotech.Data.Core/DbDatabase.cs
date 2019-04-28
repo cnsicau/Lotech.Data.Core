@@ -318,10 +318,9 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual TScalar ExecuteScalar<TScalar>(DbCommand command)
         {
-            using (var reader = ExecuteReader(command, CommandBehavior.SingleRow))
+            using (var reader = ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
             {
-                var mapper = ResultMapper<TScalar>.Create();
-                return new ResultEnumerable<TScalar>(this, reader, mapper).FirstOrDefault();
+                return new ResultEnumerable<TScalar>(this, reader).FirstOrDefault();
             }
         }
         /// <summary>
@@ -452,11 +451,7 @@ namespace Lotech.Data
         {
             using (var reader = ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
             {
-                using (IEnumerator<dynamic> enumerator = new ResultEnumerable<dynamic>(this, reader, ResultMapper<dynamic>.Create()))
-                {
-                    if (enumerator.MoveNext()) return enumerator.Current;
-                }
-                return default(dynamic);
+                return new ResultEnumerable<dynamic>(this, reader).FirstOrDefault();
             }
         }
         /// <summary>
@@ -466,15 +461,10 @@ namespace Lotech.Data
         /// <returns></returns>
         public virtual dynamic[] ExecuteEntities(DbCommand command)
         {
-            var entities = new List<object>();
             using (var reader = ExecuteReader(command, CommandBehavior.SequentialAccess))
             {
-                using (IEnumerator<object> enumerator = new ResultEnumerable<dynamic>(this, reader, ResultMapper<dynamic>.Create()))
-                {
-                    while (enumerator.MoveNext()) entities.Add(enumerator.Current);
-                }
+                return new ResultEnumerable<dynamic>(this, reader).ToArray();
             }
-            return entities.ToArray();
         }
         /// <summary>
         /// 
@@ -564,7 +554,7 @@ namespace Lotech.Data
         {
             using (var reader = ExecuteReader(command, CommandBehavior.SingleRow | CommandBehavior.SequentialAccess))
             {
-                return new ResultEnumerable<EntityType>(this, reader, ResultMapper<EntityType>.Create()).FirstOrDefault();
+                return new ResultEnumerable<EntityType>(this, reader).FirstOrDefault();
             }
         }
 
@@ -578,7 +568,7 @@ namespace Lotech.Data
         {
             using (var reader = ExecuteReader(command, CommandBehavior.SequentialAccess))
             {
-                return new ResultEnumerable<EntityType>(this, reader, ResultMapper<EntityType>.Create()).ToArray();
+                return new ResultEnumerable<EntityType>(this, reader).ToArray();
             }
         }
         /// <summary>

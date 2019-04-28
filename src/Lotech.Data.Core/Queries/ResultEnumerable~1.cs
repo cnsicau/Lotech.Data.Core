@@ -27,6 +27,13 @@ namespace Lotech.Data.Queries
         /// </summary>
         /// <param name="database"></param>
         /// <param name="reader"></param>
+        public ResultEnumerable(IDatabase database, IDataReader reader) : this(database, reader, ResultMapper<TEntity>.Create()) { }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="reader"></param>
         /// <param name="mapper"></param>
         public ResultEnumerable(IDatabase database, IDataReader reader, IResultMapper<TEntity> mapper)
         {

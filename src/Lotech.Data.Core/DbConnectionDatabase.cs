@@ -56,8 +56,6 @@ namespace Lotech.Data
 
         void EnlistTransaction(DbCommand command)
         {
-            command.Prepare();
-
             if (TransactionManager.Current != null)
             {
                 DbTransaction transaction;

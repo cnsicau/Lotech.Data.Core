@@ -178,14 +178,7 @@ namespace Lotech.Data.Queries
             #region IDictionary<string, object>
             object IDictionary<string, object>.this[string key]
             {
-                get
-                {
-                    for (int i = 0; i < keys.Length; i++)
-                    {
-                        if (keys[i].Equals(key, StringComparison.InvariantCultureIgnoreCase)) return values[i];
-                    }
-                    throw new KeyNotFoundException();
-                }
+                get { return GetValue(key); }
                 set { throw new NotImplementedException(); }
             }
 
@@ -260,6 +253,14 @@ namespace Lotech.Data.Queries
                 value = null;
                 return false;
             }
+            public object GetValue(string name)
+            {
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    if (keys[i].Equals(name, StringComparison.InvariantCultureIgnoreCase)) return values[i];
+                }
+                throw new KeyNotFoundException();
+            }
             #endregion
 
             #region IDynamicMetaObjectProvider
@@ -282,9 +283,12 @@ namespace Lotech.Data.Queries
 
                 public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
                 {
-                    var value = ((IDictionary<string, object>)Value)[binder.Name];
-                    var expression = Expression.Constant(value, binder.ReturnType);
-                    return new DynamicMetaObject(expression, BindingRestrictions.GetInstanceRestriction(expression, value));
+                    var expression = Expression.Call(
+                                        Expression.Convert(Expression, LimitType),
+                                        typeof(DataExpando).GetMethod(nameof(DataExpando.GetValue)),
+                                        Expression.Constant(binder.Name)
+                                    );
+                    return new DynamicMetaObject(expression, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
                 }
             }
             #endregion

@@ -8,24 +8,9 @@ namespace Lotech.Data.Queries
     /// 
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
-    public abstract class ResultMapper<TValue> : IResultMapper<TValue>
+    public abstract class ResultMapper<TValue>
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="record"></param>
-        /// <returns></returns>
-        public abstract TValue Map(IDataRecord record);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="database"></param>
-        /// <param name="record"></param>
-        public abstract void Initialize(IDatabase database, IDataRecord record);
-
-        #region Static Members
-        readonly static Func<IResultMapper<TValue>> NewMapper;
+        public readonly static IResultMapper<TValue> Instance;
 
         static ResultMapper()
         {
@@ -43,18 +28,7 @@ namespace Lotech.Data.Queries
             {
                 mapperType = typeof(EntityResultMapper<>).MakeGenericType(typeof(TValue));
             }
-
-            NewMapper = Expression.Lambda<Func<IResultMapper<TValue>>>(
-                    Expression.New(mapperType.GetConstructor(Type.EmptyTypes))
-                ).Compile();
+            Instance = (IResultMapper<TValue>)Activator.CreateInstance(mapperType);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public static IResultMapper<TValue> Create() { return NewMapper(); }
-
-        #endregion
     }
 }

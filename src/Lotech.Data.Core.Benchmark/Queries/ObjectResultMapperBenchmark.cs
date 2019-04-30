@@ -183,7 +183,7 @@ namespace Lotech.Data.Queries.Benchmark
         [Benchmark]
         public void MapperInitialize()
         {
-            new ObjectResultMapper().Initialize(null, record);
+            ResultMapper<object>.Instance.TearUp(null, record);
         }
 
         [Benchmark]

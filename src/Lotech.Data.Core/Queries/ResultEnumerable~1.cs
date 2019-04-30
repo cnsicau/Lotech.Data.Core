@@ -12,39 +12,28 @@ namespace Lotech.Data.Queries
     /// <typeparam name="TEntity"></typeparam>
     public class ResultEnumerable<TEntity> : IEnumerable<TEntity>, IEnumerator<TEntity>
     {
-        private IResultMapper<TEntity> _mapper;
+        private object _state;
         private IDataReader _reader;
         private int _count;
         private Stopwatch _stopwatch;
         private Action<string> _log;
 
-        TEntity IEnumerator<TEntity>.Current => _mapper.Map(_reader);
+        TEntity IEnumerator<TEntity>.Current => ResultMapper<TEntity>.Instance.Map(_reader, _state);
 
-        object IEnumerator.Current => _mapper.Map(_reader);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="database"></param>
-        /// <param name="reader"></param>
-        public ResultEnumerable(IDatabase database, IDataReader reader) : this(database, reader, ResultMapper<TEntity>.Create()) { }
+        object IEnumerator.Current => ResultMapper<TEntity>.Instance.Map(_reader, _state);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="database"></param>
         /// <param name="reader"></param>
-        /// <param name="mapper"></param>
-        public ResultEnumerable(IDatabase database, IDataReader reader, IResultMapper<TEntity> mapper)
+        public ResultEnumerable(IDatabase database, IDataReader reader)
         {
-            if (mapper == null)
-                throw new ArgumentNullException(nameof(mapper));
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
             _reader = reader;
-            _mapper = mapper;
-            _mapper.Initialize(database, reader);
+            _state = ResultMapper<TEntity>.Instance.TearUp(database, reader);
             if (database.Log != null)
             {
                 _log = database.Log;
@@ -73,6 +62,7 @@ namespace Lotech.Data.Queries
 
         void IDisposable.Dispose()
         {
+            ResultMapper<TEntity>.Instance.TearDown(_state);
             if (_log != null)
             {
                 _log($"  Complete read {_count} {typeof(TEntity).Name} records. Elpased times: {_stopwatch.Elapsed}.");

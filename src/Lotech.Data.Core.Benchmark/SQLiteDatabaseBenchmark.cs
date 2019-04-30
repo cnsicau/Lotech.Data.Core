@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Lotech.Data.Benchmark
 {
-    [CoreJob, MemoryDiagnoser]
+    [ShortRunJob, MemoryDiagnoser]
     public class SQLiteDatabaseBenchmark
     {
         static SQLiteDatabaseBenchmark()
@@ -19,7 +19,7 @@ namespace Lotech.Data.Benchmark
         public IDatabase database;
         private DbConnection connection;
 
-        [Params(100)]
+        [Params(1)]
         public int Count { get; set; }
 
         [GlobalSetup]
@@ -71,11 +71,11 @@ namespace Lotech.Data.Benchmark
                 command.CommandText = sql;
                 using (var reader = command.ExecuteReader(System.Data.CommandBehavior.SequentialAccess))
                 {
-                    var mapper = Queries.ResultMapper<BenchmarkDataModel>.Create();
-                    mapper.Initialize(database, reader);
+                    var mapper = Queries.ResultMapper<BenchmarkDataModel>.Instance;
+                    var state = mapper.TearUp(database, reader);
                     while (reader.Read())
                     {
-                        entities.Add(mapper.Map(reader));
+                        entities.Add(mapper.Map(reader, state));
                     }
                 }
             }
@@ -111,13 +111,13 @@ namespace Lotech.Data.Benchmark
             var model = connection.Query(sql).ToArray();
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void Complete()
         {
             var model = database.ExecuteEntities<BenchmarkDataModel>(sql);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void Dapper()
         {
             var model = connection.Query<BenchmarkDataModel>(sql).ToArray();

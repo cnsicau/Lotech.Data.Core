@@ -10,7 +10,7 @@ namespace Lotech.Data.Queries
     /// 实体结果映射
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    class EntityResultMapper<TEntity> : ResultMapper<TEntity> where TEntity : class
+    class EntityResultMapper<TEntity> : IResultMapper<TEntity> where TEntity : class
     {
         class MapContext
         {
@@ -125,34 +125,25 @@ namespace Lotech.Data.Queries
             return Tuple.Create(fields, provider, map);
         }
 
-        MapDelegate map;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="database"></param>
-        /// <param name="record"></param>
-        public override void Initialize(IDatabase database, IDataRecord record)
+        object IResultMapper<TEntity>.TearUp(IDatabase database, IDataRecord record)
         {
-            map = GetOrCreateMapDelegate(record, database.DescriptorProvider);
+            return GetOrCreateMapDelegate(record, database.DescriptorProvider);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="record"></param>
-        /// <returns></returns>
-        public override TEntity Map(IDataRecord record)
+        TEntity IResultMapper<TEntity>.Map(IDataRecord record, object tearState)
         {
             MapContext context = null;
             object value = null;
             try
             {
-                return map(record, out value, out context);
+                return ((MapDelegate)tearState)(record, out value, out context);
             }
             catch (Exception exception)
             {
                 throw new InvalidCastException($"列 {context.MemberName} 映射失败，值“{value}”({value?.GetType() })无法转换为 {context.MemberType}", exception);
             }
         }
+
+        void IResultMapper<TEntity>.TearDown(object tearState) { }
     }
 }

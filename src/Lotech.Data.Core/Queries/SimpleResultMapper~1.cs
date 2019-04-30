@@ -7,16 +7,13 @@ namespace Lotech.Data.Queries
     /// 简单类型映射int\short\bool等
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class SimpleResultMapper<T> : ResultMapper<T>
+    class SimpleResultMapper<T> : IResultMapper<T>
     {
-        public override void Initialize(IDatabase database, IDataRecord record) { }
+        object IResultMapper<T>.TearUp(IDatabase database, IDataRecord record) { return null; }
 
-        /// <summary>
-        /// 映射下一项
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public override T Map(IDataRecord record)
+        void IResultMapper<T>.TearDown(object tearState) { }
+
+        T IResultMapper<T>.Map(IDataRecord record, object tearState)
         {
             var value = record.GetValue(0);
             try

@@ -13,13 +13,21 @@ namespace Lotech.Data.Queries
         /// </summary>
         /// <param name="database".
         /// <param name="record"></param>
-        void Initialize(IDatabase database, IDataRecord record);
+        /// <returns></returns>
+        object TearUp(IDatabase database, IDataRecord record);
 
         /// <summary>
         /// 映射结果
         /// </summary>
         /// <param name="record"></param>
+        /// <param name="tearState"></param>
         /// <returns>映射的结果</returns>
-        TResult Map(IDataRecord record);
+        TResult Map(IDataRecord record, object tearState);
+
+        /// <summary>
+        /// 卸载状态
+        /// </summary>
+        /// <param name="tearState"></param>
+        void TearDown(object tearState);
     }
 }

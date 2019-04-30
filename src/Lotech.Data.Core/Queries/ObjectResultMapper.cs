@@ -6,32 +6,25 @@ namespace Lotech.Data.Queries
     /// <summary>
     /// 动态对象结果映射
     /// </summary>
-    public class ObjectResultMapper : ResultMapper<object>
+    public class ObjectResultMapper : IResultMapper<object>
     {
-        string[] fields;
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="record"></param>
-        public override void Initialize(IDatabase database, IDataRecord record)
+        object IResultMapper<object>.Map(IDataRecord record, object tearState)
         {
-            fields = new string[record.FieldCount];
+            var values = new object[((string[])tearState).Length];
+            record.GetValues(values);
+            return new DynamicEntity((string[])tearState, values);
+        }
+
+        void IResultMapper<object>.TearDown(object tearState) { }
+
+        object IResultMapper<object>.TearUp(IDatabase database, IDataRecord record)
+        {
+            var fields = new string[record.FieldCount];
             for (int i = fields.Length - 1; i >= 0; i--)
             {
                 fields[i] = record.GetName(i);
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="record"></param>
-        /// <returns></returns>
-        public override dynamic Map(IDataRecord record)
-        {
-            var values = new object[fields.Length];
-            record.GetValues(values);
-            return new DynamicEntity(fields, values);
+            return fields;
         }
     }
 }

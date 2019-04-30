@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Lotech.Data.Benchmark
 {
-    [ShortRunJob, MemoryDiagnoser]
+    [CoreJob, MemoryDiagnoser]
     public class SQLiteDatabaseBenchmark
     {
         static SQLiteDatabaseBenchmark()
@@ -19,7 +19,7 @@ namespace Lotech.Data.Benchmark
         public IDatabase database;
         private DbConnection connection;
 
-        [Params(1, 10, 100)]
+        [Params(100)]
         public int Count { get; set; }
 
         [GlobalSetup]
@@ -111,7 +111,6 @@ namespace Lotech.Data.Benchmark
             var model = connection.Query(sql).ToArray();
         }
 
-
         //[Benchmark]
         public void Complete()
         {
@@ -136,7 +135,6 @@ namespace Lotech.Data.Benchmark
         {
             var model = connection.QueryFirstOrDefault(sql);
         }
-
 
         //[Benchmark]
         public void CompleteOne()
@@ -186,10 +184,10 @@ namespace Lotech.Data.Benchmark
                 {
                     AddInParameter(command, "@1", System.Data.DbType.String, model.Code);
                     AddInParameter(command, "@2", System.Data.DbType.String, model.Name);
-                    AddInParameter(command, "@3", System.Data.DbType.String, model.CreateTime);
-                    AddInParameter(command, "@4", System.Data.DbType.String, model.ModifyTime);
-                    AddInParameter(command, "@5", System.Data.DbType.String, model.Deleted);
-                    AddInParameter(command, "@6", System.Data.DbType.String, model.Content);
+                    AddInParameter(command, "@3", System.Data.DbType.DateTime, model.CreateTime);
+                    AddInParameter(command, "@4", System.Data.DbType.DateTime, model.ModifyTime);
+                    AddInParameter(command, "@5", System.Data.DbType.Boolean, model.Deleted);
+                    AddInParameter(command, "@6", System.Data.DbType.Binary, model.Content);
                     ExecuteNonQuery(command);
                 }
             }

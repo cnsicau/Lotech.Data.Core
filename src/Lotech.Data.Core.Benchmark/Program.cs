@@ -13,6 +13,11 @@ namespace Lotech.Data.Benchmark
     {
         static void Main(string[] args)
         {
+            var b = new Queries.Benchmark.ObjectResultMapperBenchmark();
+            b.GlobalSetup();
+            b.Map();
+            b.DapperMap();
+
             //BenchmarkRunner.Run<Utils.Benchmark.DbTypeParserBenchmark>();
             //BenchmarkRunner.Run<Utils.Benchmark.ConvertBenchmark>();
             //BenchmarkRunner.Run<Descriptors.Benchmark.DefaultDescriptorProviderBenchmark>();

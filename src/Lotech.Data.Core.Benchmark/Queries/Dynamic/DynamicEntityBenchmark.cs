@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using Lotech.Data.Benchmark;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,138 +14,10 @@ namespace Lotech.Data.Queries.Dynamic.Benchmark
     [ShortRunJob, MemoryDiagnoser]
     public class DynamicEntityBenchmark
     {
-        #region BenchmarkDataRecord
-        class BenchmarkDataRecord : IDataRecord
-        {
-            private readonly string[] fields;
-            private readonly object[] values;
-
-            public BenchmarkDataRecord(string[] fields, object[] values)
-            {
-                this.fields = fields;
-                this.values = values;
-            }
-            public object this[int i] => values[i];
-
-            public object this[string name] => throw new NotImplementedException();
-
-            public int FieldCount => fields.Length;
-
-            public bool GetBoolean(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public byte GetByte(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
-            {
-                throw new NotImplementedException();
-            }
-
-            public char GetChar(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDataReader GetData(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetDataTypeName(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public DateTime GetDateTime(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public decimal GetDecimal(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public double GetDouble(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Type GetFieldType(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public float GetFloat(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Guid GetGuid(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public short GetInt16(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int GetInt32(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public long GetInt64(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetName(int i)
-            {
-                return fields[i];
-            }
-
-            public int GetOrdinal(string name)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetString(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object GetValue(int i)
-            {
-                return values[i];
-            }
-
-            public int GetValues(object[] values)
-            {
-                Array.Copy(this.values, values, values.Length);
-                return values.Length;
-            }
-
-            public bool IsDBNull(int i)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
+        #region DynamicData
         class DynamicData : DynamicObject
         {
-            readonly IDictionary<string, object> values = new Dictionary<string, object>();
+            readonly IDictionary<string, object> values = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
             public override bool TrySetMember(SetMemberBinder binder, object value)
             {
                 values[binder.Name] = value;
@@ -159,6 +32,7 @@ namespace Lotech.Data.Queries.Dynamic.Benchmark
         #endregion
 
         string[] fields = new[] { "Id", "Name", "Content" };
+        object[] values = new object[] { 1, "Lily", new byte[20] };
         IDataRecord record;
         dynamic dynamicEntity;
         dynamic dynamicObject;
@@ -167,9 +41,9 @@ namespace Lotech.Data.Queries.Dynamic.Benchmark
         [GlobalSetup]
         public void GlobalSetup()
         {
-            record = new BenchmarkDataRecord(fields, new object[] { 1, "Lily", new byte[20] });
+            record = new BenchmarkDataReader(fields, values);
 
-            dynamicEntity = new DynamicEntity(fields, new object[] { 1, "Lily", new byte[20] });
+            dynamicEntity = new DynamicEntity(fields, values);
 
             dynamicObject = new ExpandoObject();
             dynamicObject.Id = record.GetValue(0);
@@ -182,20 +56,25 @@ namespace Lotech.Data.Queries.Dynamic.Benchmark
             dynamicData.Content = record.GetValue(2);
         }
 
-
         [Benchmark]
         public void CreateEntity()
         {
-            new DynamicEntity(fields, new object[] { 1, "Lily", new byte[20] });
+            new DynamicEntity(fields, values);
         }
 
         [Benchmark]
+        public void ConvertEntity()
+        {
+            var dnt = (BenchmarkDataModel)dynamicEntity;
+        }
+
+        //[Benchmark]
         public void VisitEntity()
         {
             Visit(dynamicEntity);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void CreateObject()
         {
             dynamic obj = new System.Dynamic.ExpandoObject();
@@ -204,13 +83,13 @@ namespace Lotech.Data.Queries.Dynamic.Benchmark
             obj.Content = record.GetValue(2);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void VisitObject()
         {
             Visit(dynamicObject);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void CreateData()
         {
             dynamicData = new DynamicData();
@@ -219,7 +98,7 @@ namespace Lotech.Data.Queries.Dynamic.Benchmark
             dynamicData.Content = record.GetValue(2);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void VisitData()
         {
             Visit(dynamicData);

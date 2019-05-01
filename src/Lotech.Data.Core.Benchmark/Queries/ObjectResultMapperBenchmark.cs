@@ -1,183 +1,21 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Lotech.Data.Queries.Dynamic;
-using System;
+using Lotech.Data.Benchmark;
 using System.Data;
+using Dapper;
+using System.Linq;
 
 namespace Lotech.Data.Queries.Benchmark
 {
     [ShortRunJob, MemoryDiagnoser]
     public class ObjectResultMapperBenchmark
     {
-        #region BenchmarkDataRecord
-        class BenchmarkDataRecord : IDataRecord
-        {
-            private readonly string[] fields;
-            private readonly object[] values;
-
-            public BenchmarkDataRecord(string[] fields, object[] values)
-            {
-                this.fields = fields;
-                this.values = values;
-            }
-            public object this[int i] => values[i];
-
-            public object this[string name] => throw new NotImplementedException();
-
-            public int FieldCount => fields.Length;
-
-            public bool GetBoolean(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public byte GetByte(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public long GetBytes(int i, long fieldOffset, byte[] buffer, int bufferoffset, int length)
-            {
-                throw new NotImplementedException();
-            }
-
-            public char GetChar(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public long GetChars(int i, long fieldoffset, char[] buffer, int bufferoffset, int length)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IDataReader GetData(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetDataTypeName(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public DateTime GetDateTime(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public decimal GetDecimal(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public double GetDouble(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Type GetFieldType(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public float GetFloat(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Guid GetGuid(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public short GetInt16(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int GetInt32(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public long GetInt64(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetName(int i)
-            {
-                return fields[i];
-            }
-
-            public int GetOrdinal(string name)
-            {
-                throw new NotImplementedException();
-            }
-
-            public string GetString(int i)
-            {
-                throw new NotImplementedException();
-            }
-
-            public object GetValue(int i)
-            {
-                return values[i];
-            }
-
-            public int GetValues(object[] values)
-            {
-                Array.Copy(this.values, values, values.Length);
-                return values.Length;
-            }
-
-            public bool IsDBNull(int i)
-            {
-                throw new NotImplementedException();
-            }
-        }
-        #endregion
-
-
-        IDataRecord record;
+        IDataReader record, record2;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            record = new BenchmarkDataRecord(new[] {
-"id",
-"distrib_plan_id",
-"distrib_plan_code",
-"distrib_dtl_code",
-"product_id",
-"product_code",
-"product_name",
-"station_code",
-"station_name",
-"station_pot_id",
-"station_pot_num",
-"conveyance_tank_id",
-"conveyance_tank_num",
-"retail_pot_id",
-"retail_tank_id",
-"quantity",
-"quantity_uom",
-"retail_quantity",
-"retail_qty_uom",
-"gen_type",
-"distance",
-"distance_uom",
-"retail_distance",
-"retail_dist_uom",
-"finish_date",
-"is_finish",
-"quantity_switch",
-"quantity_uom_switch",
-"station_id",
-"waybill_id",
-"order_number",
-"insertdate",
-"insertdate_partition"}, new object[33]);
+            record = new BenchmarkDataReader(new[] { "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31", "f32", "f33", "f34", "f35", "f36", "f37", "f38", "f39", "f40", "f41", "f42", "f43", "f44", "f45", "f46", "f47", "f48", "f49", "f50", "f51", "f52", "f53", "f54", "f55", "f56", "f57", "f58", "f59", "f60", "f61", "f62", "f63", "f64", "f65", "f66", "f67", "f68", "f69", "f70", "f71", "f72", "f73", "f74", "f75", "f76", "f77", "f78", "f79", "f80", "f81", "f82", "f83", "f84", "f85", "f86", "f87", "f88", "f89", "f90", "f91", "f92", "f93", "f94", "f95", "f96", "f97", "f98", "f99", "f100", "f101", "f102", "f103", "f104", "f105", "f106", "f107", "f108", "f109", "f110", "f111", "f112", "f113", "f114", "f115", "f116", "f117", "f118", "f119", "f120", "f121", "f122", "f123", "f124", "f125", "f126", "f127", "f128", "f129", "f130", "f131", "f132", "f133", "f134", "f135", "f136", "f137", "f138", "f139", "f140", "f141", "f142", "f143", "f144", "f145", "f146", "f147", "f148", "f149", "f150", "f151", "f152", "f153", "f154", "f155", "f156", "f157", "f158", "f159", "f160", "f161", "f162", "f163", "f164", "f165", "f166", "f167", "f168", "f169", "f170", "f171", "f172", "f173", "f174", "f175", "f176", "f177", "f178", "f179", "f180", "f181", "f182", "f183", "f184", "f185", "f186", "f187", "f188", "f189", "f190", "f191", "f192", "f193", "f194", "f195", "f196", "f197", "f198", "f199", "f200", "f201", "f202", "f203", "f204", "f205", "f206", "f207", "f208", "f209", "f210", "f211", "f212", "f213", "f214", "f215", "f216", "f217", "f218", "f219", "f220", "f221", "f222", "f223", "f224", "f225", "f226", "f227", "f228", "f229", "f230", "f231", "f232", "f233", "f234", "f235", "f236", "f237", "f238", "f239", "f240", "f241", "f242", "f243", "f244", "f245", "f246", "f247", "f248", "f249", "f250", "f251", "f252", "f253", "f254", "f255" }, new object[255]);
+            record2 = new BenchmarkDataReader(new[] { "F1", "F2", "F3", "F4", "F5" }, new object[5]);
         }
 
         [Benchmark]
@@ -187,10 +25,35 @@ namespace Lotech.Data.Queries.Benchmark
         }
 
         [Benchmark]
-        public void RawColumns()
+        public void Map()
+        {
+            var r = new BenchmarkDataReader(new[] { "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31", "f32", "f33", "f34", "f35", "f36", "f37", "f38", "f39", "f40", "f41", "f42", "f43", "f44", "f45", "f46", "f47", "f48", "f49", "f50", "f51", "f52", "f53", "f54", "f55", "f56", "f57", "f58", "f59", "f60", "f61", "f62", "f63", "f64", "f65", "f66", "f67", "f68", "f69", "f70", "f71", "f72", "f73", "f74", "f75", "f76", "f77", "f78", "f79", "f80", "f81", "f82", "f83", "f84", "f85", "f86", "f87", "f88", "f89", "f90", "f91", "f92", "f93", "f94", "f95", "f96", "f97", "f98", "f99", "f100", "f101", "f102", "f103", "f104", "f105", "f106", "f107", "f108", "f109", "f110", "f111", "f112", "f113", "f114", "f115", "f116", "f117", "f118", "f119", "f120", "f121", "f122", "f123", "f124", "f125", "f126", "f127", "f128", "f129", "f130", "f131", "f132", "f133", "f134", "f135", "f136", "f137", "f138", "f139", "f140", "f141", "f142", "f143", "f144", "f145", "f146", "f147", "f148", "f149", "f150", "f151", "f152", "f153", "f154", "f155", "f156", "f157", "f158", "f159", "f160", "f161", "f162", "f163", "f164", "f165", "f166", "f167", "f168", "f169", "f170", "f171", "f172", "f173", "f174", "f175", "f176", "f177", "f178", "f179", "f180", "f181", "f182", "f183", "f184", "f185", "f186", "f187", "f188", "f189", "f190", "f191", "f192", "f193", "f194", "f195", "f196", "f197", "f198", "f199", "f200", "f201", "f202", "f203", "f204", "f205", "f206", "f207", "f208", "f209", "f210", "f211", "f212", "f213", "f214", "f215", "f216", "f217", "f218", "f219", "f220", "f221", "f222", "f223", "f224", "f225", "f226", "f227", "f228", "f229", "f230", "f231", "f232", "f233", "f234", "f235", "f236", "f237", "f238", "f239", "f240", "f241", "f242", "f243", "f244", "f245", "f246", "f247", "f248", "f249", "f250", "f251", "f252", "f253", "f254", "f255" }, new object[255]);
+            var val = ResultMapper<object>.Instance.Map(r,
+                 ResultMapper<object>.Instance.TearUp(null, r));
+        }
+
+        [Benchmark]
+        public void DapperMap()
+        {
+            var r = new BenchmarkDataReader(new[] { "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15", "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31", "f32", "f33", "f34", "f35", "f36", "f37", "f38", "f39", "f40", "f41", "f42", "f43", "f44", "f45", "f46", "f47", "f48", "f49", "f50", "f51", "f52", "f53", "f54", "f55", "f56", "f57", "f58", "f59", "f60", "f61", "f62", "f63", "f64", "f65", "f66", "f67", "f68", "f69", "f70", "f71", "f72", "f73", "f74", "f75", "f76", "f77", "f78", "f79", "f80", "f81", "f82", "f83", "f84", "f85", "f86", "f87", "f88", "f89", "f90", "f91", "f92", "f93", "f94", "f95", "f96", "f97", "f98", "f99", "f100", "f101", "f102", "f103", "f104", "f105", "f106", "f107", "f108", "f109", "f110", "f111", "f112", "f113", "f114", "f115", "f116", "f117", "f118", "f119", "f120", "f121", "f122", "f123", "f124", "f125", "f126", "f127", "f128", "f129", "f130", "f131", "f132", "f133", "f134", "f135", "f136", "f137", "f138", "f139", "f140", "f141", "f142", "f143", "f144", "f145", "f146", "f147", "f148", "f149", "f150", "f151", "f152", "f153", "f154", "f155", "f156", "f157", "f158", "f159", "f160", "f161", "f162", "f163", "f164", "f165", "f166", "f167", "f168", "f169", "f170", "f171", "f172", "f173", "f174", "f175", "f176", "f177", "f178", "f179", "f180", "f181", "f182", "f183", "f184", "f185", "f186", "f187", "f188", "f189", "f190", "f191", "f192", "f193", "f194", "f195", "f196", "f197", "f198", "f199", "f200", "f201", "f202", "f203", "f204", "f205", "f206", "f207", "f208", "f209", "f210", "f211", "f212", "f213", "f214", "f215", "f216", "f217", "f218", "f219", "f220", "f221", "f222", "f223", "f224", "f225", "f226", "f227", "f228", "f229", "f230", "f231", "f232", "f233", "f234", "f235", "f236", "f237", "f238", "f239", "f240", "f241", "f242", "f243", "f244", "f245", "f246", "f247", "f248", "f249", "f250", "f251", "f252", "f253", "f254", "f255" }, new object[255]);
+            var val = r.Parse().FirstOrDefault();
+        }
+
+        [Benchmark]
+        public void EnumerateColumns()
         {
             var columns = new string[record.FieldCount];
             for (int i = 0; i < record.FieldCount; i++)
+            {
+                columns[i] = record.GetName(i);
+            }
+        }
+
+        [Benchmark]
+        public void ReverseEnumerateColumns()
+        {
+            var columns = new string[record.FieldCount];
+            for (int i = record.FieldCount - 1; i >= 0; i--)
             {
                 columns[i] = record.GetName(i);
             }

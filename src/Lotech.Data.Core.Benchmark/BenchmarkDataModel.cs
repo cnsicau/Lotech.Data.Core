@@ -5,7 +5,7 @@ namespace Lotech.Data.Benchmark
     public class BenchmarkDataModel
     {
         [Column(PrimaryKey = true, DbGenerated = true)]
-        public long Id { get; set; }
+        public TypeCode Id { get; set; }
 
         public string Code { get; set; }
 

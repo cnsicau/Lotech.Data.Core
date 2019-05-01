@@ -62,7 +62,7 @@ namespace Lotech.Data.Benchmark
         }
 
         string sql = "SELECT * FROM BenchmarkDataModel WHERE ID <= ";
-        //[Benchmark]
+        [Benchmark]
         public void Raw()
         {
             var entities = new List<BenchmarkDataModel>();

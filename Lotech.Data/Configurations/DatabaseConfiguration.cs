@@ -8,7 +8,7 @@ namespace Lotech.Data.Configurations
     /// </summary>
     public class DatabaseConfiguration
     {
-        static readonly string ConfigurationFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "database.xml");
+        static readonly string ConfigurationFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "database.config");
         static readonly Lazy<DatabaseConfiguration> configuration
                 = new Lazy<DatabaseConfiguration>(() => new DatabaseConfigurationSerializer().Parse(ConfigurationFile), true);
 

@@ -22,7 +22,17 @@ namespace Lotech.Data.MySqls
                 {Methods.Contains, VisitContains },
                 {Methods.Substring, VisitSubstring },
                 {Methods.SubstringLength, VisitSubstring },
+                {Methods.IsNullOrEmpty, VisitIsNullOrEmpty },
             };
+
+        static void VisitIsNullOrEmpty(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.AddFragment("(");
+            visitor.Visit(call.Arguments[0]);
+            visitor.AddFragment(" IS NULL OR '' = ");
+            visitor.Visit(call.Arguments[0]);
+            visitor.AddFragment(")");
+        }
 
         #region Method Visitors
         static void VisitToUpper(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)

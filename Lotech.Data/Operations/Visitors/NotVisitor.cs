@@ -7,8 +7,20 @@ namespace Lotech.Data.Operations.Visitors
     {
         void IExpressionNodeVisitor<TEntity, UnaryExpression>.Visit(SqlExpressionVisitor<TEntity> visitor, UnaryExpression node)
         {
-            visitor.Visit(node.Operand);
-            visitor.AddFragment(" <> 0");
+            if (node.Operand.NodeType == ExpressionType.MemberAccess
+                || node.Operand.NodeType == ExpressionType.Convert
+                || node.Operand.NodeType == ExpressionType.ConvertChecked
+                || node.Operand.NodeType == ExpressionType.Call && ((MethodCallExpression)node.Operand).Method.ReturnType != typeof(bool))
+            {
+                visitor.AddFragment("1 <> ");
+                visitor.Visit(node.Operand);
+            }
+            else
+            {
+                visitor.AddFragment("NOT (");
+                visitor.Visit(node.Operand);
+                visitor.AddFragment(")");
+            }
         }
     }
 }

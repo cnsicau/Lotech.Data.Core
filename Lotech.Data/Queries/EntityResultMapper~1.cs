@@ -112,6 +112,7 @@ namespace Lotech.Data.Queries
                         var isDBNullExpression = Expression.Call(
                                     record, typeof(IDataRecord).GetMethod(nameof(IDataRecord.IsDBNull)), fieldExpression);
                         var valueExpression = to != null ? (Expression)Expression.Call(to, value)
+                            : !valueType.IsValueType ? Expression.Convert(value, valueType)
                             : Expression.ConvertChecked(Expression.Call(
                                         typeof(Convert).GetMethod(nameof(Convert.ChangeType), new[] { typeof(object), typeof(Type) }),
                                         value,

@@ -31,7 +31,7 @@ namespace Lotech.Data
         [ThreadStatic]
         static TransactionManagerChain currentTansactionManager;
 
-        private readonly Guid id;
+        private readonly long id;
         private readonly Dictionary<string, DbTransaction> transactions;
         private readonly TransactionManager parentManager;
         private readonly IsolationLevel? isolationLevel;
@@ -49,7 +49,7 @@ namespace Lotech.Data
         /// <summary>
         /// 
         /// </summary>
-        public TransactionManager() : this(false, null) { }
+        public TransactionManager(): this(false, null) { }
 
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Lotech.Data
                 parentManager.Completed += (s, e) => Completed?.Invoke(this, e);
                 return;
             }
-            id = Guid.NewGuid();
+            id = DateTime.Now.Ticks;
             transactions = new Dictionary<string, DbTransaction>();
         }
 
@@ -189,7 +189,7 @@ namespace Lotech.Data
         #region 
         void IDisposable.Dispose()
         {
-            if (parentManager == null)
+            if (parentManager == null && transactions != null)
             {
                 foreach (var transaction in transactions.Values)
                 {

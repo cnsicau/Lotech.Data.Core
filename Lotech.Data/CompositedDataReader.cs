@@ -68,6 +68,7 @@ namespace Lotech.Data
         public void Close()
         {
             dataReader.Close();
+            DisposeComposited();
         }
         /// <summary>
         /// 
@@ -75,6 +76,7 @@ namespace Lotech.Data
         public void Dispose()
         {
             dataReader.Dispose();
+            DisposeComposited();
         }
         /// <summary>
         /// 

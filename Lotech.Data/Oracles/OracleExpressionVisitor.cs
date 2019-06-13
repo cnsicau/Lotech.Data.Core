@@ -22,7 +22,14 @@ namespace Lotech.Data.Oracles
                 {Methods.Contains, VisitContains },
                 {Methods.Substring, VisitSubstring },
                 {Methods.SubstringLength, VisitSubstring },
+                {Methods.IsNullOrEmpty, VisitIsNullOrEmpty },
             };
+
+        static void VisitIsNullOrEmpty(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)
+        {
+            visitor.Visit(call.Object);
+            visitor.AddFragment(" IS NULL");
+        }
 
         #region Method Visitors
         static void VisitToUpper(SqlExpressionVisitor<TEntity> visitor, MethodCallExpression call)

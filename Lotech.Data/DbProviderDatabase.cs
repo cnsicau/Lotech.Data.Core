@@ -138,7 +138,7 @@ namespace Lotech.Data
                     reader = command.ExecuteReader(behavior);
                     Log("  -- elapsed times: " + sw.Elapsed);
                 }
-                return reader;
+                return new CompositedDataReader(reader, substitute);
             }
             catch
             {

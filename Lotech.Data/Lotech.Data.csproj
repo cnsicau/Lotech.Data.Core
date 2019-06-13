@@ -255,9 +255,7 @@
     <Compile Include="Utils\ValueConverter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="database.xml" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="database.config" />
     <None Include="database.xsd">
       <SubType>Designer</SubType>
     </None>

@@ -54,6 +54,11 @@ namespace Lotech.Data.Operations
             /// String.Contains(int position, int length)
             /// </summary>
             public static readonly MethodInfo SubstringLength = new Func<int, int, string>(string.Empty.Substring).Method;
+
+            /// <summary>
+            /// String.IsNullOrEmpty(string value)
+            /// </summary>
+            public static readonly MethodInfo IsNullOrEmpty = new Func<string, bool>(string.IsNullOrEmpty).Method;
         }
         #endregion
 

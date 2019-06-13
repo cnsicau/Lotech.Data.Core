@@ -102,8 +102,13 @@ namespace Lotech.Data
             }
             catch
             {
-                if (closed) connection.Close();
+                if (closed && connection.State == ConnectionState.Open) connection.Close();
                 throw;
+            }
+            finally
+            {
+                if (!typeof(IDataReader).IsAssignableFrom(typeof(TResult))
+                    && closed && connection.State == ConnectionState.Open) connection.Close();
             }
         }
 

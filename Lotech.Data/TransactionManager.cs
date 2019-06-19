@@ -195,7 +195,8 @@ namespace Lotech.Data
                 {
                     using (transaction)
                     {
-                        transaction.Rollback();
+                        if(transaction.Connection.State == ConnectionState.Open)
+                            transaction.Rollback();
                     }
                 }
                 transactions.Clear();

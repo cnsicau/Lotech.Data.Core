@@ -34,6 +34,7 @@ namespace Lotech.Data.Operations.Visitors
         /// </summary>
         static public IExpressionNodeVisitor<TEntity, BinaryExpression> LessEqual = new BinaryNodeVisitor<TEntity>("<=");
         #endregion
+
         private readonly string _operator;
 
         /// <summary>
@@ -50,11 +51,13 @@ namespace Lotech.Data.Operations.Visitors
 
         void IExpressionNodeVisitor<TEntity, BinaryExpression>.Visit(SqlExpressionVisitor<TEntity> visitor, BinaryExpression node)
         {
+            visitor.AddFragment("(");
             visitor.Visit(node.Left);
-            visitor.AddFragment(" ");
+            visitor.AddFragment(") ");
             visitor.AddFragment(_operator);
-            visitor.AddFragment(" ");
+            visitor.AddFragment(" (");
             visitor.Visit(node.Right);
+            visitor.AddFragment(")");
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Lotech.Data
     public class CompositedDataReader : IDataReader
     {
         private readonly IDataReader dataReader;
-        private readonly IDisposable[] compositedDisposables;
+        private IDisposable[] compositedDisposables;
 
         /// <summary>
         /// 
@@ -24,9 +24,13 @@ namespace Lotech.Data
 
         void DisposeComposited()
         {
-            for (int i = compositedDisposables.Length - 1; i >= 0; i--)
+            if (compositedDisposables != null && compositedDisposables.Length > 0)
             {
-                compositedDisposables[i].Dispose();
+                for (int i = compositedDisposables.Length - 1; i >= 0; i--)
+                {
+                    compositedDisposables[i].Dispose();
+                }
+                compositedDisposables = null;
             }
         }
 

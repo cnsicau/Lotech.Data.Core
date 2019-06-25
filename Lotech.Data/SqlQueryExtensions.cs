@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Lotech.Data
@@ -23,6 +24,7 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="database"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ISqlQuery SqlQuery(this IDatabase database)
         {
             if (database == null)
@@ -37,6 +39,7 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="sql"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ISqlQuery SqlQuery(this IDatabase database, string sql)
         {
             if (database == null)
@@ -52,6 +55,7 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="sql"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ISqlQuery SqlQueryLine(this IDatabase database, string sql)
         {
             if (database == null)
@@ -64,8 +68,8 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
         /// <param name="args">用于sql中的参数引用</param>
-
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ISqlQuery SqlQuery(this IDatabase database, string sql, params object[] args)
         {
             if (database == null)
@@ -79,6 +83,7 @@ namespace Lotech.Data
         /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
         /// <param name="args">用于sql中的参数引用</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public ISqlQuery SqlQueryLine(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).AppendLine();
@@ -94,6 +99,7 @@ namespace Lotech.Data
         /// <param name="snippet">片断中可以使用 {0}, {1} 作为参数占位</param>
         /// <param name="args">片断中占位将被替换的参数值</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLine(this ISqlQuery query, string snippet, IList<object> args)
         {
             return query.Append(snippet, args).AppendLine();
@@ -105,6 +111,7 @@ namespace Lotech.Data
         /// <param name="snippet">片断中可以使用 {0}, {1} 作为参数占位</param>
         /// <param name="args">片断中占位将被替换的参数值</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery Append(this ISqlQuery query, string snippet, params object[] args)
         {
             IList<object> parameters = args;
@@ -118,6 +125,7 @@ namespace Lotech.Data
         /// <param name="snippet">不使用{n}占位的SQL片断，如：UserAccount = @account</param>
         /// <param name="parameters">绑定原始片断中的参数，顺序应与原始片断参数位置一致</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendRaw(this ISqlQuery query, string snippet, IEnumerable<SqlQueryParameter> parameters)
         {
             IEnumerable<SqlQueryParameter> args = parameters;
@@ -130,6 +138,7 @@ namespace Lotech.Data
         /// <param name="snippet">不使用{n}占位的SQL片断，如：UserAccount = @account</param>
         /// <param name="parameters">绑定原始片断中的参数，顺序应与原始片断参数位置一致</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendRaw(this ISqlQuery query, string snippet, params SqlQueryParameter[] parameters)
         {
             return query.AppendRaw(snippet, parameters);
@@ -142,6 +151,7 @@ namespace Lotech.Data
         /// <param name="snippet">不使用{n}占位的SQL片断，如：UserAccount = @account</param>
         /// <param name="parameters">绑定原始片断中的参数，顺序应与原始片断参数位置一致</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineRaw(this ISqlQuery query, string snippet, params SqlQueryParameter[] parameters)
         {
             return query.AppendRaw(snippet, parameters).AppendLine();
@@ -153,6 +163,7 @@ namespace Lotech.Data
         /// <param name="query"></param>
         /// <param name="subQuery"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery Append(this ISqlQuery query, ISqlQuery subQuery)
         {
             return query.AppendRaw(subQuery.GetSnippets(), subQuery.GetParameters());
@@ -164,6 +175,7 @@ namespace Lotech.Data
         /// <param name="query"></param>
         /// <param name="subQuery"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLine(this ISqlQuery query, ISqlQuery subQuery)
         {
             return query.Append(subQuery).AppendLine();
@@ -175,25 +187,30 @@ namespace Lotech.Data
         /// <param name="query"></param>
         /// <param name="val"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery Append(this ISqlQuery query, int val)
         {
             return query.AppendRaw(val.ToString());
         }
+
         /// <summary>
         /// 追加原始数字字符串并换行
         /// </summary>
         /// <param name="query"></param>
         /// <param name="val"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLine(this ISqlQuery query, int val)
         {
             return query.AppendRaw(val.ToString()).AppendLine();
         }
+
         /// <summary>
         /// 追加换行
         /// </summary>
         /// <param name="query"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLine(this ISqlQuery query)
         {
             return query.Append(Environment.NewLine);
@@ -205,6 +222,7 @@ namespace Lotech.Data
         /// <param name="query"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLine(this ISqlQuery query, string snippet)
         {
             return query.Append(snippet).AppendLine();
@@ -217,6 +235,7 @@ namespace Lotech.Data
         /// <param name="snippet">片断中可以使用 {0}, {1} 作为参数占位</param>
         /// <param name="args">片断中占位将被替换的参数值</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLine(this ISqlQuery query, string snippet, params object[] args)
         {
             return query.Append(snippet, args).AppendLine();
@@ -229,13 +248,10 @@ namespace Lotech.Data
         /// <param name="predicate">条件值为真是，追加片断内容</param>
         /// <param name="snippet">要追加的片断内容</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendIf(this ISqlQuery query, bool predicate, string snippet)
         {
-            if (predicate)
-            {
-                return query.Append(snippet);
-            }
-            return query;
+            return predicate ? query.Append(snippet) : query;
         }
 
         /// <summary>
@@ -246,13 +262,10 @@ namespace Lotech.Data
         /// <param name="snippet">片断中可以使用 {0}, {1} 作为参数占位</param>
         /// <param name="args">片断中占位将被替换的参数值</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendIf(this ISqlQuery query, bool predicate, string snippet, params object[] args)
         {
-            if (predicate)
-            {
-                return query.Append(snippet, args);
-            }
-            return query;
+            return predicate ? query.Append(snippet, args) : query;
         }
 
         /// <summary>
@@ -262,13 +275,10 @@ namespace Lotech.Data
         /// <param name="predicate">条件值为真是，追加片断内容</param>
         /// <param name="snippet">要追加的片断内容</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineIf(this ISqlQuery query, bool predicate, string snippet)
         {
-            if (predicate)
-            {
-                return query.AppendLine(snippet);
-            }
-            return query;
+            return predicate ? query.AppendLine(snippet) : query;
         }
 
         /// <summary>
@@ -279,13 +289,180 @@ namespace Lotech.Data
         /// <param name="snippet">片断中可以使用 {0}, {1} 作为参数占位</param>
         /// <param name="args">片断中占位将被替换的参数值</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineIf(this ISqlQuery query, bool predicate, string snippet, params object[] args)
         {
-            if (predicate)
-            {
-                return query.AppendLine(snippet, args);
-            }
-            return query;
+            return predicate ? query.AppendLine(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="val"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendIfNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
+        {
+            return !string.IsNullOrEmpty(val) ? query.Append(snippet) : query;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="val"></param>
+        /// <param name="snippet"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendIfNotNullOrEmpty(this ISqlQuery query, string val, string snippet, params object[] args)
+        {
+            return !string.IsNullOrEmpty(val) ? query.Append(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="val"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendLineIfNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
+        {
+            return !string.IsNullOrEmpty(val) ? query.AppendLine(snippet) : query;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="val"></param>
+        /// <param name="snippet"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendLineIfNotNullOrEmpty(this ISqlQuery query, string val, string snippet, params object[] args)
+        {
+            return !string.IsNullOrEmpty(val) ? query.AppendLine(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 当val不为null时，追加snippet片断，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，支持 {n} 解析 args 位置的参数</param>
+        /// <param name="args">参数清单</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendIfNotNull<T>(this ISqlQuery query, T val, string snippet, params object[] args) where T : class
+        {
+            return val != null ? query.Append(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 当val有值时，追加snippet片断，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，支持 {n} 解析 args 位置的参数</param>
+        /// <param name="args">参数清单</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendIfNotNull<T>(this ISqlQuery query, T? val, string snippet, params object[] args) where T : struct
+        {
+            return val.HasValue ? query.Append(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 当val不为null时，追加snippet片断，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，不支持 {n} 参数解析</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendIfNotNull<T>(this ISqlQuery query, T val, string snippet) where T : class
+        {
+            return val != null ? query.Append(snippet) : query;
+        }
+
+        /// <summary>
+        /// 当val有值时，追加snippet片断，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，不支持 {n} 参数解析</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendIfNotNull<T>(this ISqlQuery query, T? val, string snippet) where T : struct
+        {
+            return val.HasValue ? query.Append(snippet) : query;
+        }
+
+        /// <summary>
+        /// 当val不为null时，追加snippet片断并换行，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，支持 {n} 解析 args 位置的参数</param>
+        /// <param name="args">参数清单</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendLineIfNotNull<T>(this ISqlQuery query, T val, string snippet, params object[] args) where T : class
+        {
+            return val != null ? query.AppendLine(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 当val有值时，追加snippet片断并换行，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，支持 {n} 解析 args 位置的参数</param>
+        /// <param name="args">参数清单</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendLineIfNotNull<T>(this ISqlQuery query, T? val, string snippet, params object[] args) where T : struct
+        {
+            return val.HasValue ? query.AppendLine(snippet, args) : query;
+        }
+
+        /// <summary>
+        /// 当val不为null时，追加snippet片断并换行，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，不支持 {n} 参数解析</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendLineIfNotNull<T>(this ISqlQuery query, T val, string snippet) where T : class
+        {
+            return val != null ? query.AppendLine(snippet) : query;
+        }
+
+        /// <summary>
+        /// 当val有值时，追加snippet片断并换行，不支持参数占位解析
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="val">判定的值</param>
+        /// <param name="snippet">SQL片断，不支持 {n} 参数解析</param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISqlQuery AppendLineIfNotNull<T>(this ISqlQuery query, T? val, string snippet) where T : struct
+        {
+            return val.HasValue ? query.AppendLine(snippet) : query;
         }
 
         /// <summary>
@@ -295,13 +472,10 @@ namespace Lotech.Data
         /// <param name="val">要判定的值（{0}占位值）</param>
         /// <param name="snippet">SQL片断，可使用 {0} 接收 val 参数绑定</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendNotNull(this ISqlQuery query, object val, string snippet)
         {
-            if (val != null)
-            {
-                return query.Append(snippet, val);
-            }
-            return query;
+            return val != null ? query.Append(snippet, val) : query;
         }
 
         /// <summary>
@@ -311,13 +485,10 @@ namespace Lotech.Data
         /// <param name="val">要判定的值（{0}占位值）</param>
         /// <param name="snippet">SQL片断，可使用 {0} 接收 val 参数绑定</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineNotNull(this ISqlQuery query, object val, string snippet)
         {
-            if (val != null)
-            {
-                return query.AppendLine(snippet, val);
-            }
-            return query;
+            return val != null ? query.AppendLine(snippet, val) : query;
         }
 
         /// <summary>
@@ -327,13 +498,10 @@ namespace Lotech.Data
         /// <param name="str">要判定的字符串（{0}占位值）</param>
         /// <param name="snippet">SQL片断，可使用 {0} 接收 str 参数绑定</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendNotNullOrEmpty(this ISqlQuery query, string str, string snippet)
         {
-            if (str != null && str.Length > 0)
-            {
-                return query.Append(snippet, new[] { str });
-            }
-            return query;
+            return !string.IsNullOrEmpty(str) ? query.Append(snippet, new object[] { str }) : query;
         }
 
         /// <summary>
@@ -343,13 +511,10 @@ namespace Lotech.Data
         /// <param name="str">要判定的字符串（{0}占位值）</param>
         /// <param name="snippet">SQL片断，可使用 {0} 接收 str 参数绑定</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineNotNullOrEmpty(this ISqlQuery query, string str, string snippet)
         {
-            if (str != null && str.Length > 0)
-            {
-                return query.AppendLine(snippet, new[] { str });
-            }
-            return query;
+            return !string.IsNullOrEmpty(str) ? query.AppendLine(snippet, new object[] { str }) : query;
         }
 
         /// <summary>
@@ -359,6 +524,7 @@ namespace Lotech.Data
         /// <param name="query"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineExpression<TEntity>(this ISqlQuery query, Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
         {
@@ -372,6 +538,7 @@ namespace Lotech.Data
         /// <param name="query"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendExpression<TEntity>(this ISqlQuery query, Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
         {
@@ -386,14 +553,11 @@ namespace Lotech.Data
         /// <param name="condition">判定条件</param>
         /// <param name="predicate">表达式</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendExpressionIf<TEntity>(this ISqlQuery query, bool condition, Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
         {
-            if (condition)
-            {
-                return query.AppendExpression(predicate);
-            }
-            return query;
+            return condition ? query.AppendExpression(predicate) : query;
         }
 
         /// <summary>
@@ -404,14 +568,11 @@ namespace Lotech.Data
         /// <param name="condition">判定条件</param>
         /// <param name="predicate">表达式</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineExpressionIf<TEntity>(this ISqlQuery query, bool condition, Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
         {
-            if (condition)
-            {
-                return query.AppendLineExpression(predicate);
-            }
-            return query;
+            return condition ? query.AppendLineExpression(predicate) : query;
         }
 
         /// <summary>
@@ -422,6 +583,7 @@ namespace Lotech.Data
         /// <param name="expressionVisitor"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendExpression<TEntity>(this ISqlQuery query, SqlExpressionVisitor<TEntity> expressionVisitor, Expression<Func<TEntity, bool>> predicate)
             where TEntity : class
         {
@@ -438,6 +600,7 @@ namespace Lotech.Data
         /// <param name="items"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, IEnumerable<TItem> items)
         {
             if (items == null) return query;
@@ -474,6 +637,7 @@ namespace Lotech.Data
         /// <param name="items"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, params TItem[] items)
         {
             return query.AppendIn(snippet, (IEnumerable<TItem>)items);
@@ -488,6 +652,7 @@ namespace Lotech.Data
         /// <param name="items"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISqlQuery AppendLineIn<TItem>(this ISqlQuery query, string snippet, params TItem[] items)
         {
             return query.AppendIn(snippet, items).AppendLine();
@@ -504,6 +669,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">参数清单</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IDataReader ExecuteSqlReader(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteReader();
@@ -517,6 +683,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">参数清单</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public object ExecuteSqlScalar(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteScalar();
@@ -530,6 +697,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">参数清单</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public T ExecuteSqlScalar<T>(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteScalar<T>();
@@ -543,6 +711,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">参数清单</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public DataSet ExecuteSqlDataSet(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteDataSet();
@@ -555,6 +724,7 @@ namespace Lotech.Data
         /// <param name="database"></param>
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">参数清单</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public void ExecuteSqlNonQuery(this IDatabase database, string sql, params object[] args)
         {
             database.SqlQuery(sql, args).ExecuteNonQuery();
@@ -568,6 +738,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public dynamic ExecuteSqlEntity(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteEntity();
@@ -581,6 +752,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public dynamic[] ExecuteSqlEntities(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteEntities();
@@ -594,6 +766,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TEntity ExecuteSqlEntity<TEntity>(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteEntity<TEntity>();
@@ -607,6 +780,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public TEntity[] ExecuteSqlEntities<TEntity>(this IDatabase database, string sql, params object[] args)
         {
             if (args == null || args.Length == 0)
@@ -623,6 +797,7 @@ namespace Lotech.Data
         /// <param name="sql">SQL语句，可使用 {0} 作为参数占位引用后续参数值</param>
         /// <param name="args">命名参数如:   new { name = "OK", code = "ok" }</param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public IEnumerable<TEntity> ExecuteSqlEnumerable<TEntity>(this IDatabase database, string sql, params object[] args)
         {
             return database.SqlQuery(sql, args).ExecuteEnumerable<TEntity>();
@@ -637,6 +812,7 @@ namespace Lotech.Data
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="database"></param>
         /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static public UpdateBuilder<TEntity> Update<TEntity>(this IDatabase database) where TEntity : class, new()
         {
             return new UpdateBuilder<TEntity>(database);

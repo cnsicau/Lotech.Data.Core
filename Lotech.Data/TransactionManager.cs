@@ -36,6 +36,7 @@ namespace Lotech.Data
         private static int sequence;
 
         private readonly int id;
+        private bool suppress;
         private Dictionary<string, DbTransaction> transactions;
         private TransactionManager parentManager;
         private readonly IsolationLevel? isolationLevel;
@@ -120,6 +121,18 @@ namespace Lotech.Data
 
         #region Transaction Methods
         /// <summary>
+        /// 进入无事务状态
+        /// </summary>
+        public void Suppress()
+        {
+            if (parentManager == null && transactions.Count > 0)
+                throw new InvalidOperationException("cannot suppress used transaction manager");
+
+            transactions = null;
+            parentManager = null;
+            suppress = true;
+        }
+        /// <summary>
         /// 为给定连接加入事务
         /// </summary>
         /// <param name="connection"></param>
@@ -166,7 +179,15 @@ namespace Lotech.Data
         /// <summary>
         /// 获取当前事务管理器
         /// </summary>
-        public static TransactionManager Current { get { return currentTansactionManager?.TransactionManager; } }
+        public static TransactionManager Current
+        {
+            get
+            {
+                var current = currentTansactionManager?.TransactionManager;
+                if (current != null && current.suppress) return null;
+                return current;
+            }
+        }
 
         /// <summary>
         /// 获取当前连接

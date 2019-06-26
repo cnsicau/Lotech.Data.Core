@@ -57,6 +57,7 @@ namespace Lotech.Data
         /// <returns></returns>
         internal virtual ConnectionSubstitute GetConnection(DbCommand command)
         {
+            ConnectionSubstitute connection;
             if (TransactionManager.Current != null)
             {
                 DbTransaction transaction;
@@ -68,10 +69,11 @@ namespace Lotech.Data
                     return new ConnectionSubstitute(transaction.Connection).Ref();
                 }
             }
-
-            var connection = TransactionScopeConnections.GetConnection(this);
-            if (connection != null)
-                return connection.Ref();
+            else
+            {
+                connection = TransactionScopeConnections.GetConnection(this);
+                if (connection != null) return connection.Ref();
+            }
 
             connection = new ConnectionSubstitute(CreateConnection());
 

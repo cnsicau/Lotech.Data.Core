@@ -26,15 +26,20 @@ namespace Lotech.Data
             }
         }
         #endregion
+
         #region Fields
 
         [ThreadStatic]
-        static TransactionManagerChain currentTansactionManager;
+        private static TransactionManagerChain currentTansactionManager;
 
-        private readonly long id;
-        private readonly Dictionary<string, DbTransaction> transactions;
-        private readonly TransactionManager parentManager;
+        [ThreadStatic]
+        private static int sequence;
+
+        private readonly int id;
+        private Dictionary<string, DbTransaction> transactions;
+        private TransactionManager parentManager;
         private readonly IsolationLevel? isolationLevel;
+        private bool disposed;
         #endregion
 
         #region Event
@@ -49,7 +54,7 @@ namespace Lotech.Data
         /// <summary>
         /// 
         /// </summary>
-        public TransactionManager(): this(false, null) { }
+        public TransactionManager() : this(false, null) { }
 
 
         /// <summary>
@@ -73,28 +78,21 @@ namespace Lotech.Data
 
         TransactionManager(bool requireNew, IsolationLevel? isolationLevel)
         {
-            this.isolationLevel = isolationLevel;
-            if (currentTansactionManager == null)
-            {
-                currentTansactionManager = new TransactionManagerChain(this, null);
-            }
-            else if (requireNew)
-            {
-                currentTansactionManager = new TransactionManagerChain(this, currentTansactionManager);
-            }
-            else // 存在父管理器时向上使用
+            if (currentTansactionManager != null && !requireNew)
             {
                 parentManager = currentTansactionManager.TransactionManager;
-                // 继承上级
                 id = parentManager.id;
                 transactions = parentManager.transactions;
                 isolationLevel = parentManager.isolationLevel;
-                // 同步事务回调
                 parentManager.Completed += (s, e) => Completed?.Invoke(this, e);
-                return;
             }
-            id = DateTime.Now.Ticks;
-            transactions = new Dictionary<string, DbTransaction>();
+            else
+            {
+                id = ++sequence;
+                this.isolationLevel = isolationLevel;
+                transactions = new Dictionary<string, DbTransaction>();
+            }
+            currentTansactionManager = new TransactionManagerChain(this, currentTansactionManager);
         }
 
         #endregion
@@ -132,6 +130,8 @@ namespace Lotech.Data
             if (connection == null)
                 throw new ArgumentNullException(nameof(connection));
 
+            if (transactions == null) throw new InvalidOperationException("current transaction is committed or rollback.");
+
             var transaction = !isolationLevel.HasValue ? connection.BeginTransaction()
                                 : connection.BeginTransaction(isolationLevel.Value);
             transactions.Add(connectionString, transaction);
@@ -144,7 +144,12 @@ namespace Lotech.Data
         /// </summary>
         public void Commit()
         {
-            if (parentManager != null) return; // 嵌套子管理器，空提交
+            if (parentManager != null)
+            {
+                transactions = null;
+                return;                 // 嵌套子管理器，空提交不再同步事务
+            }
+
             var keys = transactions.Keys.ToArray();
             foreach (var key in keys)
             {
@@ -174,11 +179,13 @@ namespace Lotech.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            TransactionManagerChain chain = currentTansactionManager;
-            while (chain != null)
+            if (currentTansactionManager != null)
             {
-                if (chain.TransactionManager.transactions.TryGetValue(connectionString, out transaction)) return true;
-                chain = chain.Next;
+                if (currentTansactionManager.TransactionManager.transactions == null)
+                    throw new InvalidOperationException("current transaction is committed or rollback.");
+
+                if (currentTansactionManager.TransactionManager.transactions.TryGetValue(connectionString, out transaction))
+                    return true;
             }
 
             transaction = null;
@@ -187,22 +194,38 @@ namespace Lotech.Data
         #endregion
 
         #region 
+        void DisposeTransactions()
+        {
+            if (transactions != null)
+            {
+                if (parentManager != null)
+                {
+                    parentManager.DisposeTransactions();  // 释放上层事务
+                    parentManager = null;
+                }
+                else
+                {
+                    foreach (var transaction in transactions.Values)
+                    {
+                        using (transaction)
+                        {
+                            if (transaction.Connection.State == ConnectionState.Open)
+                                transaction.Rollback();
+                        }
+                    }
+                    Completed?.Invoke(this, EventArgs.Empty);
+                }
+                transactions = null;
+            }
+        }
         void IDisposable.Dispose()
         {
-            if (parentManager == null && transactions != null)
+            if (!disposed)
             {
-                foreach (var transaction in transactions.Values)
-                {
-                    using (transaction)
-                    {
-                        if(transaction.Connection.State == ConnectionState.Open)
-                            transaction.Rollback();
-                    }
-                }
-                transactions.Clear();
+                DisposeTransactions();
 
                 currentTansactionManager = currentTansactionManager.Next;
-                Completed?.Invoke(this, EventArgs.Empty);
+                disposed = true;
             }
         }
         #endregion

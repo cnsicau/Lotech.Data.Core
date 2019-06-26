@@ -17,6 +17,8 @@ namespace Lotech.Data
         /// </summary>
         public DbConnection Connection { get { return connection; } }
 
+        public override string ConnectionString { get => connection.ConnectionString; set => throw new NotSupportedException(); }
+
         /// <summary>
         /// 
         /// </summary>
@@ -59,9 +61,9 @@ namespace Lotech.Data
             if (TransactionManager.Current != null)
             {
                 DbTransaction transaction;
-                if (!TransactionManager.TryGetTransaction(connection.ConnectionString, out transaction))
+                if (!TransactionManager.TryGetTransaction(ConnectionString, out transaction))
                 {
-                    transaction = TransactionManager.Current.EnlistTransaction(connection, connection.ConnectionString);
+                    transaction = TransactionManager.Current.EnlistTransaction(connection, ConnectionString);
                 }
                 command.Transaction = transaction;
             }

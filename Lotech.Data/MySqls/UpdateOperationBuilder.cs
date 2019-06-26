@@ -122,6 +122,7 @@ namespace Lotech.Data.MySqls
                 {
                     db.ExecuteNonQuery(command);
                     reverseBind(db, command, entity);
+                    transactionManager.Commit();
                 }
             };
         }

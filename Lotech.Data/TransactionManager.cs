@@ -79,7 +79,7 @@ namespace Lotech.Data
 
         TransactionManager(bool requireNew, IsolationLevel? isolationLevel)
         {
-            if (currentTansactionManager != null && !requireNew)
+            if (currentTansactionManager != null && !currentTansactionManager.TransactionManager.suppress && !requireNew)
             {
                 parentManager = currentTansactionManager.TransactionManager;
                 id = parentManager.id;

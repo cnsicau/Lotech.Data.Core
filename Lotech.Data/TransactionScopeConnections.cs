@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Transactions;
 
 namespace Lotech.Data
 {
 
-    using TransactionConnectionDictionary = ConcurrentDictionary<Transaction, ConcurrentDictionary<string, ConnectionSubstitute>>;
+    using TransactionConnectionDictionary = ConcurrentDictionary<Transaction, IDictionary<string, ConnectionSubstitute>>;
 
     /// <summary>
     /// 事务范围连接缓存
@@ -18,16 +19,16 @@ namespace Lotech.Data
         private static readonly TransactionConnectionDictionary transactionConnections = new TransactionConnectionDictionary();
 
         /// <summary>
-        /// 
+        /// 获取事务范围连接
         /// </summary>
         /// <returns></returns>
-        static ConcurrentDictionary<string, ConnectionSubstitute> GetTransactionConnections()
+        static IDictionary<string, ConnectionSubstitute> GetTransactionConnections()
         {
             return transactionConnections.GetOrAdd(Transaction.Current, transaction =>
             {
                 transaction.TransactionCompleted += (s, e) =>
                 {
-                    ConcurrentDictionary<string, ConnectionSubstitute> el;
+                    IDictionary<string, ConnectionSubstitute> el;
                     if (transactionConnections.TryRemove(e.Transaction, out el))
                     {
                         foreach (var subsitute in el.Values)
@@ -59,14 +60,19 @@ namespace Lotech.Data
             }
 
             var transactionConnections = GetTransactionConnections();
-
-            return transactionConnections.GetOrAdd(database.ConnectionString, (connectionString) =>
+            ConnectionSubstitute connectionSubstitute;
+            if (!transactionConnections.TryGetValue(database.ConnectionString, out connectionSubstitute))
             {
                 var connection = database.CreateConnection();
-                connection.ConnectionString = connectionString;
-                connection.Open();
-                return new ConnectionSubstitute(connection);
-            }).Ref();
+                try { connection.Open(); }
+                catch
+                {
+                    connection.Dispose();
+                    throw;
+                }
+                connectionSubstitute = new ConnectionSubstitute(connection);
+            }
+            return connectionSubstitute.Ref();
         }
     }
 }

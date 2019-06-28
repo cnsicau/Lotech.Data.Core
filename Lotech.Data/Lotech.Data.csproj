@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Lotech.Data</RootNamespace>
     <AssemblyName>Lotech.Data</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>

@@ -54,7 +54,7 @@ namespace Lotech.Data.Configurations
                         Trace = configuration?.Settings?.Trace ?? false
                     },
                     ConnectionStrings = new ConnectionStringSettingsCollection(
-                        configuration.ConnectionStrings.ToDictionary(_ => _.Name ?? string.Empty, _ => new ConnectionStringSettings(_.Items)
+                        configuration.ConnectionStrings.ToDictionary(_ => _.Name ?? string.Empty, _ => new ConnectionStringSettings(_.Properties)
                         {
                             ConnectionString = _.ConnectionString,
                             ParameterPrefix = _.ParameterPrefix,
@@ -71,7 +71,7 @@ namespace Lotech.Data.Configurations
         {
             if (e.ObjectBeingDeserialized is ConnectionStringsConfiguration)
             {
-                ((ConnectionStringsConfiguration)e.ObjectBeingDeserialized).Items.Add(
+                ((ConnectionStringsConfiguration)e.ObjectBeingDeserialized).Properties.Add(
                     e.Attr.Name,
                     e.Attr.Value
                 );
@@ -106,14 +106,14 @@ namespace Lotech.Data.Configurations
             /// </summary>
             public ConnectionStringsConfiguration()
             {
-                Items = new Dictionary<string, string>();
+                Properties = new Dictionary<string, string>();
             }
 
             /// <summary>
-            /// 
+            /// 连接串属性
             /// </summary>
             [XmlIgnore]
-            public Dictionary<string, string> Items { get; }
+            public Dictionary<string, string> Properties { get; }
 
             /// <summary>
             /// 

@@ -17,7 +17,14 @@ namespace Lotech.Data
         /// </summary>
         public DbConnection Connection { get { return connection; } }
 
-        public override string ConnectionString { get => connection.ConnectionString; set => throw new NotSupportedException(); }
+        /// <summary>
+        /// 
+        /// </summary>
+        public override string ConnectionString
+        {
+            get { return connection.ConnectionString; }
+            set { throw new NotSupportedException(); }
+        }
 
         /// <summary>
         /// 
@@ -160,24 +167,7 @@ namespace Lotech.Data
                 {
                     using (var reader = dbCommand.ExecuteReader(behavior))
                     {
-                        var dataSet = new DataSet(dbCommand.CommandText);
-                        var index = 0;
-                        do
-                        {
-                            var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
-                            }
-                            var rows = new object[reader.FieldCount];
-                            while (reader.Read())
-                            {
-                                reader.GetValues(rows);
-                                table.Rows.Add(rows);
-                            }
-                        } while (reader.NextResult());
-
-                        return dataSet;
+                        return CreateDataSet(reader);
                     }
                 });
         }

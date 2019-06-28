@@ -10,13 +10,13 @@ namespace Lotech.Data.Configurations
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="items"></param>
-        public ConnectionStringSettings(IReadOnlyDictionary<string, string> items) { Items = items; }
+        /// <param name="properties"></param>
+        public ConnectionStringSettings(IDictionary<string, string> properties) { Properties = properties; }
 
         /// <summary>
         /// 额外属性
         /// </summary>
-        public IReadOnlyDictionary<string, string> Items { get; }
+        public IDictionary<string, string> Properties { get; }
 
         /// <summary>
         /// 提供者名称，如：System.Data.SqlClient

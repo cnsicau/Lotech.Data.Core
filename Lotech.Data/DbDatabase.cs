@@ -61,6 +61,33 @@ namespace Lotech.Data
         }
 
         /// <summary>
+        /// 由 DataReader 创建 DataSet
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        protected virtual DataSet CreateDataSet(IDataReader reader)
+        {
+            var dataSet = new DataSet();
+            var index = 0;
+            do
+            {
+                var table = dataSet.Tables.Add("Table" + (index++ == 0 ? "" : index.ToString()));
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    table.Columns.Add(reader.GetName(i), reader.GetFieldType(i));
+                }
+                var rows = new object[reader.FieldCount];
+                while (reader.Read())
+                {
+                    reader.GetValues(rows);
+                    table.Rows.Add(rows);
+                }
+            } while (reader.NextResult());
+
+            return dataSet;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         public virtual IDescriptorProvider DescriptorProvider { get; set; }

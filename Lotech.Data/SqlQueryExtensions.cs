@@ -623,7 +623,7 @@ namespace Lotech.Data
         /// <param name="val"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendNotNullOrEmptyStartsWith(this ISqlQuery query, string val, string snippet)
+        public static ISqlQuery AppendStartsWithNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
         {
             return string.IsNullOrEmpty(val) ? query : query.Append(snippet, val + '%');
         }
@@ -636,7 +636,7 @@ namespace Lotech.Data
         /// <param name="val"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendNotNullOrEmptyEndsWith(this ISqlQuery query, string val, string snippet)
+        public static ISqlQuery AppendEndsWithNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
         {
             return string.IsNullOrEmpty(val) ? query : query.Append(snippet, '%' + val);
         }
@@ -649,7 +649,7 @@ namespace Lotech.Data
         /// <param name="val"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendNotNullOrEmptyContains(this ISqlQuery query, string val, string snippet)
+        public static ISqlQuery AppendContainsNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
         {
             return string.IsNullOrEmpty(val) ? query : query.Append(snippet, '%' + val + '%');
         }
@@ -661,7 +661,7 @@ namespace Lotech.Data
         /// <param name="val"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendLineNotNullOrEmptyStartsWith(this ISqlQuery query, string val, string snippet)
+        public static ISqlQuery AppendStartsWithLineNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
         {
             return string.IsNullOrEmpty(val) ? query : query.AppendLine(snippet, val + '%');
         }
@@ -674,7 +674,7 @@ namespace Lotech.Data
         /// <param name="val"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendLineNotNullOrEmptyEndsWith(this ISqlQuery query, string val, string snippet)
+        public static ISqlQuery AppendEndsWithLineNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
         {
             return string.IsNullOrEmpty(val) ? query : query.AppendLine(snippet, '%' + val);
         }
@@ -687,7 +687,7 @@ namespace Lotech.Data
         /// <param name="val"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendLineNotNullOrEmptyContains(this ISqlQuery query, string val, string snippet)
+        public static ISqlQuery AppendContainsLineNotNullOrEmpty(this ISqlQuery query, string val, string snippet)
         {
             return string.IsNullOrEmpty(val) ? query : query.AppendLine(snippet, '%' + val + '%');
         }

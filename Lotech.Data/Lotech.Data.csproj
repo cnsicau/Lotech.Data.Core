@@ -33,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Lotech.Data.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />

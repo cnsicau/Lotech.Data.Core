@@ -41,12 +41,12 @@ namespace Lotech.Data
         }
 
         /// <summary>
-        /// 
+        /// 返回当前包裹的连接
         /// </summary>
         /// <returns></returns>
         public override DbConnection CreateConnection()
         {
-            throw new NotSupportedException("use Connection property");
+            return connection;
         }
 
         /// <summary>

@@ -101,11 +101,12 @@ namespace Lotech.Data.Queries
                         var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
 
                         var mapContext = new MapContext(i, member.Name, member.Type);
+                        blocks.Add(Expression.Assign(context, Expression.Constant(mapContext)));
+
                         var fieldExpression = Expression.Constant(i);
                         blocks.Add(Expression.Assign(value, Expression.Call(record,
                                 typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue)), fieldExpression)
                             ));
-                        blocks.Add(Expression.Assign(context, Expression.Constant(mapContext)));
 
                         var to = typeof(Convert).GetMethod("To" + valueType.Name, new[] { typeof(object) });
 

@@ -65,14 +65,11 @@ namespace Lotech.Data
 
         void EnlistTransaction(DbCommand command)
         {
-            if (TransactionManager.Current != null)
+            var transaction = TransactionManager.Current;
+            if (transaction != null)
             {
-                DbTransaction transaction;
-                if (!TransactionManager.TryGetTransaction(ConnectionString, out transaction))
-                {
-                    transaction = TransactionManager.Current.EnlistTransaction(connection, ConnectionString);
-                }
-                command.Transaction = transaction;
+                var tx = transaction.GetTransaction(ConnectionString);
+                command.Transaction = tx ?? transaction.Enlist(connection, connection.ConnectionString);
             }
         }
 

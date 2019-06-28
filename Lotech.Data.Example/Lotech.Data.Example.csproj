@@ -47,6 +47,7 @@
     <Compile Include="TestMethodCall.cs" />
     <Compile Include="TestPageExecutes.cs" />
     <Compile Include="TestSqlExecutes.cs" />
+    <Compile Include="TransactionManagerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Lotech.Data\Lotech.Data.csproj">
@@ -55,9 +56,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="database.xml">
+    <None Include="database.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp">

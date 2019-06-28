@@ -58,10 +58,12 @@ namespace Lotech.Data
         internal virtual ConnectionSubstitute GetConnection(DbCommand command)
         {
             ConnectionSubstitute connection;
-            if (TransactionManager.Current != null)
+            var transactionManager = TransactionManager.Current;
+            if (transactionManager != null)
             {
-                DbTransaction transaction;
-                if (TransactionManager.TryGetTransaction(ConnectionString, out transaction))
+                DbTransaction transaction = transactionManager.GetTransaction(ConnectionString);
+
+                if (transaction != null)
                 {
                     // 绑定事务
                     command.Transaction = transaction;
@@ -86,8 +88,9 @@ namespace Lotech.Data
                     connection.Dispose();
                     throw;
                 }
+
                 TransactionManager.Current.Completed += (s, e) => connection.Dispose();
-                command.Transaction = TransactionManager.Current.EnlistTransaction(connection.Connection, ConnectionString);  // 绑定事务到 DbCommand中
+                command.Transaction = TransactionManager.Current.Enlist(connection.Connection, ConnectionString);  // 绑定事务到 DbCommand中
                 return connection.Ref();   // 以便上面完成时关闭连接，避免过早关闭
             }
             return connection;

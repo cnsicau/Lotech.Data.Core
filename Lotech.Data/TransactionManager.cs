@@ -2,253 +2,194 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Lotech.Data
 {
     /// <summary>
-    /// 
+    /// Transaction Manager
     /// </summary>
     public class TransactionManager : IDisposable
     {
-        #region Types
-        class TransactionManagerChain
+        class Chain
         {
-            internal readonly TransactionManager TransactionManager;
-            internal readonly TransactionManagerChain Next;
+            [ThreadStatic]
+            static Chain current;
 
-            internal TransactionManagerChain(TransactionManager transactionManager, TransactionManagerChain next)
+            public static Chain Current { get { return current; } }
+
+            Chain(Transaction transaction)
             {
-                TransactionManager = transactionManager;
-                Next = next;
+                Transaction = transaction;
+                Next = current;
+            }
+
+            public Transaction Transaction { get; set; }
+
+            public Chain Next { get; }
+
+            public static void Join(Transaction transaction)
+            {
+                current = new Chain(transaction);
+            }
+
+            public static void Broke()
+            {
+                current = current?.Next;
             }
         }
-        #endregion
-
-        #region Fields
-
-        [ThreadStatic]
-        private static TransactionManagerChain currentTansactionManager;
-
-        [ThreadStatic]
-        private static int sequence;
-
-        private readonly int id;
-        private bool suppress;
-        private Dictionary<string, DbTransaction> transactions;
-        private TransactionManager parentManager;
-        private readonly IsolationLevel? isolationLevel;
-        private bool disposed;
-        #endregion
-
-        #region Event
-        /// <summary>
-        /// 完成
-        /// </summary>
-        public event EventHandler Completed;
-        #endregion
-
-        #region Constructor
-
         /// <summary>
         /// 
         /// </summary>
-        public TransactionManager() : this(false, null) { }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="isolationLevel"></param>
-        public TransactionManager(IsolationLevel isolationLevel) : this(false, (IsolationLevel?)isolationLevel) { }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="requireNew"></param>
-        public TransactionManager(bool requireNew) : this(requireNew, null) { }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="requireNew"></param>
-        /// <param name="isolationLevel"></param>
-        public TransactionManager(bool requireNew, IsolationLevel isolationLevel) : this(requireNew, (IsolationLevel?)isolationLevel) { }
-
-        TransactionManager(bool requireNew, IsolationLevel? isolationLevel)
+        public class Transaction
         {
-            if (currentTansactionManager != null && !currentTansactionManager.TransactionManager.suppress && !requireNew)
+            KeyValuePair<string, DbTransaction>[] transactions;
+            IsolationLevel? level;
+            /// <summary>
+            /// 
+            /// </summary>
+            public bool IsCompleted { get; private set; }
+
+            internal Transaction(IsolationLevel? level) { this.level = level; }
+
+            void CheckCompleted() { if (IsCompleted) throw new InvalidOperationException("transation is already completed."); }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void Commit()
             {
-                parentManager = currentTansactionManager.TransactionManager;
-                id = parentManager.id;
-                transactions = parentManager.transactions;
-                isolationLevel = parentManager.isolationLevel;
-                parentManager.Completed += (s, e) => Completed?.Invoke(this, e);
+                CheckCompleted();
+                if (transactions != null)
+                {
+                    for (int i = 0; i < transactions.Length; i++)
+                    {
+                        transactions[i].Value.Commit();
+                    }
+                    transactions = null;
+                }
+                Complete();
             }
-            else
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void Rollback()
             {
-                id = ++sequence;
-                this.isolationLevel = isolationLevel;
-                transactions = new Dictionary<string, DbTransaction>();
+                CheckCompleted();
+                if (transactions != null)
+                {
+                    for (int i = 0; i < transactions.Length; i++)
+                    {
+                        transactions[i].Value.Rollback();
+                    }
+                    transactions = null;
+                }
+                Complete();
             }
-            currentTansactionManager = new TransactionManagerChain(this, currentTansactionManager);
+
+            #region Event
+            /// <summary>
+            /// 完成
+            /// </summary>
+            public event EventHandler Completed;
+            #endregion
+
+            void Complete()
+            {
+                IsCompleted = true;
+                Completed?.Invoke(this, EventArgs.Empty);
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="connection"></param>
+            /// <param name="connectionString"></param>
+            public DbTransaction Enlist(DbConnection connection, string connectionString)
+            {
+                CheckCompleted();
+
+                var transaction = level.HasValue ? connection.BeginTransaction(level.Value) : connection.BeginTransaction();
+                var size = transactions == null ? 0 : transactions.Length;
+                Array.Resize(ref transactions, size + 1);
+                transactions[size] = new KeyValuePair<string, DbTransaction>(connectionString, transaction);
+
+                return transaction;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="connectionString"></param>
+            /// <returns></returns>
+            public DbTransaction GetTransaction(string connectionString)
+            {
+                CheckCompleted();
+                if (transactions == null) return null;
+                for (int i = 0; i < transactions.Length; i++)
+                {
+                    var transaction = transactions[i];
+                    if (transaction.Key == connectionString) return transaction.Value;
+                }
+                return null;
+            }
         }
 
-        #endregion
-
-        #region OverrideMethod
+        bool disposed;
         /// <summary>
-        /// 返回ID的Hash值
+        /// 
         /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
+        /// <param name="requiresNew"></param>
+        /// <param name="level"></param>
+        /// <param name="suppress"></param>
+        public TransactionManager(bool requiresNew = false, IsolationLevel? level = null, bool suppress = false)
         {
-            return id.GetHashCode();
+            if (suppress) Chain.Join(null);
+            else if (Current == null || requiresNew) Chain.Join(new Transaction(level));
+            else Chain.Join(Current);
         }
+
         /// <summary>
-        /// ID一致比较
+        /// 
         /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            return obj is TransactionManager && Equals(id, ((TransactionManager)obj).id);
-        }
-
-        #endregion
-
-        #region Transaction Methods
-        /// <summary>
-        /// 进入无事务状态
-        /// </summary>
-        public void Suppress()
-        {
-            if (parentManager == null && transactions.Count > 0)
-                throw new InvalidOperationException("cannot suppress used transaction manager");
-
-            transactions = null;
-            parentManager = null;
-            suppress = true;
-        }
-        /// <summary>
-        /// 为给定连接加入事务
-        /// </summary>
-        /// <param name="connection"></param>
-        /// <param name="connectionString"></param>
-        /// <returns></returns>
-        public DbTransaction EnlistTransaction(DbConnection connection, string connectionString)
-        {
-            if (connection == null)
-                throw new ArgumentNullException(nameof(connection));
-
-            if (transactions == null) throw new InvalidOperationException("current transaction is committed or rollback.");
-
-            var transaction = !isolationLevel.HasValue ? connection.BeginTransaction()
-                                : connection.BeginTransaction(isolationLevel.Value);
-            transactions.Add(connectionString, transaction);
-
-            return transaction;
-        }
+        static public Transaction Current { get { return Chain.Current?.Transaction; } }
 
         /// <summary>
-        /// 提交
+        /// 
         /// </summary>
         public void Commit()
         {
-            if (parentManager != null)
+            if (Current != null)
             {
-                transactions = null;
-                return;                 // 嵌套子管理器，空提交不再同步事务
-            }
-
-            var keys = transactions.Keys.ToArray();
-            foreach (var key in keys)
-            {
-                using (var transaction = transactions[key])
+                // has continus reference
+                if (Current == Chain.Current?.Next?.Transaction)
                 {
-                    transactions.Remove(key);
-                    transaction.Commit();
+                    Chain.Current.Transaction = null;
+                    return;
                 }
+                Current?.Commit();
             }
-        }
-        #endregion
-
-        #region Static Method
-        /// <summary>
-        /// 获取当前事务管理器
-        /// </summary>
-        public static TransactionManager Current
-        {
-            get
+            else
             {
-                var current = currentTansactionManager?.TransactionManager;
-                if (current != null && current.suppress) return null;
-                return current;
+                throw new InvalidOperationException("current transaction is missing.");
             }
         }
 
         /// <summary>
-        /// 获取当前连接
+        /// 
         /// </summary>
-        /// <param name="connectionString"></param>
-        /// <param name="transaction"></param>
-        /// <returns></returns>
-        static public bool TryGetTransaction(string connectionString, out DbTransaction transaction)
-        {
-            if (connectionString == null)
-                throw new ArgumentNullException(nameof(connectionString));
-
-            if (currentTansactionManager != null)
-            {
-                if (currentTansactionManager.TransactionManager.transactions == null)
-                    throw new InvalidOperationException("current transaction is committed or rollback.");
-
-                if (currentTansactionManager.TransactionManager.transactions.TryGetValue(connectionString, out transaction))
-                    return true;
-            }
-
-            transaction = null;
-            return false;
-        }
-        #endregion
-
-        #region 
-        void DisposeTransactions()
-        {
-            if (transactions != null)
-            {
-                if (parentManager != null)
-                {
-                    parentManager.DisposeTransactions();  // 释放上层事务
-                    parentManager = null;
-                }
-                else
-                {
-                    foreach (var transaction in transactions.Values)
-                    {
-                        using (transaction)
-                        {
-                            if (transaction.Connection.State == ConnectionState.Open)
-                                transaction.Rollback();
-                        }
-                    }
-                    Completed?.Invoke(this, EventArgs.Empty);
-                }
-                transactions = null;
-            }
-        }
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             if (!disposed)
             {
-                DisposeTransactions();
-
-                currentTansactionManager = currentTansactionManager.Next;
                 disposed = true;
+
+                if (Current != null && !Current.IsCompleted)
+                    Current.Rollback();
+
+                Chain.Broke();
             }
         }
-        #endregion
     }
 }

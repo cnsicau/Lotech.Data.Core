@@ -15,7 +15,7 @@ namespace Lotech.Data.Queries
         /// 全局参数ID编号，以避免构建子查询时参数名可能重复问题
         /// </summary>
         [ThreadStatic]
-        private static ushort _id = 0;
+        static int global_id;
 
         private readonly StringBuilder _snippets;
         private readonly List<SqlQueryParameter> _parameters = new List<SqlQueryParameter>(4);
@@ -32,7 +32,7 @@ namespace Lotech.Data.Queries
         internal SqlQuery(IDatabase database, int capacity) : base(database)
         {
             _snippets = new StringBuilder(capacity);
-            _id++;  // 随着SQLQuery对象增加
+            _index = (global_id++ & 0x7FF) << 20; ;  // 随着SQLQuery对象增加
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Lotech.Data.Queries
         internal SqlQuery(IDatabase database, string sql) : base(database)
         {
             _snippets = new StringBuilder(sql);
-            _id++;  // 随着SQLQuery对象增加
+            _index = (global_id++ & 0x7FF) << 20; ;  // 随着SQLQuery对象增加
         }
         #endregion
 
@@ -79,7 +79,11 @@ namespace Lotech.Data.Queries
                     {
                         if (placeIndex >= 0)
                         {
-                            var parameterName = database.BuildParameterName("p_" + _id + '_' + _index++);
+                            var parameterName = database.BuildParameterName("p" 
+                                + (_index >> 20)
+                                + "_"
+                                + (_index++ & 0xFFFFF)
+                            );
                             _snippets.Append(snippet, index, enterIndex - index).Append(parameterName);
 
                             var value = args[placeIndex];

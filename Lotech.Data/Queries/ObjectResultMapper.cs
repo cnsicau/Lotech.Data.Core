@@ -83,6 +83,11 @@ namespace Lotech.Data.Queries
             }
             var values = new object[columns.Length];
             reader.GetValues(values);
+            // DBNull to null
+            for (int i = values.Length - 1; i >= 0; i--)
+            {
+                if (values[i] == DBNull.Value) values[i] = null;
+            }
             result = new DataExpando(columns, values);
             return true;
         }

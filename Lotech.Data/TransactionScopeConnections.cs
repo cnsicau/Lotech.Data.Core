@@ -18,6 +18,18 @@ namespace Lotech.Data
         /// </summary>
         private static readonly TransactionConnectionDictionary transactionConnections = new TransactionConnectionDictionary();
 
+        static TransactionCompletedEventHandler OnTransactionCompleted = (s, e) =>
+        {
+            e.Transaction.TransactionCompleted -= OnTransactionCompleted;
+            List<KeyValuePair<string, ConnectionSubstitute>> connections;
+            if (transactionConnections.TryRemove(e.Transaction, out connections))
+            {
+                for (int i = connections.Count - 1; i >= 0; i--)
+                    connections[i].Value.Dispose();
+                connections.Clear();
+            }
+        };
+
         /// <summary>
         /// 获取事务范围连接
         /// </summary>
@@ -26,18 +38,8 @@ namespace Lotech.Data
         {
             return transactionConnections.GetOrAdd(Transaction.Current, transaction =>
             {
-                transaction.TransactionCompleted += (s, e) =>
-                {
-                    List<KeyValuePair<string, ConnectionSubstitute>> connections;
-                    if (transactionConnections.TryRemove(e.Transaction, out connections))
-                    {
-                        for (int i = connections.Count; i >= 0; i++)
-                            connections[i].Value.Dispose();
-                        connections.Clear();
-                    }
-                };
-
-                return new List<KeyValuePair<string, ConnectionSubstitute>>(2);
+                transaction.TransactionCompleted += OnTransactionCompleted;
+                return new List<KeyValuePair<string, ConnectionSubstitute>>(1);
             });
         }
 

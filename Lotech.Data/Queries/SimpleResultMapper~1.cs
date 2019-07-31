@@ -21,6 +21,7 @@ namespace Lotech.Data.Queries
 
             var resultType = typeof(T);
             var valueType = Nullable.GetUnderlyingType(resultType) ?? resultType;
+            if (valueType.IsEnum) valueType = Enum.GetUnderlyingType(valueType);
 
             var assign = Expression.Assign(value, Expression.Call(record
                      , typeof(IDataRecord).GetMethod(nameof(IDataRecord.GetValue))

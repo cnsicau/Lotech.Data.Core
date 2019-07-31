@@ -99,6 +99,7 @@ namespace Lotech.Data.Queries
                     if (member.Name.Equals(fields[i], StringComparison.InvariantCultureIgnoreCase))
                     {
                         var valueType = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+                        if (valueType.IsEnum) valueType = Enum.GetUnderlyingType(valueType);
 
                         var mapContext = new MapContext(i, member.Name, member.Type);
                         blocks.Add(Expression.Assign(context, Expression.Constant(mapContext)));

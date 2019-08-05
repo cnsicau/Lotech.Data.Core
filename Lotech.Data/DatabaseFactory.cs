@@ -73,6 +73,7 @@ namespace Lotech.Data
             db.ConnectionString = connectionSettings.ConnectionString;
             return db;
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -81,6 +82,9 @@ namespace Lotech.Data
         public static Func<IDatabase> CreateDatabaseProvider(ConnectionStringSettings connectionSettings)
         {
             var provider = Configurations.DbProviderFactories.GetFactory(connectionSettings.ProviderName);
+            var factory = DatabaseFactoryProviderAttribute.CreateDatabaseFactory(provider, connectionSettings);
+            if (factory != null) return factory;
+
             var databaseType = connectionSettings.Type;
             if (databaseType == DatabaseType.Default)
             {

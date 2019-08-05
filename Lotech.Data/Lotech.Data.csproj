@@ -55,6 +55,7 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configurations\DatabaseFactoryProvider.cs" />
     <Compile Include="DbConnectionDatabase.cs" />
     <Compile Include="DbDatabase.cs" />
     <Compile Include="Queries\MetaRecord.cs" />

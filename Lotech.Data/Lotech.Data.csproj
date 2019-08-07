@@ -58,6 +58,8 @@
     <Compile Include="Configurations\DatabaseFactoryProvider.cs" />
     <Compile Include="DbConnectionDatabase.cs" />
     <Compile Include="DbDatabase.cs" />
+    <Compile Include="Queries\DynamicEntity.cs" />
+    <Compile Include="Queries\DynamicEntityMetaObject.cs" />
     <Compile Include="Queries\MetaRecord.cs" />
     <Compile Include="Queries\Query.cs" />
     <Compile Include="Queries\ResultMapper.cs" />

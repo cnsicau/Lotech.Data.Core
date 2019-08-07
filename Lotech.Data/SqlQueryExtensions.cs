@@ -703,12 +703,12 @@ namespace Lotech.Data
         /// </summary>
         /// <typeparam name="TItem"></typeparam>
         /// <param name="query"></param>
-        /// <param name="items"></param>
+        /// <param name="set"></param>
         /// <param name="snippet"></param>
         /// <returns></returns>
-        public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, HashSet<TItem> items)
+        public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, HashSet<TItem> set)
         {
-            return query.AppendIn(snippet, (IEnumerable<TItem>)items);
+            return query.AppendIn(snippet, (IEnumerable<TItem>)set);
         }
 
         /// <summary>
@@ -723,6 +723,20 @@ namespace Lotech.Data
         public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, params TItem[] items)
         {
             return query.AppendIn(snippet, (IEnumerable<TItem>)items);
+        }
+
+        /// <summary>
+        /// 如果 items 集合非空，追加 snippet 片断，并使用集合替换 {0}
+        /// 已知：oracle 在 in 超过1000时超出限制
+        /// </summary>
+        /// <typeparam name="TItem"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="set"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendLineIn<TItem>(this ISqlQuery query, string snippet, HashSet<TItem> set)
+        {
+            return query.AppendIn(snippet, (IEnumerable<TItem>)set);
         }
 
         /// <summary>

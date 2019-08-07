@@ -14,9 +14,6 @@ namespace Lotech.Data
     /// </summary>
     public static class SqlQueryExtensions
     {
-        [ThreadStatic]
-        static uint parameterIndex = 0;
-
         #region Instance Methods
 
         /// <summary>
@@ -30,6 +27,21 @@ namespace Lotech.Data
                 throw new NullReferenceException(nameof(database));
 
             return new SqlQuery(database);
+        }
+
+
+        /// <summary>
+        /// 构建指定容量SQL的实例
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="capacity"></param>
+        /// <returns></returns>
+        static public ISqlQuery SqlQuery(this IDatabase database, int capacity)
+        {
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
+
+            return new SqlQuery(database, capacity);
         }
 
         /// <summary>
@@ -46,6 +58,21 @@ namespace Lotech.Data
             return new SqlQuery(database, sql);
         }
 
+        /// <summary>
+        /// 构建指定初始SQL的实例
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="sql"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        static public ISqlQuery SqlQuery(this IDatabase database, string sql, int offset, int length)
+        {
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
+
+            return new SqlQuery(database, sql, offset, length);
+        }
 
         /// <summary>
         /// 构建指定初始SQL的实例并在末尾追加换行
@@ -59,6 +86,22 @@ namespace Lotech.Data
                 throw new NullReferenceException(nameof(database));
 
             return database.SqlQuery(sql).AppendLine();
+        }
+
+        /// <summary>
+        /// 构建指定初始SQL的实例并在末尾追加换行
+        /// </summary>
+        /// <param name="database"></param>
+        /// <param name="sql"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        static public ISqlQuery SqlQueryLine(this IDatabase database, string sql, int offset, int length)
+        {
+            if (database == null)
+                throw new NullReferenceException(nameof(database));
+
+            return new SqlQuery(database, sql, offset, length).AppendLine();
         }
 
         /// <summary>构建指定初始SQL、参数实例</summary>
@@ -98,6 +141,7 @@ namespace Lotech.Data
         {
             return query.Append(snippet, args).AppendLine();
         }
+
         /// <summary>
         /// 追加片断
         /// </summary>
@@ -133,6 +177,34 @@ namespace Lotech.Data
         public static ISqlQuery AppendRaw(this ISqlQuery query, string snippet, params SqlQueryParameter[] parameters)
         {
             return query.AppendRaw(snippet, parameters);
+        }
+
+        /// <summary>
+        /// 追加原始片断与参数并换行，不处理任何占位，直接通过参数绑定
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="snippet">不使用{n}占位的SQL片断，如：UserAccount = @account</param>
+        /// <param name="parameters">绑定原始片断中的参数，顺序应与原始片断参数位置一致</param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendLineRaw(this ISqlQuery query, string snippet, int offset, int length, SqlQueryParameter[] parameters)
+        {
+            return query.AppendRaw(snippet, offset, length, parameters).AppendLine();
+        }
+
+        /// <summary>
+        /// 追加原始片断与参数并换行，不处理任何占位，直接通过参数绑定
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="snippet">不使用{n}占位的SQL片断，如：UserAccount = @account</param>
+        /// <param name="parameters">绑定原始片断中的参数，顺序应与原始片断参数位置一致</param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendLineRaw(this ISqlQuery query, string snippet, int offset, int length, IEnumerable<SqlQueryParameter> parameters)
+        {
+            return query.AppendRaw(snippet, offset, length, parameters).AppendLine();
         }
 
         /// <summary>
@@ -213,6 +285,19 @@ namespace Lotech.Data
         }
 
         /// <summary>
+        /// 追加原始SQL片断并换行
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="snippet"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendStringLine(this ISqlQuery query, string snippet, int offset, int length)
+        {
+            return query.AppendString(snippet, offset, length).AppendLine();
+        }
+
+        /// <summary>
         /// 追加片断并换行
         /// </summary>
         /// <param name="query"></param>
@@ -234,6 +319,20 @@ namespace Lotech.Data
         public static ISqlQuery AppendIf(this ISqlQuery query, bool predicate, string snippet)
         {
             return predicate ? query.Append(snippet) : query;
+        }
+
+        /// <summary>
+        /// 按条件追加原始SQL片断
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="predicate">条件值为真是，追加片断内容</param>
+        /// <param name="snippet">要追加的片断内容</param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendStringIf(this ISqlQuery query, bool predicate, string snippet, int offset, int length)
+        {
+            return predicate ? query.AppendString(snippet, offset, length) : query;
         }
 
         /// <summary>
@@ -259,6 +358,20 @@ namespace Lotech.Data
         public static ISqlQuery AppendLineIf(this ISqlQuery query, bool predicate, string snippet)
         {
             return predicate ? query.AppendLine(snippet) : query;
+        }
+
+        /// <summary>
+        /// 按条件追加原始SQL片断并换行
+        /// </summary>
+        /// <param name="query"></param>
+        /// <param name="predicate">条件值为真是，追加片断内容</param>
+        /// <param name="snippet">要追加的片断内容</param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendStringLineIf(this ISqlQuery query, bool predicate, string snippet, int offset, int length)
+        {
+            return predicate ? query.AppendStringLine(snippet, offset, length) : query;
         }
 
         /// <summary>
@@ -571,7 +684,7 @@ namespace Lotech.Data
                 var parameters = new List<SqlQueryParameter>();
                 while (true)
                 {
-                    var name = query.Database.BuildParameterName("el_" + (parameterIndex++));
+                    var name = query.NextParameterName();
                     parameters.Add(new SqlQueryParameter(name, enumerator.Current));
                     parameterNames.Append(name);
                     if (!enumerator.MoveNext())
@@ -584,6 +697,19 @@ namespace Lotech.Data
             }
         }
 
+        /// <summary>
+        /// 如果 items 集合非空，追加 snippet 片断，并使用集合替换 {0}
+        /// 已知：oracle 在 in 超过1000时超出限制
+        /// </summary>
+        /// <typeparam name="TItem"></typeparam>
+        /// <param name="query"></param>
+        /// <param name="items"></param>
+        /// <param name="snippet"></param>
+        /// <returns></returns>
+        public static ISqlQuery AppendIn<TItem>(this ISqlQuery query, string snippet, HashSet<TItem> items)
+        {
+            return query.AppendIn(snippet, (IEnumerable<TItem>)items);
+        }
 
         /// <summary>
         /// 如果 items 集合非空，追加 snippet 片断，并使用集合替换 {0}

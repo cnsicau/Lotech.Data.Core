@@ -4,7 +4,7 @@
     /// 
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public class PageData<TEntity> where TEntity : class
+    public class PageData<TEntity>
     {
         /// <summary>
         /// 

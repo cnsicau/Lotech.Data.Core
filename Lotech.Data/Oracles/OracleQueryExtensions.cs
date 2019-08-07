@@ -21,7 +21,7 @@ namespace Lotech.Data.Oracles
         /// <param name="query"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page) where T : class
+        public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page)
         {
             var count = query.Database.SqlQuery("/*CountQuery*/SELECT COUNT(1) FROM (")
                             .AppendLine().AppendLine(query).Append("/*~CountQuery*/)")
@@ -68,7 +68,6 @@ namespace Lotech.Data.Oracles
         /// <param name="args"></param>
         /// <returns></returns>
         public static PageData<T> PageExecuteEntities<T>(this IDatabase db, Page page, string sql, params object[] args)
-            where T : class
         {
             return db.SqlQuery(sql, args).PageExecuteEntites<T>(page);
         }

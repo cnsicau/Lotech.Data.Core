@@ -90,7 +90,7 @@ namespace Lotech.Data
                 }
                 else
                 {
-                    LogCommand(action, command);
+                    LogCommandAction(action, command);
                     var sw = Stopwatch.StartNew();
                     if (closed)
                     {

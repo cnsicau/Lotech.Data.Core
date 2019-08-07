@@ -17,19 +17,84 @@ namespace Lotech.Data.SqlServers
     public static class SqlServerQueryExtensions
     {
         /// <summary>
+        /// 计算CTE语句长度  WITH alais AS (SELECT ****), b AS (SELECT ***) , .., n AS () SELECT ...
+        ///                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns>返回长度，0 代表无CTE</returns>
+        static int DeterminingCteLength(string sql)
+        {
+            // 忽略前端空白，检查 WITH 标识符
+            int i = 0, len = sql.Length - 5;
+            while (i++ < len)
+            {
+                var chr = sql[i];
+                if (char.IsWhiteSpace(chr)) continue;
+
+                if (chr != 'W' && chr != 'w'
+                    || (sql[++i] != 'I' && sql[i] != 'i')
+                    || (sql[++i] != 'T' && sql[i] != 't')
+                    || (sql[++i] != 'H' && sql[i] != 'h')
+                    || !char.IsWhiteSpace(sql[++i])) return 0;
+
+                break;
+            }
+
+            if (i == 0) return 0;
+
+            var isInStr = false;
+            var isInBrackets = false;
+            var success = false;
+
+            while (++i < sql.Length)
+            {
+                var chr = sql[i];
+
+                if (success)
+                {
+                    if (chr == ','/*多个CTE分组*/)
+                    {
+                        success = false;
+                        continue;
+                    }
+                    else if (!char.IsWhiteSpace(chr))
+                    {
+                        return i - 1;
+                    }
+                }
+
+                if (isInStr) { isInStr = chr != '\''; continue; }
+                else if (chr == '\'') { isInStr = true; continue; }
+
+                if (isInBrackets) { success = chr == ')'; isInBrackets = !success; }
+                else if (chr == '(') { isInBrackets = true; }
+            }
+            if (!success || i == sql.Length) return 0;
+            return i;
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
         /// <param name="page"></param>
         /// <returns></returns>
-        public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page) where T : class
+        public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page)
         {
             if (page.Index > 0 && (page.Orders == null || page.Orders.Length == 0))
                 throw new InvalidOperationException("由于第2页之后使用 ROW_NUMBER() OVER(ORDER BY ***)分页，必须给出至少一个排序字段.");
 
-            var count = query.Database.SqlQuery("/*CountQuery*/SELECT COUNT(1) FROM (")
-                            .AppendLine().AppendLine(query).Append("/*~CountQuery*/) t")
+            var sql = query.GetSnippets();
+            var parameters = query.GetParameters();
+            var cte = DeterminingCteLength(sql);
+
+            var count = query.Database.SqlQuery(sql.Length + 80)
+                            .Append("/*CountQuery*/")
+                            .AppendString(sql, 0, cte)
+                            .AppendLine("SELECT COUNT(1) FROM (")
+                            .AppendLineRaw(sql, cte, sql.Length - cte, parameters)
+                            .Append("/*~CountQuery*/) t")
                             .ExecuteScalar<int>();
             // 无数据
             if (count == 0) return new PageData<T>(0, new T[0]);
@@ -44,18 +109,24 @@ namespace Lotech.Data.SqlServers
 
             if (page.Index == 0)
             {
-                result.Data = query.Database.SqlQuery("/*DataQuery*/SELECT TOP(").Append(page.Size.ToString())
-                                        .AppendLine(") * FROM (")
-                                        .AppendLine(query)
-                                        .Append("/*~DataQuery*/) t ORDER BY ").Append(orderBy)
-                                        .ExecuteEntities<T>();
+                result.Data = query.Database.SqlQuery(sql.Length + orderBy.Length + 96)
+                                .Append(@"/*DataQuery*/")
+                                .AppendString(sql, 0, cte)
+                                .Append("SELECT TOP(").Append(page.Size.ToString())
+                                .AppendLine(") * FROM (")
+                                .AppendLineRaw(sql, cte, sql.Length - cte, parameters)
+                                .Append("/*~DataQuery*/) t ORDER BY ").Append(orderBy)
+                                .ExecuteEntities<T>();
             }
             else
             {
-                result.Data = query.Database.SqlQuery(@"/*DataQuery*/SELECT * FROM (")
+                result.Data = query.Database.SqlQuery(sql.Length + orderBy.Length + 192)
+                                .Append(@"/*DataQuery*/")
+                                .AppendString(sql, 0, cte)
+                                .Append("SELECT * FROM (")
                                 .Append("SELECT *, ROW_NUMBER() OVER(ORDER BY ").Append(orderBy).Append(@")  AS __RowIndex ")
                                 .AppendLine("FROM (")
-                                .AppendLine(query)
+                                .AppendLineRaw(sql, cte, sql.Length - cte, parameters)
                                 .Append(@"/*~DataQuery*/ ) I")
                                 .Append(") O WHERE __RowIndex BETWEEN ").Append(page.Size * page.Index + 1)
                                 .Append(" AND ").Append(page.Size * (page.Index + 1))
@@ -74,7 +145,6 @@ namespace Lotech.Data.SqlServers
         /// <param name="args"></param>
         /// <returns></returns>
         public static PageData<T> PageExecuteEntities<T>(this IDatabase db, Page page, string sql, params object[] args)
-            where T : class
         {
             return db.SqlQuery(sql, args).PageExecuteEntites<T>(page);
         }

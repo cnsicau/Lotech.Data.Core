@@ -30,7 +30,17 @@ namespace Lotech.Data
         /// </summary>
         /// <param name="action"></param>
         /// <param name="command"></param>
-        protected void LogCommand(string action, DbCommand command)
+        protected virtual void LogCommand(string action, DbCommand command)
+        {
+            if (Log != null) LogCommandAction(action, command);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="command"></param>
+        protected void LogCommandAction(string action, DbCommand command)
         {
             var log = new StringBuilder();
             log.AppendLine().Append(action).Append('(').Append(command.CommandType)

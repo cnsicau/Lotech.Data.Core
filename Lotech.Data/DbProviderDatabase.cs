@@ -107,7 +107,7 @@ namespace Lotech.Data
                     val = value(command);
                 else
                 {
-                    LogCommand(action, command);
+                    LogCommandAction(action, command);
                     var sw = Stopwatch.StartNew();
                     val = value(command);
                     Log("  -- elapsed times: " + sw.Elapsed);
@@ -138,7 +138,7 @@ namespace Lotech.Data
                     reader = command.ExecuteReader(behavior);
                 else
                 {
-                    LogCommand("ExecuteReader", command);
+                    LogCommandAction("ExecuteReader", command);
                     var sw = Stopwatch.StartNew();
                     reader = command.ExecuteReader(behavior);
                     Log("  -- elapsed times: " + sw.Elapsed);

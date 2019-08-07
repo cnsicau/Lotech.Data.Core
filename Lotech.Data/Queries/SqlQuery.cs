@@ -43,6 +43,15 @@ namespace Lotech.Data.Queries
             _snippets = new StringBuilder(sql);
             _index = (global_id++ & 0x7FF) << 20; ;  // 随着SQLQuery对象增加
         }
+
+        /// <summary>
+        /// 构造
+        /// </summary>
+        internal SqlQuery(IDatabase database, string sql, int offset, int length) : base(database)
+        {
+            _snippets = new StringBuilder(sql, offset, length, 256);
+            _index = (global_id++ & 0x7FF) << 20; ;  // 随着SQLQuery对象增加
+        }
         #endregion
 
         public override DbCommand CreateCommand()
@@ -53,6 +62,21 @@ namespace Lotech.Data.Queries
                 database.AddInParameter(command, p.Name, database.ParseDbType(p.Type), p.Value);
             }
             return command;
+        }
+
+        string ISqlQuery.NextParameterName()
+        {
+            return database.BuildParameterName("p"
+                                + (_index >> 20)
+                                + "_"
+                                + (_index++ & 0xFFFFF)
+                            );
+        }
+
+        ISqlQuery ISqlQuery.AppendString(string snippet, int offset, int length)
+        {
+            _snippets.Append(snippet, offset, length);
+            return this;
         }
 
         ISqlQuery ISqlQuery.Append(string snippet)
@@ -79,11 +103,7 @@ namespace Lotech.Data.Queries
                     {
                         if (placeIndex >= 0)
                         {
-                            var parameterName = database.BuildParameterName("p" 
-                                + (_index >> 20)
-                                + "_"
-                                + (_index++ & 0xFFFFF)
-                            );
+                            var parameterName = ((ISqlQuery)this).NextParameterName();
                             _snippets.Append(snippet, index, enterIndex - index).Append(parameterName);
 
                             var value = args[placeIndex];
@@ -126,6 +146,13 @@ namespace Lotech.Data.Queries
         ISqlQuery ISqlQuery.AppendRaw(string snippet, IEnumerable<SqlQueryParameter> parameters)
         {
             _snippets.Append(snippet);
+            _parameters.AddRange(parameters);
+            return this;
+        }
+
+        ISqlQuery ISqlQuery.AppendRaw(string snippet, int offset, int length, IEnumerable<SqlQueryParameter> parameters)
+        {
+            _snippets.Append(snippet, offset, length);
             _parameters.AddRange(parameters);
             return this;
         }

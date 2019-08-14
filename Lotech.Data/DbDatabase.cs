@@ -273,7 +273,7 @@ namespace Lotech.Data
         /// <param name="name"></param>
         /// <returns></returns>
         public abstract string QuoteName(string name);
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -853,5 +853,161 @@ namespace Lotech.Data
         {
             return services.Count<EntityType>()(this);
         }
+
+        /// <summary>
+        /// 读取
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        public IEnumerable<TEntity> ExecuteEntityReader<TEntity>(DbCommand command)
+        {
+            IDataReader reader = ExecuteReader(command, CommandBehavior.SequentialAccess);
+            return new QueryResult<TEntity>(reader, ResultMapper<TEntity>.Create(this));
+        }
+
+        /// <summary>
+        /// 读取
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        public IEnumerable<TEntity> ExecuteEntityReader<TEntity>(string query)
+        {
+            return ExecuteEntityReader<TEntity>(CommandType.Text, query);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="commandType"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public IEnumerable<TEntity> ExecuteEntityReader<TEntity>(CommandType commandType, string text)
+        {
+            var command = GetCommand(commandType, text);
+            IDataReader reader = null;
+            try
+            {
+                reader = ExecuteReader(command, CommandBehavior.SequentialAccess);
+                reader = new CompositedDataReader(reader, command);
+                return new QueryResult<TEntity>(reader, ResultMapper<TEntity>.Create(this));
+            }
+            catch
+            {
+                reader?.Dispose();
+                command.Dispose();
+                throw;
+            }
+        }
+
+        #region Queries
+
+        /// <summary>
+        /// 构建无初始SQL的实例
+        /// </summary>
+        /// <returns></returns>
+        public ISqlQuery SqlQuery()
+        {
+            return new SqlQuery(this);
+        }
+
+        /// <summary>
+        /// 构建指定容量SQL的实例
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <returns></returns>
+        public ISqlQuery SqlQuery(int capacity)
+        {
+            return new SqlQuery(this, capacity);
+        }
+
+        /// <summary>
+        /// 构建指定初始SQL的实例
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        public ISqlQuery SqlQuery(string sql)
+        {
+            return new SqlQuery(this, sql);
+        }
+
+        /// <summary>
+        /// 构建指定初始SQL的实例
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public ISqlQuery SqlQuery(string sql, int offset, int length)
+        {
+            return new SqlQuery(this, sql, offset, length);
+        }
+
+        /// <summary>
+        /// 构建指定初始SQL的实例并在末尾追加换行
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        public ISqlQuery SqlQueryLine(string sql)
+        {
+            return new SqlQuery(this, sql).AppendLine();
+        }
+
+        /// <summary>
+        /// 构建指定初始SQL的实例并在末尾追加换行
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public ISqlQuery SqlQueryLine(string sql, int offset, int length)
+        {
+            return new SqlQuery(this, sql, offset, length).AppendLine();
+        }
+
+        /// <summary>构建指定初始SQL、参数实例</summary>
+        /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
+        /// <param name="args">用于sql中的参数引用</param>
+        /// <returns></returns>
+        public ISqlQuery SqlQuery(string sql, params object[] args)
+        {
+            return new SqlQuery(this, sql.Length + args.Length * 8).Append(sql, args);
+        }
+
+        /// <summary>构建指定初始SQL、参数实例并在末尾追加换行</summary>
+        /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
+        /// <param name="args">用于sql中的参数引用</param>
+        /// <returns></returns>
+        public ISqlQuery SqlQueryLine(string sql, params object[] args)
+        {
+            return new SqlQuery(this).AppendLine(sql, args);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="procedureName"></param>
+        /// <returns></returns>
+        public IProcedureQuery ProcedureQuery(string procedureName)
+        {
+            if (procedureName == null) throw new ArgumentNullException(nameof(procedureName));
+
+            return new ProcedureQuery(this, procedureName);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName"></param>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
+        public IProcedureQuery ProcedureQuery<TParameter>(string procedureName, TParameter parameter) where TParameter : class
+        {
+            return new ProcedureQuery(this, procedureName).AddParameters(parameter);
+        }
+        #endregion
     }
 }

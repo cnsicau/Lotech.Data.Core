@@ -19,20 +19,11 @@ namespace Lotech.Data.Queries
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
-            var index = ((DynamicEntity)Value).GetOrdinal(binder.Name);
-            Expression value;
-            if (index == -1)
-            {
-                value = Expression.Constant(null, binder.ReturnType);
-            }
-            else
-            {
-                value = Expression.Call(
-                                Expression.Convert(Expression, LimitType),
-                                LimitType.GetMethod(nameof(DynamicEntity.GetValue), new Type[] { typeof(int) }),
-                                Expression.Constant(index)
-                        );
-            }
+            var value = Expression.Call(
+                               Expression.Convert(Expression, LimitType),
+                               LimitType.GetMethod(nameof(DynamicEntity.GetValue), new Type[] { typeof(string) }),
+                               Expression.Constant(binder.Name)
+                       );
             return new DynamicMetaObject(value, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 

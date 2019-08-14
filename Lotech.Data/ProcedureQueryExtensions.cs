@@ -13,58 +13,6 @@ namespace Lotech.Data
     /// </summary>
     public static class ProcedureQueryExtensions
     {
-        static class ModelParameter<TParameter> where TParameter : class
-        {
-            internal static readonly Action<IProcedureQuery, TParameter>[] binders
-                = DefaultDescriptorProvider.Instance.GetEntityDescriptor<TParameter>(Operation.Select).Members
-                .Select<IMemberDescriptor, Action<IProcedureQuery, TParameter>>(member =>
-                {
-                    var get = MemberAccessor<TParameter, object>.GetGetter(member.Member);
-                    return (IProcedureQuery query, TParameter parameter) => query.AddParameter(member.Name, get(parameter));
-                }).ToArray();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="database"></param>
-        /// <param name="procedureName"></param>
-        /// <returns></returns>
-        static public IProcedureQuery ProcedureQuery(this IDatabase database, string procedureName)
-        {
-            if (database == null) throw new NullReferenceException(nameof(database));
-            return new ProcedureQuery(database, procedureName);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TParameter"></typeparam>
-        /// <param name="query"></param>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
-        static public IProcedureQuery AddParameter<TParameter>(this IProcedureQuery query, TParameter parameter) where TParameter : class
-        {
-            foreach (var bind in ModelParameter<TParameter>.binders)
-            {
-                bind(query, parameter);
-            }
-            return query;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TParameter"></typeparam>
-        /// <param name="database"></param>
-        /// <param name="procedureName"></param>
-        /// <param name="parameter"></param>
-        /// <returns></returns>
-        static public IProcedureQuery ProcedureQuery<TParameter>(this IDatabase database, string procedureName, TParameter parameter) where TParameter : class
-        {
-            return database.ProcedureQuery(procedureName).AddParameter(parameter);
-        }
-
         #region Execute**** Methods
 
         /// <summary>

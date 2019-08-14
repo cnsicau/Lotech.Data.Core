@@ -448,7 +448,7 @@ namespace Lotech.Data
         /// <example>
         ///     <![CDATA[
         ///         // 将所有 Code 以 9开头的 数据行的 Is_Delted 字段更新为 删除
-        ///         db.UpdateEntities(new Dic_Organiztion{Id = 1, Is_Delted = true }, entity => new { entity.Is_Delted }, _ => _.Code.StartsWith('9');
+        ///         db.UpdateEntities(new Dic_Organiztion{Id = 1, Is_Delted = true }, entity => new { entity.Is_Delted }, _ => _.Code.StartsWith("9");
         ///     ]]>
         /// </example>
         /// <typeparam name="EntityType"></typeparam>
@@ -551,6 +551,110 @@ namespace Lotech.Data
         /// <returns></returns>
         EntityType LoadEntity<EntityType>(Expression<Func<EntityType, bool>> predicate) where EntityType : class;
         #endregion
+        #endregion
+
+        #region EntityReader
+
+        /// <summary>
+        /// 读取
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="command"></param>
+        /// <returns></returns>
+        IEnumerable<TEntity> ExecuteEntityReader<TEntity>(DbCommand command);
+
+        /// <summary>
+        /// 读取
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="query"></param>
+        /// <returns></returns>
+        IEnumerable<TEntity> ExecuteEntityReader<TEntity>(string query);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="commandType"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        IEnumerable<TEntity> ExecuteEntityReader<TEntity>(CommandType commandType, string text);
+        #endregion
+
+        #region Queries
+
+        /// <summary>
+        /// 构建无初始SQL的实例
+        /// </summary>
+        /// <returns></returns>
+        ISqlQuery SqlQuery();
+
+        /// <summary>
+        /// 构建指定容量SQL的实例
+        /// </summary>
+        /// <param name="capacity">SQL语句的容量，用于初始化 StringBuilder, 指定合适的容量可避免重复申请空间</param>
+        /// <returns></returns>
+        ISqlQuery SqlQuery(int capacity);
+
+        /// <summary>
+        /// 构建指定初始SQL的实例
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        ISqlQuery SqlQuery(string sql);
+
+        /// <summary>
+        /// 构建指定初始SQL的实例
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        ISqlQuery SqlQuery(string sql, int offset, int length);
+
+        /// <summary>
+        /// 构建指定初始SQL的实例并在末尾追加换行
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <returns></returns>
+        ISqlQuery SqlQueryLine(string sql);
+
+        /// <summary>
+        /// 构建指定初始SQL的实例并在末尾追加换行
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="offset"></param>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        ISqlQuery SqlQueryLine(string sql, int offset, int length);
+
+        /// <summary>构建指定初始SQL、参数实例</summary>
+        /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
+        /// <param name="args">用于sql中的参数引用</param>
+        /// <returns></returns>
+        ISqlQuery SqlQuery(string sql, params object[] args);
+
+        /// <summary>构建指定初始SQL、参数实例并在末尾追加换行</summary>
+        /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>
+        /// <param name="args">用于sql中的参数引用</param>
+        /// <returns></returns>
+        ISqlQuery SqlQueryLine(string sql, params object[] args);
+
+        /// <summary>
+        /// 构建存储过程查询
+        /// </summary>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <returns></returns>
+        IProcedureQuery ProcedureQuery(string procedureName);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TParameter"></typeparam>
+        /// <param name="procedureName">存储过程名称</param>
+        /// <param name="parameter">参数，如 new { ParameterName = parameterName, OtherValue }</param>
+        /// <returns></returns>
+        IProcedureQuery ProcedureQuery<TParameter>(string procedureName, TParameter parameter) where TParameter : class;
         #endregion
     }
 }

@@ -12,16 +12,24 @@ namespace Lotech.Data.Queries
     /// </summary>
     class DynamicEntity : IDictionary<string, object>, IDynamicMetaObjectProvider
     {
-        private readonly string[] fields;
+        private readonly IDictionary<string, int> indexedColumns;
         private readonly object[] values;
 
-        internal DynamicEntity(string[] fields, object[] values)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="indexedColumns"></param>
+        /// <param name="values"></param>
+        public DynamicEntity(IDictionary<string, int> indexedColumns, object[] values)
         {
-            this.fields = fields;
+            this.indexedColumns = indexedColumns;
             this.values = values;
         }
 
-        public string[] Fields { get { return fields; } }
+        /// <summary>
+        /// 
+        /// </summary>
+        public IDictionary<string, int> IndexedColumn { get { return indexedColumns; } }
 
         /// <summary>
         /// 
@@ -30,7 +38,9 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public object GetValue(int index)
         {
-            return values[index];
+            var value = values[index];
+            if (value is DBNull) return null;
+            return value;
         }
 
         /// <summary>
@@ -40,11 +50,8 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public int GetOrdinal(string name)
         {
-            for (int i = 0; i < fields.Length; i++)
-            {
-                if (string.Compare(fields[i], name, true) == 0) return i;
-            }
-            return -1;
+            int ordinal;
+            return indexedColumns.TryGetValue(name, out ordinal) ? ordinal : -1;
         }
 
         /// <summary>
@@ -54,7 +61,12 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public object GetValue(string name)
         {
-            return GetValue(GetOrdinal(name));
+            int ordinal;
+            if (!indexedColumns.TryGetValue(name, out ordinal)) throw new KeyNotFoundException("column name " + name);
+
+            var value = values[ordinal];
+            if (value is DBNull) return null;
+            return value;
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter)
@@ -62,17 +74,10 @@ namespace Lotech.Data.Queries
             return new DynamicEntityMetaObject(parameter, this);
         }
 
-        #region Dictionary
-
         #region IDictionary<string, object>
         object IDictionary<string, object>.this[string key]
         {
-            get
-            {
-                var index = GetOrdinal(key);
-                if (index == -1) throw new KeyNotFoundException();
-                return GetValue(index);
-            }
+            get { return GetValue(key); }
             set
             {
                 var index = GetOrdinal(key);
@@ -81,11 +86,11 @@ namespace Lotech.Data.Queries
             }
         }
 
-        ICollection<string> IDictionary<string, object>.Keys => fields;
+        ICollection<string> IDictionary<string, object>.Keys => indexedColumns.Keys;
 
         ICollection<object> IDictionary<string, object>.Values => values;
 
-        int ICollection<KeyValuePair<string, object>>.Count => fields.Length;
+        int ICollection<KeyValuePair<string, object>>.Count => indexedColumns.Count;
 
         bool ICollection<KeyValuePair<string, object>>.IsReadOnly => true;
 
@@ -97,27 +102,29 @@ namespace Lotech.Data.Queries
 
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
-            throw new NotImplementedException();
+            var ordinal = GetOrdinal(item.Key);
+            return ordinal != -1 && GetValue(ordinal) == item.Value;
         }
 
         bool IDictionary<string, object>.ContainsKey(string key)
         {
-            return GetOrdinal(key) != -1;
+            return indexedColumns.ContainsKey(key);
         }
 
         void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
         {
-            for (int i = 0; i < fields.Length; i++)
+            foreach (var item in indexedColumns)
             {
-                array[arrayIndex + i] = new KeyValuePair<string, object>(fields[i], values[i]);
+                array[arrayIndex] = new KeyValuePair<string, object>(item.Key, GetValue(item.Value));
+                if (++arrayIndex == array.Length) break;
             }
         }
 
         IEnumerable<KeyValuePair<string, object>> GetKeyValuePairs()
         {
-            for (int i = 0; i < fields.Length; i++)
+            foreach (var item in indexedColumns)
             {
-                yield return new KeyValuePair<string, object>(fields[i], values[i]);
+                yield return new KeyValuePair<string, object>(item.Key, GetValue(item.Value));
             }
         }
 
@@ -137,16 +144,17 @@ namespace Lotech.Data.Queries
 
         bool IDictionary<string, object>.TryGetValue(string key, out object value)
         {
-            var index = GetOrdinal(key);
-            if (index != -1)
+            int ordinal;
+            if (!indexedColumns.TryGetValue(key, out ordinal))
             {
-                value = GetValue(index);
-                return true;
+                value = null;
+                return false;
             }
-            value = null;
-            return false;
+
+            value = values[ordinal];
+            if (value is DBNull) value = null;
+            return true;
         }
-        #endregion
         #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 
 namespace Lotech.Data.Queries
@@ -9,9 +10,9 @@ namespace Lotech.Data.Queries
     /// </summary>
     public class ObjectResultMapper : ResultMapper<object>
     {
-        static readonly ConcurrentDictionary<RecordKey, string[]> columnsMeta = new ConcurrentDictionary<RecordKey, string[]>();
+        static readonly ConcurrentDictionary<RecordKey, IDictionary<string, int>> indexesCache = new ConcurrentDictionary<RecordKey, IDictionary<string, int>>();
 
-        string[] columns;
+        IDictionary<string, int> indexedColumns = null;
 
         class RecordKey
         {
@@ -45,13 +46,19 @@ namespace Lotech.Data.Queries
             public override int GetHashCode()
             {
                 return record.FieldCount
-                    ^ record.GetName(0).GetHashCode();
+                    ^ record.GetName(0).GetHashCode()
+                    ^ (record.FieldCount >= 2 ? record.GetName(record.FieldCount / 2).GetHashCode() : 0);
             }
 
-            public string[] Strip()
+            public IDictionary<string, int> CreateIndexes()
             {
+                var indexes = new SortedList<string, int>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < record.FieldCount; i++)
+                {
+                    indexes[record.GetName(i)] = i;
+                }
                 record = new MetaRecord(record);
-                return ((MetaRecord)record).Columns;
+                return indexes;
             }
         }
 
@@ -62,7 +69,7 @@ namespace Lotech.Data.Queries
         public override void TearUp(IDataReader reader)
         {
             base.TearUp(reader);
-            columns = columnsMeta.GetOrAdd(new RecordKey(reader), key => key.Strip());
+            indexedColumns = indexesCache.GetOrAdd(new RecordKey(reader), key => key.CreateIndexes());
         }
 
         /// <summary>
@@ -77,14 +84,9 @@ namespace Lotech.Data.Queries
                 result = null;
                 return false;
             }
-            var values = new object[columns.Length];
+            var values = new object[indexedColumns.Count];
             reader.GetValues(values);
-            // DBNull to null
-            for (int i = values.Length - 1; i >= 0; i--)
-            {
-                if (values[i] == DBNull.Value) values[i] = null;
-            }
-            result = new DynamicEntity(columns, values);
+            result = new DynamicEntity(indexedColumns, values);
             return true;
         }
     }

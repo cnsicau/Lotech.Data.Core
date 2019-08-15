@@ -47,7 +47,7 @@ namespace Lotech.Data.Operations.Common
                                                 , string.IsNullOrEmpty(descriptor.Schema) ? null : (db.QuoteName(descriptor.Schema) + '.')
                                                 , db.QuoteName(descriptor.Name)
                                                 , " WHERE "
-                                                , string.Join(", ", keys.Select(_ => db.QuoteName(_.Name) + " = " + db.BuildParameterName(_.ParameterName))));
+                                                , string.Join(" AND ", keys.Select(_ => db.QuoteName(_.Name) + " = " + db.BuildParameterName(_.ParameterName))));
 
                     return db.GetSqlStringCommand(sql);
                 };
@@ -100,7 +100,7 @@ namespace Lotech.Data.Operations.Common
                                         , string.IsNullOrEmpty(descriptor.Schema) ? null : (quote(descriptor.Schema) + '.')
                                         , quote(descriptor.Name)
                                         , " WHERE "
-                                        , string.Join(", ", keys.Select(_ => quote(_.Name) + " = " + _.ParameterName)));
+                                        , string.Join(" AND ", keys.Select(_ => quote(_.Name) + " = " + _.ParameterName)));
 
                 return db => db.GetSqlStringCommand(sql);
             }

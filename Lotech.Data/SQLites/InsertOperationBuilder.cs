@@ -114,7 +114,7 @@ namespace Lotech.Data.SQLites
                         , string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.')
                         , Quote(_descriptor.Name)
                         , " WHERE "
-                        , string.Join(", ", _descriptor.Keys.Select((_, i) => _.Name + " = "
+                        , string.Join(" AND ", _descriptor.Keys.Select((_, i) => _.Name + " = "
                                 + (_ == _identity ? "LAST_INSERT_ROWID()" : BuildParameterName(i + _members.Length)))));
             }
             return db => db.GetSqlStringCommand(sql);

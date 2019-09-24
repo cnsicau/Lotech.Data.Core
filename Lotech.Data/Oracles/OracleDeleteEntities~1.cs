@@ -34,7 +34,7 @@ namespace Lotech.Data.Oracles
                                     , string.IsNullOrEmpty(descriptor.Schema) ? null : (Quote(descriptor.Schema) + '.')
                                     , Quote(descriptor.Name)
                                     , " WHERE "
-                                    , string.Join(", ", keys.Select(_ => Quote(_.Name) + " = " + _.ParameterName)));
+                                    , string.Join(" AND ", keys.Select(_ => Quote(_.Name) + " = " + _.ParameterName)));
 
             return (db, entities) =>
             {

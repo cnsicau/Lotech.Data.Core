@@ -57,7 +57,7 @@ namespace Lotech.Data.Generics
                                            , " SET "
                                            , string.Join(", ", members.Select(_ => db.QuoteName(_.Name) + " = " + db.BuildParameterName(_.ParameterName)))
                                            , " WHERE "
-                                           , string.Join(", ", keys.Select(_ => db.QuoteName(_.Name) + " = " + db.BuildParameterName(_.ParameterName))));
+                                           , string.Join(" AND ", keys.Select(_ => db.QuoteName(_.Name) + " = " + db.BuildParameterName(_.ParameterName))));
                 return db.GetSqlStringCommand(sql);
             };
         }

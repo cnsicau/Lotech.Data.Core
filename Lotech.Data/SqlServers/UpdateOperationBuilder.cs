@@ -126,7 +126,7 @@ namespace Lotech.Data.SqlServers
                     .AppendLine();
             }
             sqlBuilder.Append(" WHERE ")
-                    .AppendJoin(", ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)));
+                    .AppendJoin(" AND ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)));
 
             var sql = sqlBuilder.ToString();
             return db => db.GetSqlStringCommand(sql);

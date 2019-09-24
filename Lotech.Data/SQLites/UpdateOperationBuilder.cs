@@ -121,7 +121,7 @@ namespace Lotech.Data.SQLites
                 .AppendJoin(", ", _members.Select((_, i) => Quote(_.Name) + " = " + BuildSetParameter(i)))
                 .AppendLine()
                 .Append(" WHERE ")
-                .AppendJoin(", ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)))
+                .AppendJoin(" AND ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildConditionParameter(i)))
                 .ToString();
             return db => db.GetSqlStringCommand(sql);
         }

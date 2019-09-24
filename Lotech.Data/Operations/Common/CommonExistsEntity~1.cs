@@ -64,7 +64,7 @@ namespace Lotech.Data.Operations.Common
                                         , string.IsNullOrEmpty(descriptor.Schema) ? null : (quote(descriptor.Schema) + '.')
                                         , quote(descriptor.Name)
                                         , " WHERE "
-                                        , string.Join(", ", keys.Select(_ => _.Name + " = " + _.ParameterName)));
+                                        , string.Join(" AND ", keys.Select(_ => _.Name + " = " + _.ParameterName)));
                 return (db, entity) =>
                 {
                     using (var command = db.GetSqlStringCommand(sql))

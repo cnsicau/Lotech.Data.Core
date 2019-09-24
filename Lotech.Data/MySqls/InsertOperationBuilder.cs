@@ -104,7 +104,7 @@ namespace Lotech.Data.MySqls
                         , string.IsNullOrEmpty(_descriptor.Schema) ? null : (Quote(_descriptor.Schema) + '.')
                         , Quote(_descriptor.Name)
                         , " WHERE "
-                        , string.Join(", ", _descriptor.Keys.Select((_, i) => _.Name + " = "
+                        , string.Join(" AND ", _descriptor.Keys.Select((_, i) => _.Name + " = "
                                 + (_ == _identity ? "LAST_INSERT_ID()" : BuildParameter("p_sql_" + i)))));
 
             var bindParameters = _descriptor.Keys.Select((key, i) =>

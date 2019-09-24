@@ -134,7 +134,7 @@ namespace Lotech.Data.Oracles
                 .AppendJoin(", ", _members.Select((_, i) => Quote(_.Name) + " = " + BuildParameterName(i)))
                 .AppendLine();
             sqlBuilder.Append(" WHERE ")
-                    .AppendJoin(", ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildParameterName(_members.Length + i)));
+                    .AppendJoin(" AND ", _keys.Select((_, i) => Quote(_.Name) + " = " + BuildParameterName(_members.Length + i)));
 
             if (_outputs.Length > 0)
             {

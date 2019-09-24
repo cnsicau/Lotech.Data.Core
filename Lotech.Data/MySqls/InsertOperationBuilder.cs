@@ -18,7 +18,6 @@ namespace Lotech.Data.MySqls
     {
         #region Fields
         private IEntityDescriptor _descriptor;
-        private IMemberDescriptor[] _keys;
         private IMemberDescriptor[] _members;
         private IMemberDescriptor _identity; //返回的主键列
         private IMemberDescriptor[] _outputs; // 除主键外的返回列
@@ -35,8 +34,7 @@ namespace Lotech.Data.MySqls
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
         InsertOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
-            if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
-            _setFilter = setFilter;
+            _setFilter = setFilter ?? throw new ArgumentNullException(nameof(setFilter));
 
         }
 
@@ -51,7 +49,6 @@ namespace Lotech.Data.MySqls
             if (_members.Length == 0)
                 throw new InvalidOperationException("未找到需要更新的列.");
             _descriptor = descriptor;
-            _keys = descriptor.Keys;
             var outputs = descriptor.Members.Where(_ => _.DbGenerated).ToArray();
             _identity = outputs.SingleOrDefault(_ => _.PrimaryKey);
             _outputs = outputs.Where(_ => !_.PrimaryKey).ToArray();

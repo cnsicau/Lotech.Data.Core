@@ -13,10 +13,10 @@ namespace Lotech.Data.Queries
     /// <typeparam name="TEntity"></typeparam>
     public class QueryResult<TEntity> : IEnumerable<TEntity>, IEnumerator<TEntity>
     {
-        private IResultMapper<TEntity> _mapper;
+        private readonly IResultMapper<TEntity> _mapper;
         private int _count;
         private TEntity _current;
-        private Stopwatch _stopwatch;
+        private readonly Stopwatch _stopwatch;
 
         TEntity IEnumerator<TEntity>.Current => _current;
 
@@ -29,12 +29,10 @@ namespace Lotech.Data.Queries
         /// <param name="mapper"></param>
         public QueryResult(IDataReader reader, IResultMapper<TEntity> mapper)
         {
-            if (mapper == null)
-                throw new ArgumentNullException(nameof(mapper));
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
 
-            _mapper = mapper;
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _mapper.TearUp(reader);
             if (_mapper.Database.Log != null)
                 _stopwatch = Stopwatch.StartNew();

@@ -17,7 +17,6 @@ namespace Lotech.Data.Oracles
         internal static Action<DbCommand, int> ArrayBind;
 
         private IEntityDescriptor _descriptor;
-        private IMemberDescriptor[] _keys;
         private IMemberDescriptor[] _members;
         private IMemberDescriptor[] _outputs;
 
@@ -34,7 +33,6 @@ namespace Lotech.Data.Oracles
             if (_members.Length == 0)
                 throw new InvalidOperationException("insert members not found.");
             _descriptor = descriptor;
-            _keys = descriptor.Keys;
             _outputs = descriptor.Members.Where(_ => _.DbGenerated).ToArray();
         }
 

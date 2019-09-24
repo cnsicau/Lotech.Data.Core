@@ -44,7 +44,7 @@ namespace Lotech.Data
         public class Transaction
         {
             KeyValuePair<string, DbTransaction>[] transactions;
-            IsolationLevel? level;
+            readonly IsolationLevel? level;
             /// <summary>
             /// 
             /// </summary>

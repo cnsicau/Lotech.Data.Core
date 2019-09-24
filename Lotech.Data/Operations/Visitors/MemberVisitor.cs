@@ -18,8 +18,7 @@ namespace Lotech.Data.Operations.Visitors
         /// <param name="descriptor"></param>
         public MemberVisitor(IEntityDescriptor descriptor)
         {
-            if(descriptor  == null) throw new ArgumentNullException(nameof(descriptor));
-            _descriptor  = descriptor ;
+            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
 
         }
 

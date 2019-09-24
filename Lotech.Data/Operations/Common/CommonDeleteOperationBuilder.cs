@@ -13,7 +13,7 @@ namespace Lotech.Data.Operations.Common
     public abstract class CommonDeleteOperationBuilder<TEntity> : IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>
         where TEntity : class
     {
-        IOperationBuilder<Action<IDatabase, DbCommand, TEntity>> builder;
+        readonly IOperationBuilder<Action<IDatabase, DbCommand, TEntity>> builder;
 
         /// <summary>
         /// 
@@ -77,8 +77,8 @@ namespace Lotech.Data.Operations.Common
         /// </summary>
         class Optmized : IOperationBuilder<Action<IDatabase, DbCommand, TEntity>>
         {
-            Func<string, string> quote;
-            Func<string, string> buildParameter;
+            readonly Func<string, string> quote;
+            readonly Func<string, string> buildParameter;
             internal Optmized(Func<string, string> quote, Func<string, string> buildParameter)
             {
                 this.quote = quote;

@@ -44,8 +44,7 @@ namespace Lotech.Data.SQLites
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
         UpdateOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
-            if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
-            _setFilter = setFilter;
+            _setFilter = setFilter ?? throw new ArgumentNullException(nameof(setFilter));
         }
 
         void Initialize(IEntityDescriptor descriptor)
@@ -73,23 +72,6 @@ namespace Lotech.Data.SQLites
         static string BuildSetParameter(int index) { return BuildParameter("p_set_" + index); }
 
         static string BuildConditionParameter(int index) { return BuildParameter("p_where_" + index); }
-
-        static Action<IDatabase, DbCommand, TEntity> CreateParameterBinder(IMemberDescriptor[] descriptors, Func<int, string> parameterNameBuilder)
-        {
-            var members = descriptors.Select((_, i) => new MemberTuple<TEntity>(
-                _.Name,
-                _.DbType,
-                parameterNameBuilder(i),
-                MemberAccessor<TEntity, object>.GetGetter(_.Member)
-            )).ToArray();
-            return (db, command, entity) =>
-            {
-                foreach (var member in members)
-                {
-                    db.AddInParameter(command, member.ParameterName, member.DbType, member.Getter(entity));
-                }
-            };
-        }
 
         internal Action<IDatabase, DbCommand, TEntity> BuildCommandExecutor()
         {

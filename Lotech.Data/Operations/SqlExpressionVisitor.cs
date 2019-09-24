@@ -89,11 +89,8 @@ namespace Lotech.Data.Operations
         /// <param name="operation"></param>
         SqlExpressionVisitor(IDatabase database, IEntityDescriptor descriptor, Operation operation)
         {
-            if (database == null) throw new ArgumentNullException(nameof(database));
-            _database = database;
-
-            if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
-            _descriptor = descriptor;
+            _database = database ?? throw new ArgumentNullException(nameof(database));
+            _descriptor = descriptor ?? throw new ArgumentNullException(nameof(descriptor));
             _operation = operation;
             global_id++;
         }

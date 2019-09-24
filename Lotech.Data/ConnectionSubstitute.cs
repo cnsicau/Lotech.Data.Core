@@ -20,9 +20,7 @@ namespace Lotech.Data
         /// </summary>
         public ConnectionSubstitute(DbConnection connection)
         {
-            if (connection == null)
-                throw new ArgumentNullException("connection");
-            this.connection = connection;
+            this.connection = connection ?? throw new ArgumentNullException("connection");
             closed = connection.State == ConnectionState.Closed;
         }
 

@@ -25,10 +25,7 @@ namespace Lotech.Data
         protected DbProviderDatabase(DbProviderFactory dbProviderFactory, IEntityServices services)
             : base(services)
         {
-            if (dbProviderFactory == null)
-                throw new ArgumentNullException(nameof(dbProviderFactory));
-
-            this.dbProviderFactory = dbProviderFactory;
+            this.dbProviderFactory = dbProviderFactory ?? throw new ArgumentNullException(nameof(dbProviderFactory));
         }
 
         void BindOpenedConnection(DbCommand command, ConnectionSubstitute connection)

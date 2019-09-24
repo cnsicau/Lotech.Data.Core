@@ -12,7 +12,7 @@ namespace Lotech.Data.Operations.Common
     public class CommonExistsEntity<TEntity> : IOperationProvider<Func<IDatabase, TEntity, bool>>
         where TEntity : class
     {
-        private IOperationProvider<Func<IDatabase, TEntity, bool>> provider;
+        private readonly IOperationProvider<Func<IDatabase, TEntity, bool>> provider;
 
         /// <summary>
         /// 

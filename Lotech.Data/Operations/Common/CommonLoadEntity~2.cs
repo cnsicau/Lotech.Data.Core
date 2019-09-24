@@ -13,7 +13,7 @@ namespace Lotech.Data.Operations.Common
     public class CommonLoadEntity<TEntity, TKey> : IOperationProvider<Func<IDatabase, TKey, TEntity>>
         where TEntity : class
     {
-        private IOperationProvider<Func<IDatabase, TKey, TEntity>> provider;
+        private readonly IOperationProvider<Func<IDatabase, TKey, TEntity>> provider;
 
         /// <summary>
         /// 

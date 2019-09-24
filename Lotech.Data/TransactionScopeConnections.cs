@@ -18,7 +18,7 @@ namespace Lotech.Data
         /// </summary>
         private static readonly TransactionConnectionDictionary transactionConnections = new TransactionConnectionDictionary();
 
-        static TransactionCompletedEventHandler OnTransactionCompleted = (s, e) =>
+        static readonly TransactionCompletedEventHandler OnTransactionCompleted = (s, e) =>
         {
             e.Transaction.TransactionCompleted -= OnTransactionCompleted;
             List<KeyValuePair<string, ConnectionSubstitute>> connections;

@@ -34,10 +34,7 @@ namespace Lotech.Data
         protected DbConnectionDatabase(DbConnection connection, IEntityServices services)
             : base(services)
         {
-            if (connection == null)
-                throw new ArgumentNullException(nameof(connection));
-
-            this.connection = connection;
+            this.connection = connection ?? throw new ArgumentNullException(nameof(connection));
         }
 
         /// <summary>

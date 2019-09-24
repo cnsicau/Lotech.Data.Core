@@ -17,16 +17,14 @@ namespace Lotech.Data.Descriptors
         /// <param name="member"></param>
         public ReflectionMemberDescriptor(MemberInfo member)
         {
-            if (member == null) throw new ArgumentNullException(nameof(member));
-            Member = member;
+            Member = member ?? throw new ArgumentNullException(nameof(member));
 
             var type = member.MemberType == MemberTypes.Field
                 ? ((FieldInfo)member).FieldType
                 : member.MemberType == MemberTypes.Property
                 ? ((PropertyInfo)member).PropertyType
                 : null;
-            if (type == null) throw new NotSupportedException("invalid member type :" + member.MemberType);
-            Type = type;
+            Type = type ?? throw new NotSupportedException("invalid member type :" + member.MemberType);
             Name = member.Name;
             DbType = DbTypeParser.Parse(Type);
             DbGenerated = false;

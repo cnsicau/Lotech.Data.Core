@@ -79,10 +79,8 @@ namespace Lotech.Data.Queries
         /// <returns></returns>
         public static IResultMapper<TValue> Create(IDatabase database)
         {
-            if (database == null) throw new ArgumentNullException("database");
-
             var mapper = build();
-            mapper.Database = database;
+            mapper.Database = database ?? throw new ArgumentNullException("database");
             return mapper;
         }
 

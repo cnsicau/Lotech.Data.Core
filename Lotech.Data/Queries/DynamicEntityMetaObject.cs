@@ -14,9 +14,9 @@ namespace Lotech.Data.Queries
             /// <summary>
             /// var result = new T();
             /// object val;
-            ///     if (values.TryGetValue("A", out val) && val != null) result.A = (AType) val;
-            ///     if (values.TryGetValue("A", out val) && val != null) result.A = (AType) val;
-            ///     if (values.TryGetValue("A", out val) && val != null) result.A = (AType) val;
+            ///     if (values.TryGetValue("A", out val) &amp;&amp; val != null) result.A = (AType) val;
+            ///     if (values.TryGetValue("A", out val) &amp;&amp; val != null) result.A = (AType) val;
+            ///     if (values.TryGetValue("A", out val) &amp;&amp; val != null) result.A = (AType) val;
             /// return result;
             /// </summary>
             static readonly Func<IDictionary<string, object>, T> convert;

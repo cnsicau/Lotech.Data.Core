@@ -86,7 +86,7 @@ namespace Lotech.Data.Operations.Common
             internal Optmized(Func<string, string> quote, Func<string, string> buildParameter) : base(new OptmizedBuilder(quote, buildParameter)) { }
         }
 
-        IOperationProvider<Action<IDatabase, TKey>> provider;
+        readonly IOperationProvider<Action<IDatabase, TKey>> provider;
         /// <summary>
         /// 
         /// </summary>

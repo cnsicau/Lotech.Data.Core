@@ -45,8 +45,7 @@ namespace Lotech.Data.Oracles
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
         UpdateOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
-            if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
-            _setFilter = setFilter;
+            _setFilter = setFilter ?? throw new ArgumentNullException(nameof(setFilter));
         }
 
         void Initialize(IEntityDescriptor descriptor)

@@ -35,7 +35,7 @@ namespace Lotech.Data.SqlServers
                 private readonly PropertyInfo columnMappings;
                 private readonly MethodInfo addColumnMapping;
                 private readonly BulkCopyDelegate bulkCopy;
-                private MethodInfo writeToServer;
+                private readonly MethodInfo writeToServer;
 
                 public BulkCopyProviderImpl(Type sqlBulkCopyType, Type sqlBulkCopyOptionsType, PropertyInfo destinationTableName, PropertyInfo columnMappings, MethodInfo addColumnMapping, MethodInfo writeToServer)
                 {
@@ -200,7 +200,7 @@ namespace Lotech.Data.SqlServers
                         var connection = db.GetConnection(command);
                         if (connection.Connection.State == ConnectionState.Closed)
                             connection.Connection.Open();
-                        if (db.Log != null) db.Log("BulkCopy to " + destinationTableName);
+                        db.Log?.Invoke("BulkCopy to " + destinationTableName);
                         var columns = columnFilter == null ? members : (members.Where(columnFilter).ToArray());
                         using (var reader = new BulkCopyDataReader<TEntity>(entities, columns))
                         {

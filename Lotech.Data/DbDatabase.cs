@@ -60,10 +60,7 @@ namespace Lotech.Data
         /// <param name="services"></param>
         protected DbDatabase(IEntityServices services)
         {
-            if (services == null)
-                throw new ArgumentNullException(nameof(services));
-
-            this.services = services;
+            this.services = services ?? throw new ArgumentNullException(nameof(services));
             services.Database = this;
             DescriptorProvider = DefaultDescriptorProvider.Instance;
 

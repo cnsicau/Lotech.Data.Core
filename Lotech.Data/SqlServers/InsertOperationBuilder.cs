@@ -18,7 +18,6 @@ namespace Lotech.Data.SqlServers
     {
         #region Fields
         private IEntityDescriptor _descriptor;
-        private IMemberDescriptor[] _keys;
         private IMemberDescriptor[] _members;
         private IMemberDescriptor[] _outputs;
 
@@ -34,8 +33,7 @@ namespace Lotech.Data.SqlServers
         /// <param name="setFilter">更新字段过滤 用于仅更新与排除更新</param>
         InsertOperationBuilder(Func<IMemberDescriptor, bool> setFilter)
         {
-            if (setFilter == null) throw new ArgumentNullException(nameof(setFilter));
-            _setFilter = setFilter;
+            _setFilter = setFilter ?? throw new ArgumentNullException(nameof(setFilter));
 
         }
 
@@ -50,7 +48,6 @@ namespace Lotech.Data.SqlServers
             if (_members.Length == 0)
                 throw new InvalidOperationException("未找到需要更新的列.");
             _descriptor = descriptor;
-            _keys = descriptor.Keys;
             _outputs = descriptor.Members.Where(_ => _.DbGenerated).ToArray();
         }
         #endregion

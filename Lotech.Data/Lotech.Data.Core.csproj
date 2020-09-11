@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <DocumentationFile>bin\Debug\netstandard2.0\Lotech.Data.xml</DocumentationFile>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.0.14</Version>
+    <Version>2.0.15</Version>
     <PackageId>Lotech.Data.Core</PackageId>
     <Authors>cnsicau</Authors>
     <Company>lotech</Company>
@@ -12,7 +12,7 @@
     <AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
     <PackageProjectUrl>https://github.com/cnsicau/Lotech.Data.Core</PackageProjectUrl>
     <Description>a mini ORM like "EnterpriseLib Data Block" for dotnet and dotnet core</Description>
-    <AssemblyVersion>2.0.14.918</AssemblyVersion>
+    <AssemblyVersion>2.0.15.911</AssemblyVersion>
     <AssemblyName>Lotech.Data</AssemblyName>
     <RootNamespace>Lotech.Data</RootNamespace>
   </PropertyGroup>
@@ -28,11 +28,6 @@
   <ItemGroup>
     <Compile Remove="Properties\**" />
     <None Remove="database.xsd" />
-    <Content Include="database.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="database.xsd">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Remove="database.config" />
   </ItemGroup>
 </Project>

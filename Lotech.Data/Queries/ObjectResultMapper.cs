@@ -55,6 +55,7 @@ namespace Lotech.Data.Queries
                 var indexes = new SortedList<string, int>(StringComparer.OrdinalIgnoreCase);
                 for (int i = 0; i < record.FieldCount; i++)
                 {
+                    if(indexes.ContainsKey(record.GetName(i))) throw new InvalidOperationException(record.GetName(i) + "列名重复");
                     indexes[record.GetName(i)] = i;
                 }
                 record = new MetaRecord(record);

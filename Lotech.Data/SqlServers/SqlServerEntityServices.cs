@@ -125,6 +125,9 @@ namespace Lotech.Data.SqlServers
             where TEntity : class
             where TExclude : class
         {
+            var sql = Database as SqlServerDatabase;
+            if (sql != null && sql.Bulk) return SqlServerQueryExtensions.BulkUpdateEntitiesExclude<TEntity, TExclude>;
+
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Exclude<TExclude>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);
@@ -134,6 +137,9 @@ namespace Lotech.Data.SqlServers
             where TEntity : class
             where TInclude : class
         {
+            var sql = Database as SqlServerDatabase;
+            if (sql != null && sql.Bulk) return SqlServerQueryExtensions.BulkUpdateEntitiesInclude<TEntity, TInclude>;
+
             return Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>,
                     TransactionalOperationProvider<TEntity>.Instance<UpdateOperationBuilder<TEntity>.Include<TInclude>>
                 >.Instance(Database.DescriptorProvider, Descriptors.Operation.Update);

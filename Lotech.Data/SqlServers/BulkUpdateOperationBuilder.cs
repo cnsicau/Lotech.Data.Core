@@ -19,10 +19,10 @@ namespace Lotech.Data.SqlServers
 
             var join = string.Join(" AND "
                 , descriptor.Keys.Select(_ => "t." + Quote(_.Name) + " = s." + Quote(_.Name)));
-            var set = string.Join(", ", descriptor.Members.Except(descriptor.Keys).Where(_ => !_.DbGenerated)
+            var set = string.Join(", ", GetSetMembers(descriptor.Members.Except(descriptor.Keys).Where(_ => !_.DbGenerated))
                     .Select(_ => Quote(_.Name) + " = s." + Quote(_.Name)));
 
-            if (string.IsNullOrEmpty(set)) throw new InvalidOperationException("未找到需要更新的列.");
+            if (string.IsNullOrEmpty(set)) throw new InvalidOperationException("要更新的列不能为空.");
 
             var destinationTableName = string.IsNullOrEmpty(descriptor.Schema) ? Quote(descriptor.Name)
                         : (Quote(descriptor.Schema) + "." + Quote(descriptor.Name));
@@ -94,6 +94,24 @@ namespace Lotech.Data.SqlServers
                     transaction.Commit();
                 }
             };
+        }
+
+        protected virtual IEnumerable<IMemberDescriptor> GetSetMembers(IEnumerable<IMemberDescriptor> members) { return members; }
+
+        public class Exclude<TExclude> : BulkUpdateOperationBuilder<TEntity> where TExclude : class
+        {
+            protected override IEnumerable<IMemberDescriptor> GetSetMembers(IEnumerable<IMemberDescriptor> members)
+            {
+                return members.Where(Operations.MemberFilters.Exclude<TExclude>());
+            }
+        }
+
+        public class Include<TInclude> : BulkUpdateOperationBuilder<TEntity> where TInclude : class
+        {
+            protected override IEnumerable<IMemberDescriptor> GetSetMembers(IEnumerable<IMemberDescriptor> members)
+            {
+                return members.Where(Operations.MemberFilters.Include<TInclude>());
+            }
         }
     }
 }

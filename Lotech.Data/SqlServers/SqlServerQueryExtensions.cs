@@ -236,6 +236,38 @@ namespace Lotech.Data.SqlServers
         }
 
         /// <summary>
+        /// 排除列大批量更新数据
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TExclude"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="entities"></param>
+        static public void BulkUpdateEntitiesExclude<TEntity, TExclude>(this IDatabase db, IEnumerable<TEntity> entities)
+            where TEntity : class where TExclude : class
+        {
+            Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
+                , BulkUpdateOperationBuilder<TEntity>.Exclude<TExclude>>.Instance(
+                db.DescriptorProvider, Descriptors.Operation.Insert
+            )(db, entities);
+        }
+
+        /// <summary>
+        /// 限制列大批量更新数据
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TInclude"></typeparam>
+        /// <param name="db"></param>
+        /// <param name="entities"></param>
+        static public void BulkUpdateEntitiesInclude<TEntity, TInclude>(this IDatabase db, IEnumerable<TEntity> entities)
+            where TEntity : class where TInclude : class
+        {
+            Operation<TEntity, Action<IDatabase, IEnumerable<TEntity>>
+                , BulkUpdateOperationBuilder<TEntity>.Include<TInclude>>.Instance(
+                db.DescriptorProvider, Descriptors.Operation.Insert
+            )(db, entities);
+        }
+
+        /// <summary>
         /// 大批量删除数据
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>

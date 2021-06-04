@@ -19,7 +19,7 @@ namespace Lotech.Data.Oracles
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="query"></param>
-        /// <param name="page"></param>
+        /// <param name="page">排序列(Orders.Column)有SQL注入风险，使用时应注意过滤</param>
         /// <returns></returns>
         public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page)
         {

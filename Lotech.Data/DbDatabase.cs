@@ -937,7 +937,7 @@ namespace Lotech.Data
         /// <param name="offset"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        public ISqlQuery SqlQuery(string sql, int offset, int length)
+        public ISqlQuery SqlQueryString(string sql, int offset, int length)
         {
             return new SqlQuery(this, sql, offset, length);
         }
@@ -959,7 +959,7 @@ namespace Lotech.Data
         /// <param name="offset"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        public ISqlQuery SqlQueryLine(string sql, int offset, int length)
+        public ISqlQuery SqlQueryStringLine(string sql, int offset, int length)
         {
             return new SqlQuery(this, sql, offset, length).AppendLine();
         }

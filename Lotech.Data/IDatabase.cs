@@ -610,7 +610,7 @@ namespace Lotech.Data
         /// <param name="offset"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        ISqlQuery SqlQuery(string sql, int offset, int length);
+        ISqlQuery SqlQueryString(string sql, int offset, int length);
 
         /// <summary>
         /// 构建指定初始SQL的实例并在末尾追加换行
@@ -626,7 +626,7 @@ namespace Lotech.Data
         /// <param name="offset"></param>
         /// <param name="length"></param>
         /// <returns></returns>
-        ISqlQuery SqlQueryLine(string sql, int offset, int length);
+        ISqlQuery SqlQueryStringLine(string sql, int offset, int length);
 
         /// <summary>构建指定初始SQL、参数实例</summary>
         /// <param name="sql">初始SQL语句，可使用 {0}、{1}…{n}，向后引用args位置上的参数值</param>

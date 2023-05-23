@@ -24,22 +24,19 @@ namespace Lotech.Data.MySqls
         /// <returns></returns>
         public static PageData<T> PageExecuteEntites<T>(this ISqlQuery query, Page page)
         {
-            var count = query.Database.SqlQuery("SELECT COUNT(1) FROM (").Append(query).Append(") t").ExecuteScalar<int>();
-            // 无数据
-            if (count == 0) return new PageData<T>(0, new T[0]);
-
             string orderBy = "1";
             if (page.Orders?.Length > 0)
             {
                 orderBy = string.Join(", ", page.Orders.Select(_ => query.Database.QuoteName(_.Column) + " " + _.Direction));
             }
 
-            var data = query.Database.SqlQuery("SELECT * FROM (")
+            var data = query.Database.SqlQuery("SELECT SQL_CALC_FOUND_ROWS * FROM (")
                                     .Append(query)
                                     .Append(") t ORDER BY ").Append(orderBy)
                                     .Append(" LIMIT ").Append(page.Size.ToString())
                                     .AppendIf(page.Index > 0, " OFFSET " + (page.Index * page.Size))
                                     .ExecuteEntities<T>();
+            var count = query.Database.SqlQuery("SELECT FOUND_ROWS()").ExecuteScalar<int>();
 
             return new PageData<T>(count, data);
         }

@@ -1,6 +1,5 @@
 ﻿using Lotech.Data.Descriptors;
 using System;
-using System.Data;
 using System.Linq;
 
 namespace Lotech.Data.Operations.Common

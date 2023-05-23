@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lotech.Data.SqlServers
+﻿namespace Lotech.Data.SqlServers
 {
     using static SqlServerDatabase;
     /// <summary>

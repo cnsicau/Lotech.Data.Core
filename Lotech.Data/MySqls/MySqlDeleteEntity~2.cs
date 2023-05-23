@@ -1,6 +1,4 @@
-﻿using Lotech.Data.Operations;
-
-namespace Lotech.Data.MySqls
+﻿namespace Lotech.Data.MySqls
 {
     using static MySqlEntityServices;
     /// <summary>

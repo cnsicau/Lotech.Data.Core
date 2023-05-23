@@ -1,5 +1,4 @@
-﻿using System;
-using Lotech.Data.SqlServers;
+﻿using Lotech.Data.SqlServers;
 
 namespace Lotech.Data.Example
 {

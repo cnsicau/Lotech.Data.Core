@@ -1,10 +1,4 @@
-﻿using Lotech.Data.Descriptors;
-using Lotech.Data.Queries;
-using Lotech.Data.Utils;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
+﻿using System.Data;
 
 namespace Lotech.Data
 {

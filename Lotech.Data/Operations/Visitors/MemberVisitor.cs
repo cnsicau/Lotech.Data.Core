@@ -1,9 +1,7 @@
 ﻿using Lotech.Data.Descriptors;
 using System;
 using System.Linq;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 using Lotech.Data.Utils;
 
 namespace Lotech.Data.Operations.Visitors
@@ -45,15 +43,15 @@ namespace Lotech.Data.Operations.Visitors
         {
             if (node.Expression == null) // static member
             {
-                return Expression.Constant(MemberAccessor.GetGetter(node.Member)(null));
+                return Expression.Constant(MemberAccessor.GetGetter(node.Member)(null), node.Type);
             }
             switch (node.Expression.NodeType)
             {
                 case ExpressionType.Constant:
-                    return Expression.Constant(MemberAccessor.GetGetter(node.Member)(((ConstantExpression)node.Expression).Value));
+                    return Expression.Constant(MemberAccessor.GetGetter(node.Member)(((ConstantExpression)node.Expression).Value), node.Type);
                 case ExpressionType.MemberAccess:
                     var value = EvaluateExternalMember((MemberExpression)node.Expression);  // 递归向内获取
-                    return Expression.Constant(MemberAccessor.GetGetter(node.Member)(value.Value));
+                    return Expression.Constant(MemberAccessor.GetGetter(node.Member)(value.Value), node.Type);
                 default:
                     throw new NotSupportedException("不支持的外部值访问：" + node);
             }

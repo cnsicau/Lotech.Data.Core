@@ -1,7 +1,6 @@
 ﻿using Lotech.Data.Generics;
 using Lotech.Data.Utils;
 using System.Data.Common;
-using System.Diagnostics;
 
 namespace Lotech.Data
 {

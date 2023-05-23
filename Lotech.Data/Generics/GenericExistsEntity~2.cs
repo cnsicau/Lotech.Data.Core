@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lotech.Data.Generics
+﻿namespace Lotech.Data.Generics
 {
     /// <summary>
     /// 

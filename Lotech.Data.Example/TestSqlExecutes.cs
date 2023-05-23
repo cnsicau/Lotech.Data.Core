@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Dynamic;
-using System.Linq;
 
 namespace Lotech.Data.Example
 {

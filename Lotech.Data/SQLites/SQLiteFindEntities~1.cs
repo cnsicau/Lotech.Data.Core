@@ -1,6 +1,5 @@
 ﻿using Lotech.Data.Operations.Common;
 using System;
-using System.Collections.Generic;
 
 namespace Lotech.Data.SQLites
 {

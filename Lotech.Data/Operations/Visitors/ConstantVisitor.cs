@@ -1,5 +1,4 @@
-﻿using Lotech.Data.Operations;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace Lotech.Data.Operations.Visitors
 {

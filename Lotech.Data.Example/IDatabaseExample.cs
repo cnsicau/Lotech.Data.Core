@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Lotech.Data.Example
+﻿namespace Lotech.Data.Example
 {
     public interface IDatabaseExample
     {

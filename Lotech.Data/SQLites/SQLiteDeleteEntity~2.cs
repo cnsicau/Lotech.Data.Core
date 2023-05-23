@@ -1,6 +1,4 @@
-﻿using Lotech.Data.Operations;
-
-namespace Lotech.Data.SQLites
+﻿namespace Lotech.Data.SQLites
 {
     using static SQLiteEntityServices;
     /// <summary>

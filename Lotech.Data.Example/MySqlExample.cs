@@ -1,5 +1,4 @@
-﻿using System;
-using Lotech.Data.MySqls;
+﻿using Lotech.Data.MySqls;
 
 namespace Lotech.Data.Example
 {

@@ -1,7 +1,5 @@
 ﻿using Lotech.Data.Descriptors;
 using Lotech.Data.Operations.Visitors;
-using Lotech.Data.Queries;
-using Lotech.Data.Utils;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
